@@ -52,7 +52,7 @@ def test_migration_preserves_bytes_deduplicates_within_case_and_replays_public_p
     for item in expected['evidence']:item.pop('content')
     assert store.replay('blob-rider','old-upload','fingerprint')==expected
     with store.connect() as db:
-        assert db.execute('PRAGMA user_version').fetchone()[0]==2
+        assert db.execute('PRAGMA user_version').fetchone()[0]==4
         assert db.execute('SELECT COUNT(*) FROM attachment_blobs').fetchone()[0]==1
         assert db.execute('SELECT COUNT(*) FROM attachments').fetchone()[0]==2
         assert db.execute('SELECT encoding,typeof(response) FROM receipts').fetchone()==('zlib-json','blob')

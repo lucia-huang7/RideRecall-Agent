@@ -2,7 +2,7 @@
 FROM node:22-alpine@sha256:fe4f6d74e20370acb04ad889077d14d0f64a9c8ea6a42bc60cddf1e844699914 AS frontend
 WORKDIR /build
 COPY frontend/package.json frontend/package-lock.json ./
-RUN npm ci
+RUN npm ci --no-audit --no-fund --fetch-timeout=30000 --fetch-retries=1
 COPY frontend/index.html frontend/vite.config.js ./
 COPY frontend/src ./src
 RUN npm run build
@@ -30,4 +30,4 @@ WORKDIR /app/backend
 EXPOSE 8000
 HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/readyz',timeout=4).read()"
-CMD ["python", "-m", "uvicorn", "mobility.app:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--no-proxy-headers"]
+CMD ["python", "-m", "uvicorn", "mobility.app:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--no-proxy-headers", "--limit-concurrency", "64", "--timeout-keep-alive", "5"]

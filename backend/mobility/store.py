@@ -67,6 +67,9 @@ class Store:
         uri=Path(self.path).resolve().as_uri()+'?mode=rw'
         with sqlite3.connect(uri,uri=True,timeout=.25) as db:
             db.execute('SELECT 1 FROM cases LIMIT 1').fetchone()
+            db.execute('SELECT 1 FROM case_index LIMIT 1').fetchone()
+            key=db.execute("SELECT value FROM runtime_settings WHERE key='case_cursor_secret'").fetchone()
+            if key is None or len(key[0])!=64 or any(c not in '0123456789abcdef' for c in key[0]):return False
             if db.execute('PRAGMA user_version').fetchone()[0]!=SCHEMA_VERSION:return False
         return True
 
@@ -74,6 +77,14 @@ class Store:
         with self.connect() as db:
             rows=db.execute('SELECT data FROM cases' if owner is None else 'SELECT data FROM cases WHERE owner=?',() if owner is None else (owner,)).fetchall()
         return sorted([decoded(r[0]) for r in rows],key=lambda c:c['updated_at'],reverse=True)
+
+    def page(self,**options):
+        from mobility.case_index import page
+        return page(self,**options)
+
+    def find_trip(self,owner,trip_id):
+        from mobility.case_index import find_trip
+        with self.connect() as db:return find_trip(db,owner,trip_id)
 
     def get(self, case_id, owner=None):
         with self.connect() as db:return self.load(db,case_id,owner)
@@ -114,6 +125,8 @@ class Store:
         case['updated_at']=now()
         pending=case.pop('_pending_projections',[])
         db.execute('INSERT INTO cases VALUES(?,?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data',(case['id'],case['owner'],json.dumps(case)))
+        from mobility.case_index import index_case
+        index_case(db,case)
         for projection in pending:
             db.execute('INSERT INTO projection_outbox(id,case_id,payload,created_at,available_at) VALUES(?,?,?,?,?)',
                        (projection['id'],case['id'],json.dumps(projection['effects']),time.time(),time.time()))

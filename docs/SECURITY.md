@@ -41,16 +41,18 @@ No cookies are used for these credentials. Deployment assumes a trusted same-ori
 
 - Global body limit: 4 MiB, checked before JSON/multipart parsing, including chunked bodies and misleading lengths.
 - Body acquisition timeout: 15 seconds. Invalid/duplicate lengths are rejected; oversized requests close the connection.
-- Attachments: existing 3 MiB limit, accepted PNG/JPEG/PDF signatures, attachment disposition and no-sniff responses. These checks do not prove a file is harmless; use scanning/quarantine before accepting untrusted uploads in a real deployment.
+- Attachments: 3 MiB per file, ten files and 15 MiB of unique bytes per case; twenty evidence items total. Files are case-scoped, immutable and digest-verified. Accepted PNG/JPEG/PDF signatures, attachment disposition and no-sniff responses. These checks do not prove a file is harmless; use scanning/quarantine before accepting untrusted uploads in a real deployment.
 - Request models reject unknown fields. Validation responses omit submitted values and cap the error list.
 - Authenticated API responses use `Cache-Control: no-store`. Responses disable framing and sensitive browser permissions; production applies a same-origin Content Security Policy.
 - Interactive API documentation is disabled in the authenticated profile.
+- Ride analysis admission: four active commands globally, two per account, no unbounded inference waiting queue, and a 35-second analysis deadline. Busy work is rejected with a retry hint; timed-out analysis commits no result. Human handoff and inexpensive case actions do not consume analysis slots. Shipped Uvicorn entry points also cap concurrent connections/tasks at 64.
+- Core financial-policy documents are read-only in the authenticated management API and checked against their release before startup. Confirmation revalidates a positive authoritative amount and current release. Management updates commit canonical content and a durable delivery outbox before altering files/indexes; new analyses pause on pending configuration.
 
 ## Health endpoints
 
-`/livez` reports process responsiveness only. `/readyz` separately checks completed startup, an existing readable case schema, populated policy indexes and an actual independent MCP trip-record response. A dependency failure returns 503 without internal paths, credentials or customer data. `/health` retains demo metadata for the local interface; the authenticated profile returns a minimal status.
+`/livez` reports process responsiveness only. `/readyz` separately checks completed startup, an existing readable case schema, populated policy indexes, active memory/configuration projection workers with acceptable backlog, and an actual independent MCP trip-record response. A dependency failure returns 503 without internal paths, credentials or customer data. `/health` retains demo metadata for the local interface; the authenticated profile returns a minimal status.
 
-Readiness is not an end-to-end availability guarantee. A readable SQLite schema does not prove disk capacity or distributed write availability. Production deployment still needs TLS, persistent-volume permissions, backups, external identity lifecycle integration, abuse controls and measured concurrency/fault testing.
+Readiness is not an end-to-end availability guarantee. A readable SQLite schema does not prove disk capacity or distributed write availability. Production deployment still needs TLS, offsite recovery policy, external identity lifecycle integration, deployment-specific abuse controls and capacity sizing.
 
 ## Exercise the profile locally
 

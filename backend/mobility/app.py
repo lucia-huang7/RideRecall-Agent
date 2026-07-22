@@ -4,11 +4,11 @@ import json
 import os
 import re
 from uuid import uuid4
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, nullcontext
 from pathlib import Path
 from typing import Literal
 
-from fastapi import FastAPI, File, Header, HTTPException, UploadFile
+from fastapi import FastAPI, File, Header, HTTPException, UploadFile, Query
 from fastapi.responses import JSONResponse
 from mobility.security import Security, principal_context, staff_receipt_owner
 from fastapi.responses import Response
@@ -66,33 +66,38 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
     if security.production and not database_path:
         raise ValueError('Production requires an explicit KINDER_UBER_RIDE_DB')
     database_path=database_path or str(Path(__file__).resolve().parents[2]/'.runtime/rides.sqlite3')
-    store=service=projections=None
+    store=service=projections=configuration=None
 
     @asynccontextmanager
     async def lifespan(app):
-        nonlocal store, service, projections
+        nonlocal store, service, projections, configuration
         from mobility.runtime_lock import embedded_writer_lock
         from mobility.projections import ProjectionWorker
         with embedded_writer_lock(database_path):
             store=Store(database_path)
             service=RideSupport(store,catalog,model_settings=model_settings)
             projections=ProjectionWorker(store,service.engine.chroma,service.engine.hash_embedding)
+            from mobility.configuration import ConfigurationWorker
+            configuration=ConfigurationWorker(service)
+            app.state.configuration=configuration
             app.state.store=store
             app.state.service=service
             app.state.projections=projections
             try:
                 if security.production:service.engine.validate_authoritative_policies()
+                await configuration.start()
                 await service.engine.operations.start()
                 await projections.start()
                 app.state.started=True
                 yield
             finally:
                 app.state.started=False
+                await configuration.close()
                 await projections.close()
                 await service.tools._client.close()
                 await service.engine.close()
 
-    app = FastAPI(title="kinder-uber Ride Support", version="0.4.0", lifespan=lifespan,
+    app = FastAPI(title="kinder-uber Ride Support", version="0.5.0", lifespan=lifespan,
         docs_url=None if security.production else "/docs",
         redoc_url=None if security.production else "/redoc",
         openapi_url=None if security.production else "/openapi.json")
@@ -103,6 +108,7 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
     app.state.store = store
     app.state.service = service
     app.state.projections = projections
+    app.state.configuration = configuration
 
     import sqlite3
     @app.exception_handler(sqlite3.DatabaseError)
@@ -211,13 +217,16 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
             raise HTTPException(503, 'The application is starting or stopping.')
         if security.production:
             return dict(status='ok', auth_mode='production')
-        return dict(status="ok", dataset_id=service.catalog.dataset_id, catalog_trips=len(service.catalog.trips), mode=service.engine.mode, model=service.engine.model, api_key_required=service.engine.mode == "live", pipeline="original-intent-orchestrator-rag", retrieval="embedded-chroma-local-hash")
+        return dict(status="ok", dataset_id=service.catalog.dataset_id, catalog_trips=len(service.catalog.trips), mode=service.engine.mode, model=service.engine.model, api_key_required=service.engine.mode == "live", pipeline="intent-orchestration-rag", retrieval="embedded-chroma-local-hash")
 
     @app.get("/api/agent/operations")
     async def operations(x_demo_agent: str = Header(default="")):
         staff(x_demo_agent)
         result=await service.engine.operations.status()
         result['memory_projection']=store.projection_status()
+        from mobility.configuration import status
+        result['configuration']=status(store)
+        result['analysis_admission']=service.admission.status()
         return result
 
     @app.post("/api/agent/quality/jobs")
@@ -271,11 +280,12 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
         return dict(skills=[dict(name=s.name, description=s.description, agents=s.agents, enabled=s.enabled, content=s.content) for s in service.skills.skills], errors=["A Skill could not be loaded; review the saved document." for _ in service.skills.errors], editable_content=service.skill_file.read_text())
 
     @app.post("/api/agent/skills/reload")
-    async def reload_skills(x_demo_agent: str = Header(default="")):
+    async def reload_skills(x_demo_agent: str = Header(default=""), x_request_id: str = Header(default="")):
         staff(x_demo_agent)
-        async with service.management_lock:
-            service.skills.reload()
-            return skills(x_demo_agent)
+        from mobility.configuration import status
+        if status(store)['pending']:raise HTTPException(409,'A configuration release is still applying. Wait before reloading the runtime file.')
+        # Reload is a validated durable release too, never an unreceipted side effect.
+        return await update_skill(SkillDocument(content=service.skill_file.read_text()),x_demo_agent,x_request_id)
 
     @app.post("/api/agent/skills")
     async def update_skill(body: SkillDocument, x_demo_agent: str = Header(default=""), x_request_id: str = Header(default="")):
@@ -297,15 +307,17 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
                 raise HTTPException(422, "Provide a valid Skill document with a heading and content.")
         payload = ["skill", body.content]
         fingerprint = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
-        async with service.management_lock:
-            cached = store.replay(staff_receipt_owner(), x_request_id, fingerprint)
-            if cached is not None:
-                return cached
-            temporary = service.skill_file.with_suffix(".pending")
-            temporary.write_text(body.content)
-            temporary.replace(service.skill_file)
-            service.skills.reload()
-            return write(staff_receipt_owner(), x_request_id, payload, lambda db: skills(x_demo_agent))
+        cached=store.replay(staff_receipt_owner(),x_request_id,fingerprint)
+        if cached is not None:return cached
+        from mobility.configuration import enqueue
+        def commit_skill(db):
+            sequence=enqueue(db,dict(kind='skill',content=body.content))
+            return dict(status='accepted',configuration_sequence=sequence,
+                skills=[dict(name=item.name,description=item.description,agents=item.agents,enabled=item.enabled,content=item.content) for item in candidate_manager.skills],
+                errors=[],editable_content=body.content)
+        receipt=write(staff_receipt_owner(),x_request_id,payload,commit_skill)
+        await configuration.flush()
+        return receipt
 
     @app.get('/api/agent/knowledge')
     def knowledge_scopes(x_demo_agent: str=Header(default='')):
@@ -334,17 +346,24 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
             raise HTTPException(409,'Authoritative release documents are read-only. Publish a reviewed catalog release to change financial policy.')
         payload = ["knowledge", body.model_dump()]
         fingerprint = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
-        async with service.management_lock:
-            cached = store.replay(staff_receipt_owner(), x_request_id, fingerprint)
-            if cached is not None:
-                return cached
-            import re
-            if re.search(r"[\u4e00-\u9fff]", body.title + body.content):
-                raise HTTPException(422, "Use English for ride policy documents.")
-            chunks = await service.engine.knowledge[body.topic].add_documents_async([dict(document_id=body.document_id, title=body.title, content=body.content)])
-            service.engine.save_policy_source(body.topic, body.model_dump())
-            service.engine.rag_tools.invalidate_cache("ride_policy_search")
-            return write(staff_receipt_owner(), x_request_id, payload, lambda db: dict(scope=body.topic, added_chunks=chunks, document_id=body.document_id))
+        cached=store.replay(staff_receipt_owner(),x_request_id,fingerprint)
+        if cached is not None:return cached
+        if re.search(r"[\u4e00-\u9fff]",body.title+body.content):
+            raise HTTPException(422,'Use English for ride policy documents.')
+        from mobility.configuration import enqueue
+        count=len(service.engine.knowledge[body.topic]._chunk_text(body.content,chunk_size=500))
+        def commit_policy(db):
+            sequence=enqueue(db,dict(kind='policy',topic=body.topic,document=body.model_dump()))
+            return dict(status='accepted',configuration_sequence=sequence,scope=body.topic,added_chunks=count,document_id=body.document_id)
+        receipt=write(staff_receipt_owner(),x_request_id,payload,commit_policy)
+        await configuration.flush()
+        return receipt
+
+    @app.get('/api/agent/configuration')
+    def configuration_status(x_demo_agent: str=Header(default='')):
+        staff(x_demo_agent)
+        from mobility.configuration import status
+        return status(store)
 
     @app.post("/api/agent/evaluations")
     async def evaluate(x_demo_agent: str = Header(default="")):
@@ -365,9 +384,22 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
         security.require_trip(catalog, trip_id)
         return service.trip(trip_id)
 
-    @app.get("/api/cases")
-    def cases(x_demo_session: str = Header(default="")):
-        return [public(c) for c in store.list(owner(x_demo_session))]
+    def list_response(data,path):
+        from urllib.parse import urlencode
+        headers={'X-Total-Count':str(data['total'])}
+        if data['next_cursor']:
+            headers['Link']='<'+path+'?'+urlencode(dict(cursor=data['next_cursor'],limit=data['limit']))+'>; rel="next"'
+            headers['X-Next-Cursor']=data['next_cursor']
+        return JSONResponse([public(record) for record in data['items']],headers=headers)
+
+    @app.get('/api/cases')
+    def cases(x_demo_session: str=Header(default=''),limit: int=Query(default=25,ge=1,le=100),cursor: str|None=Query(default=None,max_length=512)):
+        return list_response(store.page(owner=owner(x_demo_session),limit=limit,cursor=cursor,full=True),'/api/cases')
+
+    @app.get('/api/cases/index')
+    def case_index(x_demo_session: str=Header(default=''),limit: int=Query(default=25,ge=1,le=100),cursor: str|None=Query(default=None,max_length=512),trip_id: str|None=Query(default=None,max_length=100,pattern=r'^trip-[a-z0-9-]+$')):
+        if trip_id:security.require_trip(catalog,trip_id)
+        return store.page(owner=owner(x_demo_session),limit=limit,cursor=cursor,trip_id=trip_id)
 
     @app.get("/api/cases/{case_id}")
     def case(case_id: str, x_demo_session: str = Header(default="")):
@@ -381,18 +413,18 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
             raise HTTPException(400, "A request ID is required for every change.")
         if not body.description.strip() or len(body.description.strip()) < 5:
             raise HTTPException(422, "Please describe what happened.")
-        async with service.engine_locks.hold(actor + ":" + body.trip_id):
+        async with service.admission.hold(actor), service.engine_locks.hold(actor + ":" + body.trip_id):
             payload = ["create", body.model_dump()]
             fingerprint = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
             replay = store.replay(actor, x_request_id, fingerprint)
             if replay is not None:
                 return case_response(replay)
             data, trace = await service.inspect(body.trip_id)
-            existing = next((c for c in store.list(actor) if c["trip_id"] == body.trip_id and (c["status"] != "resolved" or c["adjustment"])), None)
+            existing = store.find_trip(actor,body.trip_id)
             candidate_id=existing['id'] if existing else 'KU-'+uuid4().hex.upper()
             expected_revision=existing.get('revision',0) if existing else 0
             context=existing or dict(id=candidate_id,owner=actor,trip_id=body.trip_id)
-            analysis = await service.engine.run(body.trip_id, body.description.strip(), context)
+            analysis = await service.analyze(body.trip_id, body.description.strip(), context)
             def apply(db):
                 record = service.create(db, actor, data[0], body.description.strip(), body.topic, trace, case_id=candidate_id)
                 if record['id']!=candidate_id or record.get('revision',0)!=expected_revision:
@@ -413,7 +445,7 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
             raise HTTPException(400, "A request ID is required for every change.")
         if body.action in ("message", "evidence") and not body.text.strip():
             raise HTTPException(422, "Please enter a message.")
-        async with service.engine_locks.hold(actor + ":" + case_id):
+        async with service.admission.hold(actor,enabled=body.action=="message"), (service.engine_locks.hold(actor + ":" + case_id) if body.action=="message" else nullcontext()):
             payload = [case_id, body.model_dump()]
             fingerprint = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
             replay = store.replay(actor, x_request_id, fingerprint)
@@ -422,7 +454,7 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
             snapshot = store.get(case_id, actor)
             check_revision(snapshot, if_match)
             if body.action=="message":service.check_rider_budget(snapshot)
-            analysis = await service.engine.run(snapshot["trip_id"], body.text.strip(), snapshot) if body.action == "message" else None
+            analysis = await service.analyze(snapshot["trip_id"], body.text.strip(), snapshot) if body.action == "message" else None
             def apply(db):
                 record = store.load(db, case_id, actor)
                 check_revision(record,if_match)
@@ -482,10 +514,23 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
         disposition="attachment; filename*=UTF-8''"+quote(item['filename'],safe='')
         return Response(stored['data'],media_type=stored['content_type'],headers={'Content-Disposition':disposition,'X-Content-Type-Options':'nosniff','ETag':'"'+stored['sha256']+'"'})
 
-    @app.get("/api/agent/cases")
-    def queue(x_demo_agent: str = Header(default="")):
+    @app.get('/api/agent/cases')
+    def queue(x_demo_agent: str=Header(default=''),limit: int=Query(default=25,ge=1,le=100),cursor: str|None=Query(default=None,max_length=512)):
         staff(x_demo_agent)
-        return [public(c) for c in store.list() if c["handoff"]]
+        return list_response(store.page(handed_off=True,limit=limit,cursor=cursor,full=True),'/api/agent/cases')
+
+    @app.get('/api/agent/cases/index')
+    def queue_index(x_demo_agent: str=Header(default=''),limit: int=Query(default=25,ge=1,le=100),cursor: str|None=Query(default=None,max_length=512)):
+        staff(x_demo_agent)
+        return store.page(handed_off=True,limit=limit,cursor=cursor)
+
+    @app.get('/api/agent/cases/{case_id}')
+    def specialist_case(case_id: str,x_demo_agent: str=Header(default='')):
+        staff(x_demo_agent)
+        record=store.get(case_id)
+        if not record.get('handoff'):raise HTTPException(404,'Case not found.')
+        principal=principal_context.get()
+        return dict(case=public(record),available_actions=service.staff_options(record,principal.subject if security.production else None))
 
     @app.post("/api/agent/cases/{case_id}/actions")
     def staff_action(case_id: str, body: StaffAction, x_demo_agent: str = Header(default=""), x_request_id: str = Header(default=""), if_match: str = Header(default="")):

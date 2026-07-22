@@ -232,20 +232,12 @@ class RideEngine:
 
     def policy_sources(self, topic):
         with self.support.store.connect() as db:
-            db.execute("CREATE TABLE IF NOT EXISTS policy_sources(topic TEXT, document_id TEXT, data TEXT, PRIMARY KEY(topic,document_id))")
-            import hashlib
-            indexed_metadata = self.knowledge[topic]._collection.get(include=["metadatas"])["metadatas"]
-            versions = {item.get("version") for item in indexed_metadata}
-            for doc in self.documents[topic]:
-                if hashlib.sha256(doc["content"].encode()).hexdigest() not in versions:
-                    continue
-                db.execute("INSERT OR IGNORE INTO policy_sources VALUES(?,?,?)", (topic, doc["document_id"], json.dumps(doc)))
-            return [json.loads(row[0]) for row in db.execute("SELECT data FROM policy_sources WHERE topic=? ORDER BY document_id", (topic,))]
-
-    def save_policy_source(self, topic, document):
-        with self.support.store.connect() as db:
-            db.execute("CREATE TABLE IF NOT EXISTS policy_sources(topic TEXT, document_id TEXT, data TEXT, PRIMARY KEY(topic,document_id))")
-            db.execute("INSERT OR REPLACE INTO policy_sources VALUES(?,?,?)", (topic, document["document_id"], json.dumps(document)))
+            saved={row[0]:json.loads(row[1]) for row in db.execute('SELECT document_id,data FROM policy_sources WHERE topic=?',(topic,))}
+        versions={item.get('version') for item in self.knowledge[topic]._collection.get(include=['metadatas'])['metadatas']}
+        for doc in self.documents[topic]:
+            if doc['document_id'] not in saved and hashlib.sha256(doc['content'].encode()).hexdigest() in versions:
+                saved[doc['document_id']]=doc
+        return [saved[key] for key in sorted(saved)]
 
     async def required_policy_chunks(self, topic):
         """Read current indexed anchors; never substitute seed prose for missing evidence."""
@@ -268,6 +260,14 @@ class RideEngine:
         return await self.knowledge[context["topic"]].search_async(params["query"], params.get("top_k", 5))
 
     async def run(self, trip_id, text, case=None):
+        from mobility.configuration import status
+        from fastapi import HTTPException
+        async with self.support.configuration_gate.read():
+            if status(self.support.store)['pending']:
+                raise HTTPException(503,'A committed configuration update is still applying. Retry after workspace recovery.')
+            return await self._run(trip_id,text,case)
+
+    async def _run(self, trip_id, text, case=None):
         from mobility.memory import CaseMemory
         memory = CaseMemory(self, case, trip_id)
         memory_context = await memory.prepare(text)

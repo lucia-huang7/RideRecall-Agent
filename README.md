@@ -6,6 +6,8 @@ A mobile ride-support workspace that keeps the trip, payment records, evidence, 
 
 Independent software prototype. Not affiliated with Uber. All supplied trips, policies and financial actions are fictional.
 
+![Monochrome mobile rider workspace](docs/assets/mobile-trips.png)
+
 ## What works
 
 - Rider flow: select a trip, describe a dispute, attach evidence, correct details, review a proposed adjustment or request a specialist.
@@ -13,7 +15,8 @@ Independent software prototype. Not affiliated with Uber. All supplied trips, po
 - Inspectable execution: intent routing, specialist roles, policy retrieval, guarded read-only tools and a real independent stdio MCP service.
 - Specialist desk: accept a handoff, read the existing context, reply, propose a simulated adjustment and record an outcome.
 - Consistent commands: version-aware case updates, exact replay receipts and crash-recoverable memory projections. A slow analysis cannot silently overwrite a newer specialist update.
-- Operations: execution traces, metrics, knowledge/skill controls, dependency checks and regression evaluation.
+- Operations: execution traces, metrics, durable knowledge/Skill releases, bounded inference admission, dependency checks and regression evaluation.
+- Recovery: immutable deduplicated evidence, compressed replay receipts and verified offline snapshot/restore.
 - Black-and-white mobile interface with optional Rainbow Mode; English interface and new code.
 
 The default model adapter is deterministic. The pipeline actually runs, but offline results do not establish live-model reasoning quality or a multi-agent advantage.
@@ -54,6 +57,9 @@ backend/
     http_limits.py      Body size/timeout limits before deserialization
     persistence.py      Schema migrations, compressed receipts and binary blobs
     backup.py           Offline verified snapshots and restore
+    case_index.py       Transactional summaries and account-bound pagination
+    configuration.py    Durable configuration releases and analysis/read-write gate
+    admission.py        Bounded analysis capacity and deadlines
     projections.py      Durable memory projection worker
     runtime_lock.py     Embedded storage writer exclusion
     settings.py         Validated model-provider configuration
@@ -126,6 +132,7 @@ python -m pytest tests -q
 ```bash
 cd frontend
 npm ci
+npm run lint
 npm test
 npm run build
 ```
@@ -133,8 +140,10 @@ npm run build
 ```bash
 cd legacy-java
 # JAVA_HOME must point to JDK 21 or later.
-./mvnw test
+./mvnw clean test
 ```
+
+For the complete Java transport/storage checks, install `redis-server`, use the backend Python environment and JDK 21, then run `python scripts/check-java.py --with-chroma` from the root. It starts disposable loopback dependencies and stops them afterward; no model key is used.
 
 ## Deployment boundaries
 

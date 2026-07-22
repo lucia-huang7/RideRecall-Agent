@@ -19,7 +19,9 @@ docker compose --profile tools run --rm --no-deps init python -c \
   'import json; print(json.load(open("/config/profile/access-credentials.json"))["credentials"]["preview-rider"])'
 ```
 
-The other distinct accounts are `preview-specialist` and `preview-operator`. Stop/start preserves state:
+The other distinct accounts are `preview-specialist` and `preview-operator`. The macOS installer also fingerprints the frontend package/lock files and reinstalls dependencies when they change, even if node_modules already exists. Dependency installation has bounded registry retries and does not depend on the advisory endpoint; audit is a separate check.
+
+Stop/start preserves state:
 
 ```sh
 docker compose stop app

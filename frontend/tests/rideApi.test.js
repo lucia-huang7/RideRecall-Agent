@@ -119,3 +119,41 @@ test('a delayed poll or cached receipt cannot regress the visible case revision'
   assert.equal(latestCase(committed, { id: 'case-one', revision: 10, status: 'waiting_for_agent' }).revision, 10)
   assert.equal(latestCase(committed, { id: 'case-two', revision: 1 }).id, 'case-two')
 })
+
+test('live summary pages deduplicate updates and preserve deterministic cursor order', async () => {
+  const { mergeCaseSummaries } = await import('../src/lib/rideApi.js')
+  const old = [{ id: 'KU-B', revision: 3, updated_at: '2026-10-22T02:00:00Z', status: 'in_review' }, { id: 'KU-A', revision: 1, updated_at: '2026-10-22T01:00:00Z' }]
+  const incoming = [{ id: 'KU-B', revision: 2, updated_at: '2026-10-22T02:00:00Z', status: 'waiting_for_agent' }, { id: 'KU-C', revision: 1, updated_at: '2026-10-22T02:00:00Z' }]
+  const merged = mergeCaseSummaries(old, incoming)
+  assert.deepEqual(merged.map(row => row.id), ['KU-C', 'KU-B', 'KU-A'])
+  assert.equal(merged[1].status, 'in_review')
+  assert.equal(mergeCaseSummaries(merged, incoming).length, 3)
+  assert.equal(old.length, 2)
+})
+
+test('an empty migrated demo workspace can recover only IDs already saved in this browser', async () => {
+  const { clearCredential, setCredential } = await import('../src/lib/auth.js')
+  clearCredential()
+  const values = new Map([['kinderuber.rides.session','new-rider-id'],['previous-app.rides.session','saved-rider-id']])
+  const previousStore = globalThis.localStorage
+  globalThis.localStorage = { get length() { return values.size }, key: i => [...values.keys()][i], getItem: key => values.get(key), setItem: (key,value) => values.set(key,value) }
+  try {
+    const api = await import('../src/lib/rideApi.js?workspace-recovery')
+    const seen = []
+    globalThis.fetch = async (url,options) => {
+      seen.push(options.headers)
+      const saved = options.headers['X-Demo-Session'] === 'saved-rider-id'
+      return { ok: true, status: 200, json: async () => ({ total: saved ? 1 : 0, items: saved ? [{id:'KU-SAVED'}] : [] }) }
+    }
+    assert.equal((await api.request('/api/cases/index')).items[0].id, 'KU-SAVED')
+    assert.deepEqual(seen.map(h => h['X-Demo-Session']), ['new-rider-id','saved-rider-id'])
+    assert.equal(values.get('kinderuber.rides.session'), 'saved-rider-id')
+    assert.equal(values.get('kinderuber.saved.rides.session'), 'new-rider-id')
+    setCredential('production-credential-example')
+    globalThis.fetch = async (url,options) => { seen.push(options.headers);return {ok:false,status:404,json:async()=>({detail:'Case not found.'})} }
+    const before = seen.length
+    await assert.rejects(api.request('/api/cases/KU-SAVED'))
+    assert.equal(seen.length, before + 1)
+    assert.equal(seen.at(-1).Authorization, 'Bearer production-credential-example')
+  } finally { clearCredential();globalThis.localStorage = previousStore }
+})

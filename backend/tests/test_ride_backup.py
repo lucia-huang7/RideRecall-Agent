@@ -25,7 +25,7 @@ def state(path):
 def test_snapshot_restore_preserves_database_receipt_blob_and_sidecars(tmp_path):
     source=tmp_path/'cases.sqlite3';store=state(source)
     target=tmp_path/'backup';report=snapshot(source,target)
-    assert report['database']=={'schema_version':2,'cases':1,'receipts':1}
+    assert report['database']=={'schema_version':4,'cases':1,'receipts':1}
     assert verify(target)==report
     restored=restore(target,tmp_path/'restored');recovered=Store(restored)
     assert recovered.get('KU-SNAPSHOT')==store.get('KU-SNAPSHOT')

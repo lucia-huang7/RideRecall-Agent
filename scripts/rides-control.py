@@ -66,6 +66,16 @@ def stop():
     print('KinderUber background service stopped. Saved cases remain in '+str(INSTALL/'data'))
 
 
+def ensure_frontend_dependencies(frontend,installation):
+    fingerprint=hashlib.sha256((frontend/'package.json').read_bytes()+(frontend/'package-lock.json').read_bytes()).hexdigest()
+    marker=installation/'frontend-dependencies.sha256'
+    if (frontend/'node_modules').exists() and marker.exists() and marker.read_text()==fingerprint:
+        return False
+    run(['npm','ci','--no-audit','--no-fund','--fetch-timeout=30000','--fetch-retries=1'],cwd=frontend)
+    marker.write_text(fingerprint)
+    return True
+
+
 def install():
     if sys.version_info[:2] not in [(3,11),(3,12)]:
         raise RuntimeError('Use Python 3.11 or 3.12 to install the pinned demo dependencies.')
@@ -83,14 +93,14 @@ def install():
         run([python,'-m','pip','install','-r',requirements])
         marker.write_text(fingerprint)
     frontend=ROOT/'frontend'
-    source_files=[requirements,*list((ROOT/'backend').rglob('*.py')),*list((ROOT/'backend'/'skills').rglob('*')),*list((ROOT/'scripts'/'runtime').glob('*.py')),*list((frontend/'src').rglob('*')),frontend/'package-lock.json',frontend/'package.json',frontend/'vite.config.js',frontend/'index.html']
+    source_files=[requirements,*list((ROOT/'backend').rglob('*.py')),*list((ROOT/'backend'/'skills').rglob('*')),*list((ROOT/'scripts'/'runtime').glob('*.py')),*list((frontend/'src').rglob('*')),frontend/'package-lock.json',frontend/'package.json',frontend/'vite.config.js',frontend/'eslint.config.js',frontend/'index.html']
     source_hash=digest(path for path in source_files if not any(part in {'.git','.venv','tests'} for part in path.relative_to(ROOT).parts))
     source_marker=INSTALL/'source.sha256'
     changed=not source_marker.exists() or source_marker.read_text()!=source_hash
     if changed or not (frontend/'dist'/'index.html').exists():
-        if not (frontend/'node_modules').exists():
-            run(['npm','ci'],cwd=frontend)
+        ensure_frontend_dependencies(frontend,INSTALL)
         print('Building the production frontend…',flush=True)
+        run(['npm','run','lint'],cwd=frontend)
         run(['npm','run','build'],cwd=frontend)
     if changed:
         if loaded():

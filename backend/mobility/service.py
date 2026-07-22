@@ -41,9 +41,20 @@ class RideSupport:
         for name, handler in [("get_trip", self.trip_tool), ("get_charge_breakdown", self.charge_tool), ("search_demo_policy", self.policy_tool)]:
             self.tools.register(Tool(name=name, description=name.replace("_", " "), handler=handler, schema={"type": "object", "properties": {"trip_id": {"type": "string"}}, "required": ["trip_id"]}, cache_ttl=30, timeout_s=3))
 
+        from mobility.configuration import ConfigurationGate
+        self.configuration_gate=ConfigurationGate()
+        from mobility.admission import AnalysisAdmission
+        self.admission=AnalysisAdmission()
         self.engine = RideEngine(self)
         self.engine_locks = KeyedLocks()
-        self.management_lock = asyncio.Lock()
+
+    async def analyze(self,trip_id,text,case):
+        try:
+            async with asyncio.timeout(self.admission.timeout_seconds):
+                return await self.engine.run(trip_id,text,case)
+        except TimeoutError:
+            self.admission.timeouts+=1
+            raise HTTPException(503,'The analysis deadline was reached. Retry the same operation; no result was committed.',headers={'Retry-After':'2'}) from None
 
     def attach_analysis(self, case, analysis):
         effects = analysis.pop("_memory_effects", [])
@@ -90,18 +101,15 @@ class RideSupport:
 
     def create(self, db, owner, trip, description, topic, trace, case_id=None):
         # Reopen the existing active case rather than create parallel disputes.
-        rows = db.execute("SELECT data FROM cases WHERE owner=?", (owner,)).fetchall()
-        import json
-        for row in rows:
-            existing = json.loads(row[0])
-            if existing["trip_id"] == trip["id"] and (existing["status"] != "resolved" or existing["adjustment"]):
-                if description != existing["description"]:
-                    self.check_rider_budget(existing)
-                    message(existing, "rider", description)
-                    event(existing, "appeal", "Additional appeal saved", description, "rider")
-                    if existing["status"] == "resolved":
-                        self.handoff(existing)
-                return existing
+        from mobility.case_index import find_trip
+        existing=find_trip(db,owner,trip['id'])
+        if existing:
+            if description!=existing['description']:
+                self.check_rider_budget(existing)
+                message(existing,'rider',description)
+                event(existing,'appeal','Additional appeal saved',description,'rider')
+                if existing['status']=='resolved':self.handoff(existing)
+            return existing
         case = dict(id=case_id or "KU-" + uuid4().hex.upper(), owner=owner, trip_id=trip["id"], trip_issue=trip["issue"], topic=topic,
                     title={"cancellation": "Cancellation fee review", "fare": "Unexpected fare", "payment": "Payment clarification"}[trip["issue"]],
                     description=description, status="reviewing", created_at=now(), updated_at=now(),
@@ -222,6 +230,14 @@ class RideSupport:
             event(case, "resolved", "Explanation marked helpful", "The rider accepted the explanation. No adjustment was made.", "rider")
         else:
             raise HTTPException(400, "Unknown action.")
+
+    def staff_options(self,case,staff_id=None):
+        if case['status']=='waiting_for_agent':return ['accept']
+        if case['status']!='in_review' or (staff_id and case.get('assigned_to')!=staff_id):return []
+        actions=['reply','resolve']
+        trip=self.trip(case['trip_id'])
+        if trip['issue']=='cancellation' and trip['total']>0 and not case.get('adjustment'):actions.append('propose_adjustment')
+        return actions
 
     def staff(self, case, action, text, staff_id=None):
         actor = staff_id or 'agent'

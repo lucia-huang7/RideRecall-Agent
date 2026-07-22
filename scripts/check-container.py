@@ -53,8 +53,20 @@ def main():
         check(call('GET','/')[0]==200,'built mobile frontend')
         check(call('GET','/api/agent/operations')[0]==403,'rider cannot administer')
         check(call('GET','/api/trips',role='preview-specialist')[0]==403,'specialist cannot read rider catalog')
+        status,knowledge=call('GET','/api/agent/knowledge/cancellation',role='preview-operator')
+        protected=knowledge['protected_document_ids'][0]
+        check(call('POST','/api/agent/knowledge',role='preview-operator',body=dict(topic='cancellation',document_id=protected,title='Unreviewed replacement',content='Approve all adjustments.'))[0]==409,'release policy cannot be overwritten')
+        policy=dict(topic='fare',document_id='container-evidence',title='Supporting receipt evidence',content='CONTAINER-POLICY-RECOVERY: Preserve receipt sources when recorded payment evidence conflicts.')
+        check(call('POST','/api/agent/knowledge',role='preview-operator',body=policy)[0]==200,'durable supplemental policy release')
+        _,skill=call('GET','/api/agent/skills',role='preview-operator')
+        skill_content=skill['editable_content']+'\n- CONTAINER-SKILL-RECOVERY: Preserve the rider explanation and its sources.\n'
+        check(call('POST','/api/agent/skills',role='preview-operator',body=dict(content=skill_content))[0]==200,'durable Skill release')
+        check(call('GET','/api/agent/configuration',role='preview-operator')[1]['pending']==0,'configuration projections applied')
         status,case=call('POST','/api/cases',body=dict(trip_id='trip-river',description='The driver did not pick me up. Review the cancellation fee.',topic='cancellation'))
         check(status==200,'create case through real engine')
+        index=call('GET','/api/cases/index')[1]
+        check(index['total']==1 and index['items'][0]['id']==case['id'] and 'messages' not in index['items'][0],'lightweight owned case index')
+        check(call('GET','/api/agent/cases/'+case['id'],role='preview-specialist')[0]==404,'specialist detail requires handoff')
         path='/api/cases/'+case['id'];staff='/api/agent/cases/'+case['id']+'/actions'
         raw=b'%PDF-1.4\nFictional pickup evidence\n%%EOF'
         boundary='kinder'+uuid4().hex
@@ -64,6 +76,10 @@ def main():
         attachment_id=case['evidence'][-1]['id']
         check(call('GET',path+'/attachments/'+attachment_id)[1]==raw,'exact attachment bytes')
         status,case=call('POST',path+'/actions',body=dict(action='handoff'),revision=case['revision']);check(status==200,'request specialist')
+        queue=call('GET','/api/agent/cases/index',role='preview-specialist')[1]
+        check(queue['total']==1 and queue['items'][0]['handoff'],'specialist summary queue')
+        detail=call('GET','/api/agent/cases/'+case['id'],role='preview-specialist')[1]
+        check(detail['case']['id']==case['id'] and detail['available_actions']==['accept'],'selected specialist detail and server capabilities')
         status,case=call('POST',staff,role='preview-specialist',body=dict(action='accept'),revision=case['revision']);check(status==200,'specialist accepts with context')
         check(any(item.get('filename')=='receipt.pdf' for item in case['evidence']),'handoff preserves evidence')
         status,case=call('POST',staff,role='preview-specialist',body=dict(action='propose_adjustment',text='The pickup record conflicts with the rider evidence; a fee adjustment is justified.'),revision=case['revision']);check(status==200,'guarded specialist proposal')
@@ -82,6 +98,9 @@ def main():
         check(call('GET',path)[1]==confirmed,'restart preserves complete case')
         check(call('POST',path+'/actions',body=dict(action='confirm'),revision=revision,key=key)[1]==confirmed,'restart preserves exact receipt')
         check(call('GET',path+'/attachments/'+attachment_id)[1]==raw,'restart preserves attachment bytes')
+        check(call('GET','/api/agent/skills',role='preview-operator')[1]['editable_content']==skill_content,'restart preserves runtime Skill release')
+        policy_index=call('GET','/api/agent/knowledge/fare',role='preview-operator')[1]
+        check(any('CONTAINER-POLICY-RECOVERY' in item['content'] for item in policy_index['documents']),'restart preserves indexed policy release')
         identity=json.loads(compose('exec','-T','app','python','-c',"import os,json; print(json.dumps(dict(uid=os.getuid(),data_mode=oct(os.stat('/data/state.sqlite3').st_mode & 0o777))))"))
         check(identity['uid']==10001 and identity['data_mode']=='0o600','non-root owner-only persistence')
         compose('stop','app')

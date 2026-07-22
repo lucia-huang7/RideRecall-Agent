@@ -14,7 +14,7 @@ fi
 mkdir -p "$ROOT/.runtime"
 export KINDER_UBER_RIDE_DB="${KINDER_UBER_RIDE_DB:-$ROOT/.runtime/rides.sqlite3}"
 cd "$ROOT/backend"
-"$PYTHON" -m uvicorn mobility.app:app --host 127.0.0.1 --port 8010 --reload &
+"$PYTHON" -m uvicorn mobility.app:app --host 127.0.0.1 --port 8010 --limit-concurrency 64 --no-proxy-headers --reload &
 API_PID=$!
 trap 'kill "$API_PID" "${UI_PID:-}" 2>/dev/null || true' EXIT INT TERM
 cd "$ROOT/frontend"

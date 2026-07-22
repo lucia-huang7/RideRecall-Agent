@@ -5,7 +5,7 @@ import asyncio
 async def readiness(app):
     service = app.state.service
     components = {'startup': bool(getattr(app.state, 'started', False)),
-                  'database': False, 'policy_index': False, 'mcp': False, 'memory_projection': False}
+                  'database': False, 'policy_index': False, 'mcp': False, 'memory_projection': False,'configuration':False}
     try:
         components['database'] = await asyncio.to_thread(app.state.store.ping)
     except Exception:
@@ -13,6 +13,12 @@ async def readiness(app):
     try:
         status=await asyncio.to_thread(app.state.store.projection_status)
         components['memory_projection']=bool(app.state.projections.task and not app.state.projections.task.done() and app.state.projections.last_error is None and status['retrying']==0 and status['oldest_age_seconds']<30)
+    except Exception:
+        pass
+    try:
+        from mobility.configuration import status
+        pending=await asyncio.to_thread(status,app.state.store)
+        components['configuration']=bool(app.state.configuration.task and not app.state.configuration.task.done() and not pending['pending'] and app.state.configuration.last_error is None)
     except Exception:
         pass
     try:

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.*;
 import io.modelcontextprotocol.client.*;
 import io.modelcontextprotocol.client.transport.*;
 import io.modelcontextprotocol.spec.*;
-import io.modelcontextprotocol.json.jackson.JacksonMcpJsonMapper;
+import io.modelcontextprotocol.json.jackson2.JacksonMcpJsonMapper;
 import jakarta.annotation.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;

@@ -1,3 +1,4 @@
 # Install the hashed runtime requirements.txt first, in a separate invocation.
 pytest==9.1.1
 pytest-asyncio==1.4.0
+ruff==0.17.1

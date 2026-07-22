@@ -8,7 +8,7 @@ import zlib
 
 from fastapi import HTTPException
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 4
 MAX_ATTACHMENTS = 10
 MAX_ATTACHMENT_BYTES = 15*1024*1024
 MAX_RECEIPT_BYTES = 64*1024*1024
@@ -104,4 +104,12 @@ def migrate(db):
                 db.execute('UPDATE cases SET data=? WHERE id=?',(json.dumps(case),case_id))
         for rowid,response in db.execute('SELECT rowid,response FROM receipts ORDER BY rowid'):
             db.execute('UPDATE receipts SET response=?,encoding=? WHERE rowid=?',(encode_receipt(json.loads(response)),'zlib-json',rowid))
+    if version<3:
+        db.execute('CREATE TABLE IF NOT EXISTS policy_sources(topic TEXT,document_id TEXT,data TEXT,PRIMARY KEY(topic,document_id))')
+        db.execute('CREATE TABLE runtime_settings(key TEXT PRIMARY KEY,value TEXT NOT NULL)')
+        db.execute('CREATE TABLE configuration_outbox(sequence INTEGER PRIMARY KEY AUTOINCREMENT,payload TEXT NOT NULL,created_at REAL NOT NULL,available_at REAL NOT NULL,attempts INTEGER NOT NULL DEFAULT 0,error_code TEXT,completed_at REAL)')
+        db.execute('CREATE INDEX configuration_pending ON configuration_outbox(completed_at,sequence)')
+    if version<4:
+        from mobility.case_index import migrate_index
+        migrate_index(db)
     db.execute('PRAGMA user_version='+str(SCHEMA_VERSION))

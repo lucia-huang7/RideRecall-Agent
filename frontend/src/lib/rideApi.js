@@ -1,11 +1,8 @@
 import { credentialHeaders } from './auth.js'
+import { readDemoWorkspace, saveDemoWorkspace } from './demoSession.js'
 const root = import.meta.env?.VITE_RIDE_API_URL || '/ride-api'
-const sessionKey = 'kinderuber.rides.session'
-let session = crypto.randomUUID()
-try {
-  session = localStorage.getItem(sessionKey) || session
-  localStorage.setItem(sessionKey, session)
-} catch { /* A blocked browser store falls back to this page's demo session. */ }
+const workspace = readDemoWorkspace()
+let session = workspace.session
 const attempts = new Map()
 export function resetRequests() { attempts.clear() }
 
@@ -20,9 +17,29 @@ export async function request(path, { body, agent = false, file, revision } = {}
   let payload
   if (file) { payload = new FormData(); payload.append('file', file) }
   else if (body) { headers['Content-Type'] = 'application/json'; payload = JSON.stringify(body) }
-  const response = await fetch(root + path, { method: payload ? 'POST' : 'GET', headers, body: payload, signal: AbortSignal.timeout(path.includes('evaluations') ? 90000 : 45000) })
+  let response = await fetch(root + path, { method: payload ? 'POST' : 'GET', headers, body: payload, signal: AbortSignal.timeout(path.includes('evaluations') ? 90000 : 45000) })
   let result
   try { result = await response.json() } catch { throw new Error('The service returned an unreadable response. Please try again.') }
+  const recoverable = !payload && !headers.Authorization && (
+    (response.status === 404 && /^\/api\/cases\/[^/?]+$/.test(path)) ||
+    (response.ok && path === '/api/cases/index' && result.total === 0)
+  )
+  if (recoverable) {
+    for (const candidate of workspace.alternatives.filter(value => value !== session)) {
+      const retry = await fetch(root + path, { headers: { ...headers, 'X-Demo-Session': candidate }, signal: AbortSignal.timeout(10000) })
+      let value
+      try { value = await retry.json() } catch { continue }
+      if (!retry.ok || (path === '/api/cases/index' && !value.total)) continue
+      const previous = session
+      session = candidate
+      saveDemoWorkspace(session, previous)
+      if (!workspace.alternatives.includes(previous)) workspace.alternatives.push(previous)
+      workspace.alternatives = workspace.alternatives.slice(-4)
+      attempts.clear()
+      response = retry; result = value
+      break
+    }
+  }
   if (!response.ok) {
     if (response.status < 500) attempts.delete(key)
     const error = new Error(typeof result.detail === 'string' ? result.detail : 'Please check the details and try again.')
@@ -49,4 +66,14 @@ export function latestCase(current, incoming) {
   if (!current || current.id !== incoming.id) return incoming
   const previous = current.revision ?? 0, next = incoming.revision ?? 0
   return next < previous ? current : incoming
+}
+
+
+export function mergeCaseSummaries(previous, incoming) {
+  const rows = new Map(previous.map(row => [row.id, row]))
+  for (const row of incoming) rows.set(row.id, latestCase(rows.get(row.id), row))
+  return [...rows.values()].sort((a,b) => {
+    if (a.updated_at !== b.updated_at) return a.updated_at < b.updated_at ? 1 : -1
+    return a.id === b.id ? 0 : a.id < b.id ? 1 : -1
+  })
 }

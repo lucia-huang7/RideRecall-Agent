@@ -1,0 +1,38 @@
+# Authenticated fictional preview. No model key or real payment integration.
+name: kinder-uber
+services:
+  init:
+    profiles: [tools]
+    image: kinder-uber:local
+    command: [python, /app/scripts/provision-auth-preview.py, --output, /config/profile]
+    environment:
+      KINDER_UBER_ENV: development
+    volumes:
+      - configuration:/config
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    read_only: true
+    tmpfs: ['/tmp:size=64m,mode=1777']
+  app:
+    image: kinder-uber:local
+    build: .
+    environment:
+      KINDER_UBER_ENV: production
+      KINDER_UBER_RIDE_MODEL_MODE: demo
+      KINDER_UBER_RIDE_DB: /data/state.sqlite3
+      KINDER_UBER_IDENTITY_FILE: /config/profile/identities.json
+      KINDER_UBER_RIDE_CATALOG_PATH: /config/profile/catalog.json
+    ports: ['127.0.0.1:${KINDER_UBER_HTTP_PORT:-8013}:8000']
+    volumes:
+      - state:/data
+      - configuration:/config:ro
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    read_only: true
+    tmpfs: ['/tmp:size=128m,mode=1777']
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 30s
+volumes:
+  state:
+  configuration:

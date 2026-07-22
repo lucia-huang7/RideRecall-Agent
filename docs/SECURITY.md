@@ -29,7 +29,7 @@ Production ignores demo headers when choosing identity. Client-supplied rider ID
 | Metrics, knowledge/skill controls, MCP controls and evaluation jobs | operator |
 | Attachment download | owning rider, or specialist after handoff |
 
-Roles do not imply each other. An operator cannot act as a specialist without that explicit additional role. A specialist must accept a case before updating it; only the assigned specialist can reply, propose an adjustment or resolve it. Actual specialist identity is recorded in assignment and decision events. Staff idempotency receipts are scoped to that identity rather than one shared account.
+Roles do not imply each other. An operator cannot act as a specialist without that explicit additional role. A specialist must accept a case before updating it; only the assigned specialist can reply, propose an adjustment or resolve it. Actual specialist identity is recorded in assignment and decision events. Existing-case mutations also require the current quoted revision in `If-Match`; [conditional command behavior](STATE_AND_RECOVERY.md) describes replay and conflicts. Staff idempotency receipts are scoped to that identity rather than one shared account.
 
 ## Browser session
 

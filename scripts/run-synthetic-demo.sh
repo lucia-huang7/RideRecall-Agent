@@ -14,7 +14,7 @@ if [ -z "$RIDE_PYTHON" ]; then
   done
 fi
 if [ -z "$RIDE_PYTHON" ]; then
-  echo 'Set RIDE_PYTHON to a Python environment with requirements-demo.txt installed.' >&2
+  echo 'Set RIDE_PYTHON to a Python environment with requirements.txt installed.' >&2
   exit 1
 fi
 CATALOG="$("$RIDE_PYTHON" -c 'import pathlib,sys; print(pathlib.Path(sys.argv[1]).resolve(strict=True))' "$CATALOG")"
@@ -24,7 +24,7 @@ fi
 export KINDER_UBER_RIDE_MODEL_MODE=demo
 export KINDER_UBER_RIDE_CATALOG_PATH="$CATALOG"
 CATALOG_KEY="$("$RIDE_PYTHON" -c 'import hashlib,sys; print(hashlib.sha256(open(sys.argv[1],"rb").read()).hexdigest()[:12])' "$CATALOG")"
-export KINDER_UBER_RIDE_DB="$ROOT/.runtime/synthetic-preview/$CATALOG_KEY/rides.sqlite3"
+export KINDER_UBER_RIDE_DB="${KINDER_UBER_RIDE_DB:-$ROOT/.runtime/synthetic-preview/$CATALOG_KEY/rides.sqlite3}"
 mkdir -p "$(dirname "$KINDER_UBER_RIDE_DB")"
 echo "Mobile preview: http://127.0.0.1:$PORT/#/trips"
 echo "Catalog: $CATALOG"

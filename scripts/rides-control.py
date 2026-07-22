@@ -72,7 +72,7 @@ def install():
     INSTALL.mkdir(parents=True,exist_ok=True)
     (INSTALL/'logs').mkdir(exist_ok=True)
     python=INSTALL/'venv'/'bin'/'python'
-    requirements=ROOT/'backend'/'requirements-demo.txt'
+    requirements=ROOT/'backend'/'requirements.txt'
     fingerprint=hashlib.sha256(requirements.read_bytes()).hexdigest()
     marker=INSTALL/'requirements.sha256'
     if not python.exists():

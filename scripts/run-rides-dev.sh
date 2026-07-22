@@ -6,7 +6,7 @@ if [ ! -x "$PYTHON" ]; then
   python3 -m venv "$ROOT/.venv-rides"
 fi
 if ! "$PYTHON" -c "import fastapi, uvicorn, anthropic, httpx, jsonschema, multipart, chromadb, fakeredis, redis, lupa, mcp, prometheus_client" >/dev/null 2>&1; then
-  "$PYTHON" -m pip install -r "$ROOT/backend/requirements-demo.txt"
+  "$PYTHON" -m pip install -r "$ROOT/backend/requirements.txt"
 fi
 if [ ! -d "$ROOT/frontend/node_modules" ]; then
   (cd "$ROOT/frontend" && npm ci)

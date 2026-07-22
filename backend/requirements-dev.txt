@@ -1,4 +1,3 @@
--r requirements.txt
-pytest>=8.4,<10
-pytest-asyncio>=0.25,<2
-fakeredis[lua]>=2.26,<3
+# Install the hashed runtime requirements.txt first, in a separate invocation.
+pytest==9.1.1
+pytest-asyncio==1.4.0

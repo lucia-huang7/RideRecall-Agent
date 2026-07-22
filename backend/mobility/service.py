@@ -13,18 +13,26 @@ from mobility.catalog import RideCatalog, charge_breakdown
 from mobility.store import event, message, now
 
 
+MAX_RIDER_MESSAGES = 50
+MAX_EVIDENCE_ITEMS = 20
+
+
 def money(cents):
     return f"${cents / 100:.2f}"
 
 
 class RideSupport:
-    def __init__(self, store, catalog=None):
+    def __init__(self, store, catalog=None, model_settings=None):
+        from mobility.settings import ModelSettings
+        self.model_settings = model_settings or ModelSettings.from_environment()
         self.store = store
         self.catalog = catalog or RideCatalog()
         import shutil
         skill_root = Path(store.path).with_suffix(".skills")
         if not skill_root.exists():
             shutil.copytree(Path(__file__).parent.parent / "skills" / "ride_resolution", skill_root)
+        import os
+        if os.name=='posix':skill_root.chmod(0o700)
         self.skill_file = skill_root / "SKILL.md"
         self.skills = EnglishSkills(str(skill_root))
         self.skills.load()
@@ -35,8 +43,12 @@ class RideSupport:
 
         self.engine = RideEngine(self)
         self.engine_locks = KeyedLocks()
+        self.management_lock = asyncio.Lock()
 
     def attach_analysis(self, case, analysis):
+        effects = analysis.pop("_memory_effects", [])
+        if effects:
+            case.setdefault("_pending_projections", []).append(dict(id=analysis["id"], effects=effects))
         if analysis["status"] != "success" and case.get("proposal") and not case.get("adjustment"):
             case["proposal"] = None
             case["status"] = "needs_review"
@@ -76,7 +88,7 @@ class RideSupport:
         trace = [dict(tool=r.tool_name, success=r.success, cached=r.cached, latency_ms=round(r.latency_ms, 2)) for r in results]
         return [r.data for r in results], trace
 
-    def create(self, db, owner, trip, description, topic, trace):
+    def create(self, db, owner, trip, description, topic, trace, case_id=None):
         # Reopen the existing active case rather than create parallel disputes.
         rows = db.execute("SELECT data FROM cases WHERE owner=?", (owner,)).fetchall()
         import json
@@ -84,12 +96,13 @@ class RideSupport:
             existing = json.loads(row[0])
             if existing["trip_id"] == trip["id"] and (existing["status"] != "resolved" or existing["adjustment"]):
                 if description != existing["description"]:
+                    self.check_rider_budget(existing)
                     message(existing, "rider", description)
                     event(existing, "appeal", "Additional appeal saved", description, "rider")
                     if existing["status"] == "resolved":
                         self.handoff(existing)
                 return existing
-        case = dict(id="KU-" + uuid4().hex[:8].upper(), owner=owner, trip_id=trip["id"], trip_issue=trip["issue"], topic=topic,
+        case = dict(id=case_id or "KU-" + uuid4().hex.upper(), owner=owner, trip_id=trip["id"], trip_issue=trip["issue"], topic=topic,
                     title={"cancellation": "Cancellation fee review", "fare": "Unexpected fare", "payment": "Payment clarification"}[trip["issue"]],
                     description=description, status="reviewing", created_at=now(), updated_at=now(),
                     messages=[], events=[], evidence=[], trace=trace, adjustment=None, assigned_to=None,
@@ -127,7 +140,6 @@ class RideSupport:
             case["proposal"] = None
             response = "I saved your explanation and linked the trip. This request needs a closer review; I will not assume it is only a fare issue. Add any relevant details or request human review."
         message(case, "system", response)
-        self.store.save(db, case)
         return case
 
     def handoff(self, case):
@@ -141,10 +153,33 @@ class RideSupport:
         event(case, "handoff", "Human review requested", "The full conversation, evidence, and prior actions are attached. A demo agent has not accepted the case yet.", "rider")
         message(case, "assistant", "Your case is in the demo review queue. Your explanation, evidence, and previous steps are attached. You do not need to start over. A simulated specialist can pick it up in the Agent desk.")
 
+    @staticmethod
+    def check_rider_budget(case):
+        if sum(m['role']=='rider' for m in case['messages'])>=MAX_RIDER_MESSAGES:
+            raise HTTPException(409,'This case has reached its chat limit. Request human review to continue with its history intact.')
+
+    def validate_adjustment(self, case):
+        trip=self.trip(case['trip_id'])
+        policy=self.catalog.policy(trip)
+        proposal=case.get('proposal') or {}
+        amount=proposal.get('amount')
+        if type(amount) is not int or amount<=0 or amount>trip['total']:
+            raise HTTPException(409,'The recorded payment does not support this adjustment. Request a new review.')
+        if proposal.get('policy_id')!=policy['id'] or any(case['policy'].get(key)!=policy.get(key) for key in ('id','version','rules')):
+            raise HTTPException(409,'The policy release changed. Request a new review before confirming.')
+        if trip['issue']=='fare' and (trip['eligibility']!='adjust' or amount!=trip['total']-trip['estimated']):
+            raise HTTPException(409,'The fare evidence changed. Request a new review before confirming.')
+        if trip['issue']=='cancellation' and amount!=trip['total']:
+            raise HTTPException(409,'The settled cancellation fee changed. Request a new review before confirming.')
+        if trip['issue'] not in ('fare','cancellation'):
+            raise HTTPException(409,'This payment issue requires specialist review rather than an automatic adjustment.')
+        return amount
+
     def act(self, case, action, text="", filename=None):
         if action == "handoff":
             self.handoff(case)
         elif action == "message":
+            self.check_rider_budget(case)
             message(case, "rider", text)
             lower = text.lower()
             if any(word in lower for word in ["human", "person", "agent", "appeal", "not resolved"]):
@@ -164,6 +199,8 @@ class RideSupport:
                     response += " You can add evidence or request human review; no payment action has been taken."
                 message(case, "system", response)
         elif action == "evidence":
+            if len(case["evidence"])>=MAX_EVIDENCE_ITEMS:
+                raise HTTPException(409,"This case already has twenty evidence items. Ask a specialist which evidence is needed.")
             item = dict(id=uuid4().hex, text=text, filename=filename, source="Rider", at=now(), verified=False)
             case["evidence"].append(item)
             event(case, "evidence", "Evidence added", text, "rider")
@@ -173,7 +210,8 @@ class RideSupport:
                 return
             if case["status"] != "awaiting_confirmation" or not case["proposal"]:
                 raise HTTPException(409, "There is no eligible adjustment awaiting confirmation.")
-            case["adjustment"] = dict(id="ADJ-" + uuid4().hex[:8].upper(), amount=case["proposal"]["amount"], status="simulated_complete", at=now())
+            self.validate_adjustment(case)
+            case["adjustment"] = dict(id="ADJ-" + uuid4().hex.upper(), amount=case["proposal"]["amount"], status="simulated_complete", at=now())
             case["status"] = "resolved"
             event(case, "adjustment", "Demo adjustment recorded", f"{money(case['adjustment']['amount'])}. No real money was moved.", "rider")
             message(case, "assistant", f"The {money(case['adjustment']['amount'])} demo adjustment is recorded. No real payment was made. You can request another review if the outcome does not address your concern.")
@@ -201,7 +239,10 @@ class RideSupport:
                 raise HTTPException(409, "This case is not eligible for a new specialist adjustment proposal.")
             if not text.strip():
                 raise HTTPException(422, "Explain the evidence behind your proposal.")
-            amount = self.trip(case["trip_id"])["total"]
+            trip=self.trip(case['trip_id'])
+            amount=trip['total']
+            if amount<=0:raise HTTPException(409,'There is no settled cancellation fee to adjust.')
+            case['policy']=self.catalog.policy(trip)
             case["proposal"] = dict(amount=amount, reason=text.strip(), policy_id=case["policy"]["id"])
             case["status"] = "awaiting_confirmation"
             event(case, "proposal", "Specialist offered a fee adjustment", text.strip(), actor)

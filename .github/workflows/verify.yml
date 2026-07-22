@@ -1,0 +1,52 @@
+name: Verify
+# Manual by default so private repositories do not incur unexpected hosted runs.
+on:
+  workflow_dispatch:
+    inputs:
+      container:
+        description: Build and exercise the isolated container workflow
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install locked runtime and test tools
+        run: |
+          python -m pip install --require-hashes -r backend/requirements.txt
+          python -m pip install -r backend/requirements-dev.txt
+          python -m pip check
+      - name: Backend checks
+        working-directory: backend
+        run: python -m pytest tests -q
+      - name: Frontend checks
+        working-directory: frontend
+        run: |
+          npm ci
+          npm test
+          npm run build
+      - name: Retained Java service checks
+        working-directory: legacy-java
+        run: ./mvnw test -q
+      - name: Container workflow
+        if: inputs.container
+        run: |
+          docker compose build app
+          python scripts/check-container.py

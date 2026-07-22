@@ -12,6 +12,7 @@ Independent software prototype. Not affiliated with Uber. All supplied trips, po
 - Case context: source-backed rider assertions, explicit withdrawn claims, clarification of ambiguous corrections and durable case history.
 - Inspectable execution: intent routing, specialist roles, policy retrieval, guarded read-only tools and a real independent stdio MCP service.
 - Specialist desk: accept a handoff, read the existing context, reply, propose a simulated adjustment and record an outcome.
+- Consistent commands: version-aware case updates, exact replay receipts and crash-recoverable memory projections. A slow analysis cannot silently overwrite a newer specialist update.
 - Operations: execution traces, metrics, knowledge/skill controls, dependency checks and regression evaluation.
 - Black-and-white mobile interface with optional Rainbow Mode; English interface and new code.
 
@@ -31,6 +32,8 @@ Open [Trips](http://127.0.0.1:5175/#/trips), [Agent desk](http://127.0.0.1:5175/
 
 First setup requires Python 3.11/3.12, Node.js compatible with Vite 7 and access to dependency registries. No Docker, Redis server or model provider is required for the local demo.
 
+For an authenticated, non-root container preview, run `bash scripts/container-demo.sh`. See [deployment and verification](docs/DEPLOYMENT.md) for isolated workflow checks and configuration.
+
 For foreground development, stop the background service first:
 
 ```bash
@@ -49,6 +52,12 @@ backend/
     security.py         Scoped identities, ownership and demo isolation
     readiness.py        Dependency-aware readiness
     http_limits.py      Body size/timeout limits before deserialization
+    persistence.py      Schema migrations, compressed receipts and binary blobs
+    backup.py           Offline verified snapshots and restore
+    projections.py      Durable memory projection worker
+    runtime_lock.py     Embedded storage writer exclusion
+    settings.py         Validated model-provider configuration
+    diagnostics.py      Isolated transactional evaluation fixtures
     memory.py           Durable context adapter
     claims.py           Source-backed claim handling
     corrections.py      Correction resolution and ambiguity handling
@@ -100,7 +109,14 @@ Generated outcomes are reference-state checks, not human-reviewed ground truth o
 
 ## Verify
 
-Use an environment with `backend/requirements-demo.txt` and `pytest-asyncio>=0.25,<2` installed:
+Install the hashed runtime and test-only requirements in separate commands:
+
+```bash
+python -m pip install -r backend/requirements.txt
+python -m pip install -r backend/requirements-dev.txt
+```
+
+Then run:
 
 ```bash
 cd backend

@@ -49,9 +49,11 @@ class CaseMemory:
         self.uid = hashlib.sha256(json.dumps([self.case.get("owner", "fixture"), self.case.get("id", "new"), trip_id]).encode()).hexdigest()
         self.cid = self.uid
         self.redis = FakeRedis(decode_responses=True)
+        from mobility.projections import StagedCollection
+        self.effects = []
         self.manager = SourceMemoryManager(client=MemoryModel(), redis_client=self.redis,
-            episodic=engine.chroma.get_or_create_collection("ride_memory_episodes_v1", embedding_function=engine.hash_embedding),
-            profile=engine.chroma.get_or_create_collection("ride_memory_profiles_v1", embedding_function=engine.hash_embedding),
+            episodic=StagedCollection(engine.chroma.get_or_create_collection("ride_memory_episodes_v1", embedding_function=engine.hash_embedding), self.effects),
+            profile=StagedCollection(engine.chroma.get_or_create_collection("ride_memory_profiles_v1", embedding_function=engine.hash_embedding), self.effects),
             prompt_builder=memory_prompt, strict_scope=True)
         self.saved = self.case.get("memory_snapshot", {})
 
@@ -86,6 +88,8 @@ class CaseMemory:
         snapshot = dict(working=await self.redis.lrange(m._wm_key(uid, cid), 0, -1), summary=context.summary, state=context.state, claim_ledger=dict(**self.context.claims, versions=self.ledger.facts))
         result["memory"] = dict(summary=self.context.claims["account"][:800], recent_count=len(context.recent_messages), episodic_count=len(context.relevant_history), profile=context.user_profile, state=context.state, scope="This case only", backend="Embedded Redis-compatible adapter + SQLite snapshot + Chroma", mode="Source-backed active claims + bounded source-aware summary", context_used=True, claims=self.context.claims)
         result["_memory_snapshot"] = snapshot
+        result["_memory_effects"] = self.effects
+        result["memory"]["projection_consistency"] = "Transactional outbox; derived indexes may lag canonical case state"
         result["methods"] += ["MemoryManager.get_context", "MemoryManager.commit_turn", "MemoryManager.maintain", "conversation_state.merge_state"]
         await self.redis.aclose()
         return result

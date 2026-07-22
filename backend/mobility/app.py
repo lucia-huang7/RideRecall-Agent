@@ -1,8 +1,9 @@
 """No-key ride support API. Run with uvicorn mobility.app:app --port 8010."""
-import base64
 import hashlib
 import json
 import os
+import re
+from uuid import uuid4
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Literal
@@ -59,21 +60,39 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
     security = security or Security()
     catalog = RideCatalog(catalog_path or os.getenv("KINDER_UBER_RIDE_CATALOG_PATH"))
     security.validate_catalog(catalog)
-    store = Store(db_path or os.getenv("KINDER_UBER_RIDE_DB", str(Path(__file__).resolve().parents[2] / ".runtime/rides.sqlite3")))
-    service = RideSupport(store, catalog)
+    from mobility.settings import ModelSettings
+    model_settings=ModelSettings.from_environment()
+    database_path=db_path or os.getenv('KINDER_UBER_RIDE_DB')
+    if security.production and not database_path:
+        raise ValueError('Production requires an explicit KINDER_UBER_RIDE_DB')
+    database_path=database_path or str(Path(__file__).resolve().parents[2]/'.runtime/rides.sqlite3')
+    store=service=projections=None
 
     @asynccontextmanager
     async def lifespan(app):
-        try:
-            await service.engine.operations.start()
-            app.state.started = True
-            yield
-        finally:
-            app.state.started = False
-            await service.tools._client.close()
-            await service.engine.close()
+        nonlocal store, service, projections
+        from mobility.runtime_lock import embedded_writer_lock
+        from mobility.projections import ProjectionWorker
+        with embedded_writer_lock(database_path):
+            store=Store(database_path)
+            service=RideSupport(store,catalog,model_settings=model_settings)
+            projections=ProjectionWorker(store,service.engine.chroma,service.engine.hash_embedding)
+            app.state.store=store
+            app.state.service=service
+            app.state.projections=projections
+            try:
+                if security.production:service.engine.validate_authoritative_policies()
+                await service.engine.operations.start()
+                await projections.start()
+                app.state.started=True
+                yield
+            finally:
+                app.state.started=False
+                await projections.close()
+                await service.tools._client.close()
+                await service.engine.close()
 
-    app = FastAPI(title="kinder-uber Ride Support", version="0.2.0", lifespan=lifespan,
+    app = FastAPI(title="kinder-uber Ride Support", version="0.4.0", lifespan=lifespan,
         docs_url=None if security.production else "/docs",
         redoc_url=None if security.production else "/redoc",
         openapi_url=None if security.production else "/openapi.json")
@@ -83,6 +102,12 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
     app.state.started = False
     app.state.store = store
     app.state.service = service
+    app.state.projections = projections
+
+    import sqlite3
+    @app.exception_handler(sqlite3.DatabaseError)
+    async def unavailable_database(request, error):
+        return JSONResponse({'detail':'Persistence is unavailable. Retry the same request ID after recovery.'},status_code=503,headers={'Retry-After':'2'})
 
     from fastapi.exceptions import RequestValidationError
     @app.exception_handler(RequestValidationError)
@@ -139,6 +164,20 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
         if token != "local-demo-agent":
             raise HTTPException(403, "Open the local Agent desk to use this demo-only endpoint.")
 
+    def check_revision(record, value):
+        if not value:
+            if security.production:
+                raise HTTPException(428, 'Refresh this case before making a change.')
+            return
+        match=re.fullmatch(r'"([0-9]{1,12})"',value)
+        if not match:
+            raise HTTPException(400, 'If-Match must contain the quoted case revision.')
+        if int(match.group(1))!=record.get('revision',0):
+            raise HTTPException(412, 'The case changed. Refresh and review the latest state before retrying.')
+
+    def case_response(record):
+        return JSONResponse(public(dict(record,revision=record.get('revision',0))),headers={'ETag': '"'+str(record.get('revision',0))+'"'})
+
     def write(actor, request_id, data, fn):
         if not request_id or len(request_id) > 100:
             raise HTTPException(400, "A request ID is required for every change.")
@@ -147,14 +186,14 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
 
     @app.get('/runtime-config')
     def runtime_config():
-        return dict(auth_mode='production' if security.production else 'demo', product='kinder-uber')
+        return dict(auth_mode='production' if security.production else 'demo', model_mode=model_settings.mode, product='kinder-uber')
 
     @app.get('/api/session')
     def session():
         principal = principal_context.get()
         return dict(subject=principal.subject if principal else None,
                     roles=sorted(principal.roles) if principal else ['rider','specialist','operator'],
-                    auth_mode='production' if security.production else 'demo')
+                    model_mode=model_settings.mode, auth_mode='production' if security.production else 'demo')
 
     @app.get('/livez')
     def liveness():
@@ -168,6 +207,8 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
 
     @app.get("/health")
     def health():
+        if not app.state.started:
+            raise HTTPException(503, 'The application is starting or stopping.')
         if security.production:
             return dict(status='ok', auth_mode='production')
         return dict(status="ok", dataset_id=service.catalog.dataset_id, catalog_trips=len(service.catalog.trips), mode=service.engine.mode, model=service.engine.model, api_key_required=service.engine.mode == "live", pipeline="original-intent-orchestrator-rag", retrieval="embedded-chroma-local-hash")
@@ -175,7 +216,9 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
     @app.get("/api/agent/operations")
     async def operations(x_demo_agent: str = Header(default="")):
         staff(x_demo_agent)
-        return await service.engine.operations.status()
+        result=await service.engine.operations.status()
+        result['memory_projection']=store.projection_status()
+        return result
 
     @app.post("/api/agent/quality/jobs")
     async def start_quality(x_demo_agent: str = Header(default="")):
@@ -230,8 +273,9 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
     @app.post("/api/agent/skills/reload")
     async def reload_skills(x_demo_agent: str = Header(default="")):
         staff(x_demo_agent)
-        service.skills.reload()
-        return skills(x_demo_agent)
+        async with service.management_lock:
+            service.skills.reload()
+            return skills(x_demo_agent)
 
     @app.post("/api/agent/skills")
     async def update_skill(body: SkillDocument, x_demo_agent: str = Header(default=""), x_request_id: str = Header(default="")):
@@ -253,14 +297,20 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
                 raise HTTPException(422, "Provide a valid Skill document with a heading and content.")
         payload = ["skill", body.content]
         fingerprint = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
-        cached = store.replay(staff_receipt_owner(), x_request_id, fingerprint)
-        if cached is not None:
-            return cached
-        temporary = service.skill_file.with_suffix(".pending")
-        temporary.write_text(body.content)
-        temporary.replace(service.skill_file)
-        service.skills.reload()
-        return write(staff_receipt_owner(), x_request_id, payload, lambda db: skills(x_demo_agent))
+        async with service.management_lock:
+            cached = store.replay(staff_receipt_owner(), x_request_id, fingerprint)
+            if cached is not None:
+                return cached
+            temporary = service.skill_file.with_suffix(".pending")
+            temporary.write_text(body.content)
+            temporary.replace(service.skill_file)
+            service.skills.reload()
+            return write(staff_receipt_owner(), x_request_id, payload, lambda db: skills(x_demo_agent))
+
+    @app.get('/api/agent/knowledge')
+    def knowledge_scopes(x_demo_agent: str=Header(default='')):
+        staff(x_demo_agent)
+        return dict(scopes=[dict(id=key,title=value['title'],version=value['version']) for key,value in catalog.policies.items()])
 
     @app.get("/api/agent/knowledge/{topic}")
     def knowledge(topic: str, x_demo_agent: str = Header(default="")):
@@ -269,7 +319,7 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
             raise HTTPException(404, "Policy scope not found.")
         kb = service.engine.knowledge[topic]
         rows = kb._collection.get(include=["documents", "metadatas"])
-        return dict(scope=topic, count=kb.doc_count, documents=[dict(id=i, content=d, metadata=m) for i,d,m in zip(rows["ids"], rows["documents"], rows["metadatas"])], source_documents=service.engine.policy_sources(topic))
+        return dict(scope=topic, protected_document_ids=sorted(service.engine.protected_policy_ids(topic)) if security.production else [], count=kb.doc_count, documents=[dict(id=i, content=d, metadata=m) for i,d,m in zip(rows["ids"], rows["documents"], rows["metadatas"])], source_documents=service.engine.policy_sources(topic))
 
     @app.post("/api/agent/knowledge")
     async def update_knowledge(body: PolicyDocument, x_demo_agent: str = Header(default=""), x_request_id: str = Header(default="")):
@@ -280,18 +330,21 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
             raise HTTPException(400, "A request ID is required for every change.")
         if body.topic not in service.engine.knowledge:
             raise HTTPException(404,"Policy scope not found.")
+        if security.production and body.document_id.strip() in service.engine.protected_policy_ids(body.topic):
+            raise HTTPException(409,'Authoritative release documents are read-only. Publish a reviewed catalog release to change financial policy.')
         payload = ["knowledge", body.model_dump()]
         fingerprint = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
-        cached = store.replay(staff_receipt_owner(), x_request_id, fingerprint)
-        if cached is not None:
-            return cached
-        import re
-        if re.search(r"[\u4e00-\u9fff]", body.title + body.content):
-            raise HTTPException(422, "Use English for ride policy documents.")
-        chunks = await service.engine.knowledge[body.topic].add_documents_async([dict(document_id=body.document_id, title=body.title, content=body.content)])
-        service.engine.save_policy_source(body.topic, body.model_dump())
-        service.engine.rag_tools.invalidate_cache("ride_policy_search")
-        return write(staff_receipt_owner(), x_request_id, payload, lambda db: dict(scope=body.topic, added_chunks=chunks, document_id=body.document_id))
+        async with service.management_lock:
+            cached = store.replay(staff_receipt_owner(), x_request_id, fingerprint)
+            if cached is not None:
+                return cached
+            import re
+            if re.search(r"[\u4e00-\u9fff]", body.title + body.content):
+                raise HTTPException(422, "Use English for ride policy documents.")
+            chunks = await service.engine.knowledge[body.topic].add_documents_async([dict(document_id=body.document_id, title=body.title, content=body.content)])
+            service.engine.save_policy_source(body.topic, body.model_dump())
+            service.engine.rag_tools.invalidate_cache("ride_policy_search")
+            return write(staff_receipt_owner(), x_request_id, payload, lambda db: dict(scope=body.topic, added_chunks=chunks, document_id=body.document_id))
 
     @app.post("/api/agent/evaluations")
     async def evaluate(x_demo_agent: str = Header(default="")):
@@ -318,7 +371,7 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
 
     @app.get("/api/cases/{case_id}")
     def case(case_id: str, x_demo_session: str = Header(default="")):
-        return public(store.get(case_id, owner(x_demo_session)))
+        return case_response(store.get(case_id, owner(x_demo_session)))
 
     @app.post("/api/cases")
     async def create(body: NewCase, x_demo_session: str = Header(default=""), x_request_id: str = Header(default="")):
@@ -333,21 +386,28 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
             fingerprint = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
             replay = store.replay(actor, x_request_id, fingerprint)
             if replay is not None:
-                return public(replay)
+                return case_response(replay)
             data, trace = await service.inspect(body.trip_id)
             existing = next((c for c in store.list(actor) if c["trip_id"] == body.trip_id and (c["status"] != "resolved" or c["adjustment"])), None)
-            analysis = await service.engine.run(body.trip_id, body.description.strip(), existing or dict(owner=actor, trip_id=body.trip_id))
+            candidate_id=existing['id'] if existing else 'KU-'+uuid4().hex.upper()
+            expected_revision=existing.get('revision',0) if existing else 0
+            context=existing or dict(id=candidate_id,owner=actor,trip_id=body.trip_id)
+            analysis = await service.engine.run(body.trip_id, body.description.strip(), context)
             def apply(db):
-                record = service.create(db, actor, data[0], body.description.strip(), body.topic, trace)
+                record = service.create(db, actor, data[0], body.description.strip(), body.topic, trace, case_id=candidate_id)
+                if record['id']!=candidate_id or record.get('revision',0)!=expected_revision:
+                    raise HTTPException(409, 'The case changed during analysis. Refresh and retry.')
                 service.attach_analysis(record, analysis)
                 if analysis["handoff"]:
                     service.handoff(record)
                 store.save(db, record)
                 return record
-            return public(write(actor, x_request_id, payload, apply))
+            record=write(actor, x_request_id, payload, apply)
+            await projections.flush()
+            return case_response(record)
 
     @app.post("/api/cases/{case_id}/actions")
-    async def action(case_id: str, body: Action, x_demo_session: str = Header(default=""), x_request_id: str = Header(default="")):
+    async def action(case_id: str, body: Action, x_demo_session: str = Header(default=""), x_request_id: str = Header(default=""), if_match: str = Header(default="")):
         actor = owner(x_demo_session)
         if not x_request_id or len(x_request_id) > 100:
             raise HTTPException(400, "A request ID is required for every change.")
@@ -358,11 +418,16 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
             fingerprint = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
             replay = store.replay(actor, x_request_id, fingerprint)
             if replay is not None:
-                return public(replay)
+                return case_response(replay)
             snapshot = store.get(case_id, actor)
+            check_revision(snapshot, if_match)
+            if body.action=="message":service.check_rider_budget(snapshot)
             analysis = await service.engine.run(snapshot["trip_id"], body.text.strip(), snapshot) if body.action == "message" else None
             def apply(db):
                 record = store.load(db, case_id, actor)
+                check_revision(record,if_match)
+                if analysis and record.get('revision',0)!=snapshot.get('revision',0):
+                    raise HTTPException(409, 'The case changed during analysis. Refresh and retry.')
                 service.act(record, body.action, body.text.strip())
                 if analysis:
                     service.attach_analysis(record, analysis)
@@ -370,26 +435,31 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
                         service.handoff(record)
                 store.save(db, record)
                 return record
-            return public(write(actor, x_request_id, payload, apply))
+            record=write(actor, x_request_id, payload, apply)
+            await projections.flush()
+            return case_response(record)
 
     @app.post("/api/cases/{case_id}/attachments")
-    async def attachment(case_id: str, file: UploadFile = File(...), x_demo_session: str = Header(default=""), x_request_id: str = Header(default="")):
+    async def attachment(case_id: str, file: UploadFile = File(...), x_demo_session: str = Header(default=""), x_request_id: str = Header(default=""), if_match: str = Header(default="")):
         actor = owner(x_demo_session)
         raw = await file.read(3 * 1024 * 1024 + 1)
         if len(raw) > 3 * 1024 * 1024:
             raise HTTPException(413, "Attachments must be 3 MB or smaller.")
-        filename = Path(file.filename or "attachment").name[:100]
+        filename = (file.filename or 'attachment').replace('\\','/').rsplit('/',1)[-1]
+        filename = ''.join(c for c in filename if ord(c)>=32 and ord(c)!=127)[:100] or 'attachment'
         kind = file.content_type
         valid = (kind == "image/png" and raw.startswith(b"\x89PNG\r\n\x1a\n")) or (kind == "image/jpeg" and raw.startswith(b"\xff\xd8\xff")) or (kind == "application/pdf" and raw.startswith(b"%PDF-"))
         if not valid:
             raise HTTPException(415, "Upload a PNG, JPEG, or PDF file.")
         def apply(db):
             record = store.load(db, case_id, actor)
+            check_revision(record,if_match)
             service.act(record, "evidence", "Attachment: " + filename, filename)
-            record["evidence"][-1].update(content=base64.b64encode(raw).decode(), content_type=kind)
+            evidence=record['evidence'][-1]
+            evidence.update(store.put_attachment(db,case_id,evidence['id'],kind,raw))
             store.save(db, record)
             return public(record)
-        return write(actor, x_request_id, [case_id, filename, hashlib.sha256(raw).hexdigest()], apply)
+        return case_response(write(actor, x_request_id, [case_id, filename, hashlib.sha256(raw).hexdigest()], apply))
 
     @app.get("/api/cases/{case_id}/attachments/{evidence_id}")
     def download(case_id: str, evidence_id: str, x_demo_session: str = Header(default=""), x_demo_agent: str = Header(default="")):
@@ -402,10 +472,15 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
                 raise HTTPException(404, 'Attachment not found.')
         else:
             record = store.get(case_id, owner(x_demo_session))
-        item = next((e for e in record["evidence"] if e["id"] == evidence_id and e.get("content")), None)
+        item = next((e for e in record["evidence"] if e["id"] == evidence_id and e.get("filename")), None)
         if not item:
             raise HTTPException(404, "Attachment not found.")
-        return Response(base64.b64decode(item["content"]), media_type=item["content_type"], headers={"Content-Disposition": "attachment", "X-Content-Type-Options": "nosniff"})
+        stored=store.attachment(case_id,evidence_id)
+        if stored is None:
+            raise HTTPException(503, 'The attachment record is unavailable. Request workspace assistance.')
+        from urllib.parse import quote
+        disposition="attachment; filename*=UTF-8''"+quote(item['filename'],safe='')
+        return Response(stored['data'],media_type=stored['content_type'],headers={'Content-Disposition':disposition,'X-Content-Type-Options':'nosniff','ETag':'"'+stored['sha256']+'"'})
 
     @app.get("/api/agent/cases")
     def queue(x_demo_agent: str = Header(default="")):
@@ -413,18 +488,19 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
         return [public(c) for c in store.list() if c["handoff"]]
 
     @app.post("/api/agent/cases/{case_id}/actions")
-    def staff_action(case_id: str, body: StaffAction, x_demo_agent: str = Header(default=""), x_request_id: str = Header(default="")):
+    def staff_action(case_id: str, body: StaffAction, x_demo_agent: str = Header(default=""), x_request_id: str = Header(default=""), if_match: str = Header(default="")):
         staff(x_demo_agent)
         def apply(db):
             record = store.load(db, case_id)
             if security.production and not record['handoff']:
                 raise HTTPException(404, 'Case not found.')
+            check_revision(record,if_match)
             service.staff(record, body.action, body.text.strip(), staff_id=principal_context.get().subject if security.production else None)
             if security.production and record['messages'] and record['messages'][-1]['role']=='agent':
                 record['messages'][-1]['staff_subject']=principal_context.get().subject
             store.save(db, record)
             return public(record)
-        return write(staff_receipt_owner(), x_request_id, [case_id, body.model_dump()], apply)
+        return case_response(write(staff_receipt_owner(), x_request_id, [case_id, body.model_dump()], apply))
 
     # The original FastAPI application remains available as api.main:app.
     # This entry point never reads .env; live provider access is explicitly opt-in.

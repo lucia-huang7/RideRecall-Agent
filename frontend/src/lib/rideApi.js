@@ -9,8 +9,9 @@ try {
 const attempts = new Map()
 export function resetRequests() { attempts.clear() }
 
-export async function request(path, { body, agent = false, file } = {}) {
+export async function request(path, { body, agent = false, file, revision } = {}) {
   const headers = credentialHeaders() || { 'X-Demo-Session': session, ...(agent ? { 'X-Demo-Agent': 'local-demo-agent' } : {}) }
+  if (Number.isInteger(revision) && revision >= 0) headers['If-Match'] = `"${revision}"`
   const key = JSON.stringify([path, body, file?.name, file?.size, file?.lastModified])
   if (body || file) {
     if (!attempts.has(key)) attempts.set(key, crypto.randomUUID())
@@ -24,7 +25,9 @@ export async function request(path, { body, agent = false, file } = {}) {
   try { result = await response.json() } catch { throw new Error('The service returned an unreadable response. Please try again.') }
   if (!response.ok) {
     if (response.status < 500) attempts.delete(key)
-    throw new Error(typeof result.detail === 'string' ? result.detail : 'Please check the details and try again.')
+    const error = new Error(typeof result.detail === 'string' ? result.detail : 'Please check the details and try again.')
+    error.status = response.status
+    throw error
   }
   attempts.delete(key)
   return result
@@ -40,3 +43,10 @@ export async function downloadEvidence(caseId, evidence, agent = false) {
 
 export const money = value => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value / 100)
 export const statusLabel = value => ({ reviewing: 'Checking details', needs_review: 'Needs a closer look', awaiting_confirmation: 'Ready for your review', awaiting_rider: 'Waiting for you', waiting_for_agent: 'In the review queue', in_review: 'Specialist reviewing', resolved: 'Resolved' }[value] || value)
+
+// A delayed poll or historical idempotency receipt must not regress visible state.
+export function latestCase(current, incoming) {
+  if (!current || current.id !== incoming.id) return incoming
+  const previous = current.revision ?? 0, next = incoming.revision ?? 0
+  return next < previous ? current : incoming
+}

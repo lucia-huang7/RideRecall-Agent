@@ -96,3 +96,26 @@ test('blocked browser storage does not prevent requests or credential sign-in', 
     assert.ok(sent['X-Demo-Session'])
   } finally { globalThis.localStorage = original }
 })
+
+test('conditional retries retain the command ID while sending the displayed revision', async () => {
+  const seen = []
+  globalThis.fetch = async (url, options) => {
+    seen.push(options.headers)
+    if (seen.length === 1) throw new TypeError('Response lost after commit')
+    return { ok: true, json: async () => ({ revision: 8 }) }
+  }
+  await assert.rejects(request('/api/cases/conditional/actions', { body: { action: 'confirm' }, revision: 7 }))
+  await request('/api/cases/conditional/actions', { body: { action: 'confirm' }, revision: 8 })
+  assert.equal(seen[0]['If-Match'], '"7"')
+  assert.equal(seen[1]['If-Match'], '"8"')
+  assert.equal(seen[0]['X-Request-ID'], seen[1]['X-Request-ID'])
+})
+
+test('a delayed poll or cached receipt cannot regress the visible case revision', async () => {
+  const { latestCase } = await import('../src/lib/rideApi.js')
+  const committed = { id: 'case-one', revision: 9, status: 'resolved' }
+  assert.equal(latestCase(committed, { id: 'case-one', revision: 8, status: 'awaiting_confirmation' }), committed)
+  assert.equal(latestCase(committed, { id: 'case-one', status: 'reviewing' }), committed)
+  assert.equal(latestCase(committed, { id: 'case-one', revision: 10, status: 'waiting_for_agent' }).revision, 10)
+  assert.equal(latestCase(committed, { id: 'case-two', revision: 1 }).id, 'case-two')
+})

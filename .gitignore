@@ -17,3 +17,9 @@ legacy-java/.mvn/*-bin.zip
 artifacts/
 **/access-credentials.json
 **/identities.json
+**/.vscode/
+**/*.log
+**/*.egg-info/
+backend/data/
+backend/logs/
+legacy-java/data/

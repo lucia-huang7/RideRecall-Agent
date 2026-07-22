@@ -46,6 +46,19 @@ def headers(account, key=None, **extra):
     return {'Authorization':'Bearer '+TOKENS[account],'X-Request-ID':key or uuid4().hex,**extra}
 
 
+def change(client,path,account='alice',body=None,key=None,**options):
+    case_id=path.split('/')[3] if path.startswith('/api/cases/') else path.split('/')[4]
+    if account in ('alex','blair'):
+        rows=client.get('/api/agent/cases',headers=headers(account)).json()
+        record=next((row for row in rows if row['id']==case_id),None)
+    else:
+        result=client.get('/api/cases/'+case_id,headers=headers(account))
+        record=result.json() if result.status_code==200 else None
+    request_headers=headers(account,key)
+    if record:request_headers['If-Match']='"'+str(record['revision'])+'"'
+    return client.post(path,headers=request_headers,json=body,**options)
+
+
 def create(client, account='alice', trip='trip-river'):
     result=client.post('/api/cases',headers=headers(account),json=dict(trip_id=trip,description='Please review the cancellation fee.',topic='cancellation'))
     assert result.status_code==200,result.text
@@ -105,19 +118,19 @@ def test_specialist_cannot_change_or_run_operator_controls(client,endpoint,body)
 def test_specialist_handoff_receipts_are_scoped_to_authenticated_staff(client):
     case=create(client)
     assert client.post('/api/agent/cases/'+case['id']+'/actions',headers=headers('alex'),json=dict(action='accept',text='')).status_code==404
-    handed=client.post('/api/cases/'+case['id']+'/actions',headers=headers('alice'),json={'action':'handoff'})
+    handed=change(client,'/api/cases/'+case['id']+'/actions',body={'action':'handoff'})
     assert handed.status_code==200
     assert client.get('/api/agent/cases',headers=headers('alex')).json()[0]['id']==case['id']
-    accepted=client.post('/api/agent/cases/'+case['id']+'/actions',headers=headers('alex','shared-key'),json=dict(action='accept',text=''))
+    accepted=change(client,'/api/agent/cases/'+case['id']+'/actions',account='alex',key='shared-key',body=dict(action='accept',text=''))
     assert accepted.status_code==200
     # Another specialist's same key belongs to a different receipt namespace.
     second=create(client,trip='trip-museum')
-    client.post('/api/cases/'+second['id']+'/actions',headers=headers('alice'),json={'action':'handoff'})
-    accepted_second=client.post('/api/agent/cases/'+second['id']+'/actions',headers=headers('blair','shared-key'),json=dict(action='accept',text=''))
+    change(client,'/api/cases/'+second['id']+'/actions',body={'action':'handoff'})
+    accepted_second=change(client,'/api/agent/cases/'+second['id']+'/actions',account='blair',key='shared-key',body=dict(action='accept',text=''))
     assert accepted_second.status_code==200 and accepted_second.json()['assigned_to']=='blair'
     assert accepted.json()['assigned_to']=='alex'
     assert accepted.json()['events'][-1]['actor']=='alex'
-    reply=client.post('/api/agent/cases/'+case['id']+'/actions',headers=headers('blair'),json=dict(action='reply',text='Not my assigned case.'))
+    reply=change(client,'/api/agent/cases/'+case['id']+'/actions',account='blair',body=dict(action='reply',text='Not my assigned case.'))
     assert reply.status_code==403
     assert client.post('/api/agent/cases/'+case['id']+'/actions',headers=headers('ops'),json=dict(action='reply',text='Not authorized')).status_code==403
 
@@ -125,13 +138,13 @@ def test_specialist_handoff_receipts_are_scoped_to_authenticated_staff(client):
 def test_protected_attachment_download_requires_owner_or_handed_off_specialist(client):
     case=create(client)
     png=b'\x89PNG\r\n\x1a\n' + b'test-fixture'
-    attached=client.post('/api/cases/'+case['id']+'/attachments',headers=headers('alice'),files={'file':('pickup.png',png,'image/png')}).json()
+    attached=client.post('/api/cases/'+case['id']+'/attachments',headers={**headers('alice'),'If-Match':'"'+str(case['revision'])+'"'},files={'file':('pickup.png',png,'image/png')}).json()
     path=f"/api/cases/{case['id']}/attachments/{attached['evidence'][0]['id']}"
     assert client.get(path,headers=headers('alice')).content==png
     assert client.get(path,headers=headers('bob',**{'X-Demo-Agent':'local-demo-agent'})).status_code==404
     assert client.get(path,headers=headers('alex')).status_code==404
     assert client.get(path,headers=headers('ops')).status_code==403
-    client.post('/api/cases/'+case['id']+'/actions',headers=headers('alice'),json={'action':'handoff'})
+    change(client,'/api/cases/'+case['id']+'/actions',body={'action':'handoff'})
     assert client.get(path,headers=headers('alex')).content==png
 
 
@@ -205,3 +218,35 @@ def test_local_provisioning_produces_usable_expiring_credentials_without_overwri
     assert all(token not in server_data for token in credentials.values())
     assert Path(result['credential_file']).stat().st_mode & 0o077==0
     with pytest.raises(ValueError,match='overwrite'):module['provision'](tmp_path/'profile')
+
+
+def test_protected_mutations_require_an_explicit_current_revision(client):
+    case=create(client)
+    path='/api/cases/'+case['id']+'/actions'
+    missing=client.post(path,headers=headers('alice'),json=dict(action='evidence',text='Do not save without a reviewed revision.'))
+    assert missing.status_code==428
+    invalid=client.post(path,headers={**headers('alice'),'If-Match':'*'},json=dict(action='handoff'))
+    assert invalid.status_code==400
+    accepted=change(client,path,body=dict(action='evidence',text='This note has a current revision.'))
+    assert accepted.status_code==200
+    stale=client.post(path,headers={**headers('alice'),'If-Match':'"'+str(case['revision'])+'"'},json=dict(action='handoff'))
+    assert stale.status_code==412
+    persisted=client.get('/api/cases/'+case['id'],headers=headers('alice'))
+    assert persisted.headers['etag']=='"'+str(accepted.json()['revision'])+'"'
+    assert persisted.json()['status']!='waiting_for_agent'
+
+
+def test_authenticated_runtime_discloses_live_provider_mode_without_exposing_credentials(tmp_path,monkeypatch):
+    identity,catalog=config(tmp_path)
+    monkeypatch.setenv('KINDER_UBER_RIDE_MODEL_MODE','live')
+    monkeypatch.setenv('KINDER_UBER_RIDE_MODEL','provider-contract-test')
+    monkeypatch.setenv('KINDER_UBER_RIDE_API_KEY','non-sensitive-fixture-key')
+    import httpx
+    async def no_network(*args,**kwargs):raise AssertionError('Metadata requests must not call a provider')
+    monkeypatch.setattr(httpx.AsyncClient,'send',no_network)
+    with TestClient(create_app(tmp_path/'mode.sqlite3',catalog_path=catalog,security=Security('production',identity))) as client:
+        runtime=client.get('/runtime-config')
+        session=client.get('/api/session',headers=headers('alice'))
+        assert runtime.json()['model_mode']==session.json()['model_mode']=='live'
+        assert 'non-sensitive-fixture-key' not in runtime.text+session.text
+        assert client.get('/health').json()=={'status':'ok','auth_mode':'production'}

@@ -1,0 +1,16 @@
+# Direct runtime requirements. requirements.txt is the hashed universal resolution.
+fastapi==0.159.1
+starlette==1.9.0
+uvicorn[standard]==0.32.1
+pydantic==2.12.5
+python-multipart==0.0.31
+anthropic==0.40.0
+httpx==0.28.1
+jsonschema==4.26.0
+chromadb==0.5.23
+redis==5.3.1
+fakeredis[lua]==2.40.0
+prometheus-client==0.21.1
+mcp==1.30.0
+python-dotenv==1.2.4
+pydantic-settings==2.16.1

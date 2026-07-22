@@ -41,26 +41,18 @@ class EvaluationAdapter:
     def __init__(self, engine):
         self.engine = engine
         self.records = {}
+        from mobility.diagnostics import DiagnosticCases
+        self.fixtures = DiagnosticCases(engine)
 
     async def run(self, req):
         record = self.records.setdefault(req.conv_id, dict(id=uuid4().hex, owner=uuid4().hex, trip_id='trip-river', messages=[]))
-        run = await self.engine.run(record['trip_id'], req.message, record)
-        record['messages'] += [dict(role='rider',content=req.message),dict(role='assistant',content=run['response'])]
-        snapshot = run.pop('_memory_snapshot', None)
-        if snapshot:
-            snapshot['cursor'] = len(record['messages'])
-            record['memory_snapshot'] = snapshot
+        run = await self.fixtures.turn(record,req.message)
         req.conversation_state = run.get('memory',{}).get('state',{})
         req.entities = req.conversation_state.get('entities',{})
         return SimpleNamespace(response=run['response'], status=run['status'], agent_type=AgentType(run['agents'][0] if run['agents'] else 'general'), intent=IntentCategory(run['intent']), tools_used=[t.get('tool_name') for t in run['tools']])
 
     async def cleanup(self):
-        from mobility.memory import CaseMemory
-        for record in self.records.values():
-            scope = CaseMemory(self.engine, record, record['trip_id'])
-            for collection in (scope.manager._episodic, scope.manager._profile):
-                collection.delete(where={'user_id':scope.uid})
-            await scope.redis.aclose()
+        await self.fixtures.close()
         self.records.clear()
 
 

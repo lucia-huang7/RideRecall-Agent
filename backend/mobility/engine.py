@@ -177,22 +177,20 @@ class RideOrchestrator(AgentOrchestrator):
 class RideEngine:
     def __init__(self, support):
         self.support = support
-        self.mode = os.getenv("KINDER_UBER_RIDE_MODEL_MODE", "demo").lower()
-        if self.mode not in ("demo", "live"):
-            raise ValueError("KINDER_UBER_RIDE_MODEL_MODE must be demo or live.")
-        self.model = os.getenv("KINDER_UBER_RIDE_MODEL", "") if self.mode == "live" else "deterministic-messages-adapter"
-        if self.mode == "live":
-            key = os.getenv("KINDER_UBER_RIDE_API_KEY", "")
-            if not key or not self.model:
-                raise ValueError("Live mode requires KINDER_UBER_RIDE_API_KEY and KINDER_UBER_RIDE_MODEL.")
-            self.client = AsyncAnthropic(api_key=key, base_url=os.getenv("KINDER_UBER_RIDE_BASE_URL") or None, timeout=12, max_retries=0)
+        settings=support.model_settings
+        self.mode=settings.mode
+        self.model=settings.model
+        if self.mode=='live':
+            self.client=AsyncAnthropic(api_key=settings.api_key,base_url=settings.base_url,timeout=12,max_retries=0)
         else:
-            self.client = LocalModel()
+            self.client=LocalModel()
         embedding = IntentEmbedding()
         embedding.provider, embedding.enabled, embedding.key = "local", False, ""
         self.recognizer = RideIntent(api_key="unused", client=self.client, model=self.model, embedding=embedding)
         self.rag_tools = RideTools(api_key="unused", client=self.client, model=self.model)
         path = str(Path(support.store.path).with_suffix(".vectors"))
+        Path(path).mkdir(parents=True,exist_ok=True,mode=0o700)
+        if os.name=='posix':Path(path).chmod(0o700)
         self.chroma = chromadb.PersistentClient(path=path, settings=chromadb.Settings(anonymized_telemetry=False, chroma_product_telemetry_impl="mobility.telemetry.LocalTelemetry", chroma_telemetry_impl="mobility.telemetry.LocalTelemetry"))
         self.hash_embedding = LocalHashEmbedding()
         self.knowledge = {}
@@ -216,6 +214,21 @@ class RideEngine:
         from mobility.operations import RideOperations
         self.operations = RideOperations(self, self.monitor_orchestrator)
 
+
+    def protected_policy_ids(self,topic):
+        return {doc['document_id'] for doc in self.documents[topic]}
+
+    def validate_authoritative_policies(self):
+        for topic,documents in self.documents.items():
+            for document in documents:
+                identity=hashlib.sha256(json.dumps(['explicit',document['document_id']],ensure_ascii=True).encode()).hexdigest()
+                rows=self.knowledge[topic]._collection.get(where={'document_id':identity},include=['metadatas','documents'])
+                expected=hashlib.sha256(document['content'].encode()).hexdigest()
+                chunks=self.knowledge[topic]._chunk_text(document['content'],chunk_size=500)
+                expected_rows={identity+':'+str(i):(text,i) for i,text in enumerate(chunks)}
+                actual={key:(text,meta.get('chunk_index')) for key,text,meta in zip(rows['ids'],rows['documents'],rows['metadatas'])}
+                if actual!=expected_rows or any(meta.get('version')!=expected for meta in rows['metadatas']):
+                    raise RuntimeError('Authoritative policy index differs from the configured release. Restore the index or use a reviewed release.')
 
     def policy_sources(self, topic):
         with self.support.store.connect() as db:

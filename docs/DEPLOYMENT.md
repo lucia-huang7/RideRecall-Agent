@@ -1,0 +1,52 @@
+# Deployment and verification
+
+## Authenticated container preview
+
+The container serves the built Vue mobile app and Python API on one origin. The MCP trip-record server is a separate stdio child process. This is a single-node, one-worker deployment with embedded persistence. The supplied Compose profile uses fictional identities/catalogs and simulated financial actions; it needs no model API key.
+
+With Docker Engine and Compose available, run:
+
+```sh
+bash scripts/container-demo.sh
+```
+
+Open `http://127.0.0.1:8013`. The first run builds digest-pinned base images, installs the hashed Python dependency lock, creates an owner-only identity registry and starts the app after dependency health checks. Persistent case state and configuration live in separate named volumes. The service runs as UID 10001 with a read-only root filesystem, dropped capabilities and temporary scratch space. Only the loopback host port is published. Docker startup does not depend on the macOS launcher.
+
+The generated preview credentials expire in 24 hours. Read the desired credential locally, then paste it into the sign-in form; it is held only in page memory. Never put it in an issue, screenshot, URL or repository:
+
+```sh
+docker compose --profile tools run --rm --no-deps init python -c \
+  'import json; print(json.load(open("/config/profile/access-credentials.json"))["credentials"]["preview-rider"])'
+```
+
+The other distinct accounts are `preview-specialist` and `preview-operator`. Stop/start preserves state:
+
+```sh
+docker compose stop app
+docker compose up -d --wait app
+docker compose logs --tail=50 app
+```
+
+Do not run `down --volumes` against an instance you want to keep. Preview credential rotation requires provisioning a new identity directory and explicitly selecting it in a reviewed Compose override; the helper deliberately refuses to overwrite an existing registry. Production should use managed identity issuance, revocation and delivery rather than this short-lived preview helper.
+
+## Image verification
+
+After building, run:
+
+```sh
+python scripts/check-container.py --output artifacts/container-check.json
+```
+
+The verifier creates a uniquely named temporary Compose project, selects an available loopback port and removes only its own resources. It exercises the real authenticated HTTP workflow, role rejection, evidence bytes, handoff, guarded proposal, explicit confirmation and exact replay. It then restarts the service and checks state/receipt/blob persistence, verifies non-root file ownership, stops the app, and performs an offline snapshot/restore through separate containers sharing that test volume. Credentials never appear in its report.
+
+## Production configuration
+
+The image defaults to the authenticated profile and refuses startup without an explicit identity registry and owned catalog. Mount reviewed configuration read-only under `/config`, persistent writable state under `/data`, and supply `KINDER_UBER_IDENTITY_FILE` and `KINDER_UBER_RIDE_CATALOG_PATH`. Every trip must belong to a configured rider. Use the documented opaque-token profile only within its scope; it is not an OIDC implementation.
+
+Keep one worker per database/index namespace. Do not share embedded state between replicas. Put externally exposed deployments behind a correctly configured TLS/authentication gateway with deployment-specific rate limits and resource budgets. Proxy headers are disabled in the image, so a caller cannot spoof loopback identity through forwarded headers. Financial execution remains simulated, including in the authenticated profile. Live-model configuration is separate and never grants payment permissions.
+
+`/livez` tests the process; `/readyz` checks database schema, policy index, memory projections and an actual MCP read. A dependency failure makes readiness fail without deleting source state. See [state and recovery](STATE_AND_RECOVERY.md) before upgrades and automated checks before choosing exposure boundaries. Backups need independent offsite storage and a deployment-specific recovery policy.
+
+## CI
+
+`.github/workflows/verify.yml` is manual (`workflow_dispatch`) to avoid unexpected hosted runs in a private repository. It installs locked runtime dependencies, runs Python/frontend/Java checks, and optionally builds and exercises the container. Actions are pinned by commit SHA and granted read-only repository access. The same commands can be run locally without hosted CI charges. A workflow definition is not evidence that GitHub Actions has run; local execution results are recorded separately.

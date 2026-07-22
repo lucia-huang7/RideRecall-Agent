@@ -30,7 +30,7 @@ async function bootstrap() {
   booting.value=true;error.value=''
   try {
     configuration.value=await runtimeConfig()
-    if(configuration.value.auth_mode==='demo')identity.value={auth_mode:'demo',subject:null,roles:['rider','specialist','operator']}
+    if(configuration.value.auth_mode==='demo')identity.value={auth_mode:'demo',model_mode:configuration.value.model_mode || 'demo',subject:null,roles:['rider','specialist','operator']}
   } catch(e) { error.value=e.message }
   finally { booting.value=false }
 }

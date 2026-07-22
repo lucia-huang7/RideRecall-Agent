@@ -83,15 +83,16 @@ def test_followup_uses_original_intent_and_keeps_prior_context(client):
     assert case["adjustment"] is None
 
 
-def test_imported_policy_changes_retrieved_answer_and_survives_restart(client):
-    body = dict(topic="fare", document_id="demo-fare-v1", title="Fare difference review", content="SUNRISE-42 fare review: the fare estimate and settled charge require evidence. This fictional policy does not authorize an automatic refund.")
-    result = client.post("/api/agent/knowledge", headers=headers(agent=True), json=body)
-    assert result.status_code == 200
-    case = create(client, text="Please explain the SUNRISE-42 fare review policy.", trip="trip-airport", topic="fare")
-    run = case["engine_runs"][-1]
-    assert "SUNRISE-42" in run["response"]
-    assert any("SUNRISE-42" in d["content"] for d in run["citations"])
-    path = client.app.state.store.path
+def test_imported_policy_changes_retrieved_answer_and_survives_restart(tmp_path):
+    path=tmp_path/"policy-restart.sqlite3"
+    with TestClient(create_app(path)) as client:
+        body = dict(topic="fare", document_id="demo-fare-v1", title="Fare difference review", content="SUNRISE-42 fare review: the fare estimate and settled charge require evidence. This fictional policy does not authorize an automatic refund.")
+        result = client.post("/api/agent/knowledge", headers=headers(agent=True), json=body)
+        assert result.status_code == 200
+        case = create(client, text="Please explain the SUNRISE-42 fare review policy.", trip="trip-airport", topic="fare")
+        run = case["engine_runs"][-1]
+        assert "SUNRISE-42" in run["response"]
+        assert any("SUNRISE-42" in d["content"] for d in run["citations"])
     with TestClient(create_app(path)) as reopened:
         case = create(reopened, text="Explain the SUNRISE-42 fare review policy again.", trip="trip-airport", topic="fare")
         assert "SUNRISE-42" in case["engine_runs"][-1]["response"]

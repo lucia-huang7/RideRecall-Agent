@@ -117,7 +117,7 @@ def main():
             if STOPPING:
                 break
             healthy={}
-            for name,url in [('backend','http://127.0.0.1:8010/health'),('frontend','http://127.0.0.1:5175/__kinderuber_health')]:
+            for name,url in [('backend','http://127.0.0.1:8010/readyz'),('frontend','http://127.0.0.1:5175/__kinderuber_health')]:
                 try:
                     data=read_json(url)
                     healthy[name]=data.get('status')=='ok' if name=='backend' else data.get('instance')==config['instance']

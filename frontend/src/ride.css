@@ -77,3 +77,5 @@
 .operations-panel{--ink:#1a1a1a;--surface:#ffffff;--soft:#f6f6f6}.ops-record p{margin:8px 0;color:var(--muted)}.ops-record small{color:var(--muted)}[data-theme="rainbow"] .ops-tabs button.selected{background:var(--spectrum);color:#1a1a1a}
 
 .auth-shell{min-height:100dvh;display:grid;place-items:center;background:var(--bg,#fff);color:var(--text,#111);padding:24px}.auth-card{width:min(100%,420px);padding:32px 0}.auth-card h1{font-size:32px;line-height:1.15;margin:32px 0 16px}.auth-card p{line-height:1.6}.auth-card input{display:block;width:100%;box-sizing:border-box;font:inherit;border:1px solid #aaa;border-radius:12px;background:#fff;color:#111;padding:14px;margin-top:8px}.auth-card .primary{width:100%;margin-top:16px}.auth-note{font-size:13px;color:#666}.auth-error{border:1px solid currentColor;border-radius:12px;padding:12px}
+
+.case-overline{gap:12px}.case-overline .eyebrow{min-width:0;flex:1;overflow-wrap:anywhere}.case-overline .text-button{flex-shrink:0}

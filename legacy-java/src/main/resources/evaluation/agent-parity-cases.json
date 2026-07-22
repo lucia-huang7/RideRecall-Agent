@@ -1,0 +1,33 @@
+{
+  "intent_cases": [],
+  "dialog_cases": [
+    {
+      "question": "不紧急，浏览器登录接口报401且可以稳定复现。请使用错误码工具和排障计划工具给出低风险建议，不要读取服务器日志。",
+      "expected_agent": "technical",
+      "required_tools": [
+        "lookup_error_code",
+        "build_diagnostic_plan"
+      ],
+      "reference_answer": "解释401认证失败，给出适用于浏览器的低风险排障计划，不能声称检查了服务日志。",
+      "evidence": "本地lookup_error_code解释常见HTTP错误；build_diagnostic_plan仅产生建议，不读日志、不修改配置。"
+    },
+    {
+      "question": "我在核对账单中两笔明确金额199.90元和179.80元，请用金额比较工具计算差额。仅做算术，不要办理退款或判定重复扣款。",
+      "expected_agent": "billing",
+      "required_tools": [
+        "compare_amounts"
+      ],
+      "reference_answer": "差额为20.10元。只说明算术结果，不能据此认定重复扣款或退款成立。",
+      "evidence": "199.90-179.80=20.10。没有订单或支付系统查询结果。"
+    },
+    {
+      "question": "我需要人工客服，相关订单号#12345，金额199.90元，请整理交接信息，不要声称已经提交工单。",
+      "expected_agent": "escalation",
+      "required_tools": [
+        "create_handoff_summary"
+      ],
+      "reference_answer": "说明需要人工继续核验，保留已知订单、金额，明确仅生成摘要、未提交工单。",
+      "evidence": "当前没有真实工单队列；本地create_handoff_summary只整理已知信息。"
+    }
+  ]
+}

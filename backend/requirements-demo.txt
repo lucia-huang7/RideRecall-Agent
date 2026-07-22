@@ -1,0 +1,18 @@
+# Demo mode uses a local Messages adapter; live mode is explicitly opt-in.
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+pydantic==2.12.5
+python-multipart==0.0.12
+anthropic==0.40.0
+httpx==0.28.1
+pytest>=8.4,<10
+jsonschema>=4.23,<5
+chromadb==0.5.23
+
+# In-process Redis-compatible storage; durable snapshots live with case transactions.
+redis>=5,<6
+fakeredis[lua]>=2.26,<3
+
+# Original operations monitor and standard MCP transport.
+prometheus-client==0.21.1
+mcp==1.26.0

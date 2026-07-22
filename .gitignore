@@ -1,0 +1,17 @@
+.runtime/
+.venv*/
+**/node_modules/
+**/__pycache__/
+**/.pytest_cache/
+**/target/
+**/dist/
+**/.idea/
+**/.env
+**/.env.local
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
+.DS_Store
+legacy-java/.mvn/apache-maven-*/
+legacy-java/.mvn/*-bin.zip
+artifacts/

@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "seed": 20261021,
+  "dataset_id": "ride-support-20261021-1000",
+  "statistics": {
+    "worlds": 1000,
+    "episodes": 2000,
+    "catalog_trips": 1003,
+    "variants_per_world": 2,
+    "families": {
+      "pickup_conflict": 125,
+      "fare_supported": 125,
+      "fare_over_cap": 125,
+      "authorization": 125,
+      "duplicate_settlement": 125,
+      "evidence_mismatch": 125,
+      "mcp_recovery": 125,
+      "no_excess": 125
+    },
+    "splits": {
+      "development": 581,
+      "calibration": 217,
+      "test": 202
+    },
+    "human_review_status": "not yet independently reviewed"
+  },
+  "files": {
+    "catalog-preview.json": "75e364d344e5623be7309fc9cb9d7bdf6db8b3f4cbad9d49cc744dc80c933307",
+    "catalog.schema.json": "51ade51a910b6bf375d02c6a5f6fd2ef22074e78452d7f59f5dbd3afa46f7273",
+    "human-review.jsonl": "bd20302139ce8b3529f15df333c50dbdb27cef5b7fea06ad7470338d85312ca6",
+    "catalog.json": "27fb68c70496025ece4c943154ae2fc7600facc2b23cbe7951ee999dc2472e8e",
+    "scenarios.jsonl": "5f22a4edd084de693493643d2bf2e0ec30102548926e19665576f8ab0f1540aa",
+    "world-events.jsonl": "ab08dafd552e7b66da8ed6b88ca83695fb5fec492d1b92fc7f243d8fdf9e2185",
+    "oracle.jsonl": "0a5f36b7607cee76f655b653fed27aec83d9d07c2b970a6d8e1016931cf823e2"
+  },
+  "generator_sources": {
+    "backend/mobility/simulation/audit.py": "b0e256ad45ef0c961e078b4f3507ffaea4c464682d57ea0e6d27c6cf8a769ce7",
+    "backend/mobility/simulation/generate.py": "d59e1a3c85d9961a01ee7b6fceab15720e550d5c0eee07186c755e4af7b5c2e7",
+    "backend/mobility/simulation/__init__.py": "8c0fafe323dd4eee32510fef3660d3ae4284f51a0ebc9c10a27a231f6348c1aa",
+    "backend/mobility/simulation/replay.py": "4e283890ac4f3182ea613e56312c20871068bb3889d8dd978598472b6c0ef9f9",
+    "backend/mobility/simulation/oracle.py": "b1adbc906a9d1f1629528814a5146182305b9de82b3239c4582ea2c9a5f134d7",
+    "backend/mobility/simulation/__main__.py": "60a4c035f265985151124a9915da41c7994611a4a4dbfbf63cfac2a5dd4bc22d"
+  },
+  "limitations": [
+    "Synthetic event worlds, not real user traffic.",
+    "Dialogue variants of a world remain in the same split.",
+    "Development/calibration/test splits are not training of a model.",
+    "The oracle is an independent reference implementation, not human ground truth.",
+    "Runtime receives catalog only; scenario labels never enter the application.",
+    "Language is deterministic synthetic variation; semantic quality needs independent human/model review."
+  ]
+}

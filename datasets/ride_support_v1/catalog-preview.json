@@ -1,0 +1,563 @@
+{
+  "schema_version": 1,
+  "dataset_id": "ride-support-20261021-1000",
+  "trips": [
+    {
+      "id": "trip-river",
+      "date": "Oct 20, 2026",
+      "time": "9:42 PM",
+      "destination": "River North",
+      "pickup": "West Loop",
+      "vehicle": "Standard",
+      "status": "Canceled",
+      "total": 650,
+      "estimated": 0,
+      "duration": "Canceled before pickup",
+      "distance": "0 mi",
+      "issue": "cancellation",
+      "arrival_disputed": true,
+      "eligibility": "review",
+      "caption": "A pickup that never happened.",
+      "color": "sand"
+    },
+    {
+      "id": "trip-airport",
+      "date": "Oct 19, 2026",
+      "time": "7:15 AM",
+      "destination": "O'Hare Airport",
+      "pickup": "Lincoln Park",
+      "vehicle": "Comfort",
+      "status": "Completed",
+      "total": 4820,
+      "estimated": 4120,
+      "duration": "38 min",
+      "distance": "17.4 mi",
+      "issue": "fare",
+      "arrival_disputed": false,
+      "eligibility": "adjust",
+      "caption": "A fare worth a second look.",
+      "color": "blue"
+    },
+    {
+      "id": "trip-museum",
+      "date": "Oct 17, 2026",
+      "time": "2:08 PM",
+      "destination": "Art Institute",
+      "pickup": "Wicker Park",
+      "vehicle": "Standard",
+      "status": "Completed",
+      "total": 1875,
+      "estimated": 1875,
+      "duration": "21 min",
+      "distance": "5.2 mi",
+      "issue": "payment",
+      "arrival_disputed": false,
+      "eligibility": "explain",
+      "caption": "Your receipt, explained.",
+      "color": "green"
+    },
+    {
+      "id": "trip-synthetic-000000",
+      "date": "Oct 21, 2026",
+      "time": "00:00",
+      "destination": "Fictional District 1",
+      "pickup": "Fictional Stop 9991",
+      "vehicle": "Standard",
+      "status": "Canceled",
+      "total": 988,
+      "estimated": 0,
+      "duration": "62 min",
+      "distance": "18 mi",
+      "issue": "cancellation",
+      "arrival_disputed": true,
+      "caption": "Synthetic ride-support event record.",
+      "color": "sand",
+      "policy_scope": "cancellation-r1",
+      "payments": [
+        {
+          "id": "world-000000-payment-1",
+          "status": "settled",
+          "amount": 988
+        }
+      ]
+    },
+    {
+      "id": "trip-synthetic-000001",
+      "date": "Oct 21, 2026",
+      "time": "01:01",
+      "destination": "Fictional District 2",
+      "pickup": "Fictional Stop 1157",
+      "vehicle": "Comfort",
+      "status": "Completed",
+      "total": 3927,
+      "estimated": 2982,
+      "duration": "17 min",
+      "distance": "39 mi",
+      "issue": "fare",
+      "arrival_disputed": false,
+      "caption": "Synthetic ride-support event record.",
+      "color": "sand",
+      "policy_scope": "fare-r1",
+      "payments": [
+        {
+          "id": "world-000001-payment-1",
+          "status": "settled",
+          "amount": 3927
+        }
+      ]
+    },
+    {
+      "id": "trip-synthetic-000002",
+      "date": "Oct 21, 2026",
+      "time": "02:02",
+      "destination": "Fictional District 3",
+      "pickup": "Fictional Stop 8748",
+      "vehicle": "Standard",
+      "status": "Completed",
+      "total": 4566,
+      "estimated": 1587,
+      "duration": "35 min",
+      "distance": "33 mi",
+      "issue": "fare",
+      "arrival_disputed": false,
+      "caption": "Synthetic ride-support event record.",
+      "color": "sand",
+      "policy_scope": "fare-r1",
+      "payments": [
+        {
+          "id": "world-000002-payment-1",
+          "status": "settled",
+          "amount": 4566
+        }
+      ]
+    },
+    {
+      "id": "trip-synthetic-000003",
+      "date": "Oct 21, 2026",
+      "time": "03:03",
+      "destination": "Fictional District 4",
+      "pickup": "Fictional Stop 2155",
+      "vehicle": "Comfort",
+      "status": "Completed",
+      "total": 6148,
+      "estimated": 6148,
+      "duration": "70 min",
+      "distance": "34 mi",
+      "issue": "payment",
+      "arrival_disputed": false,
+      "caption": "Synthetic ride-support event record.",
+      "color": "sand",
+      "policy_scope": "payment-r1",
+      "payments": [
+        {
+          "id": "world-000003-payment-1",
+          "status": "settled",
+          "amount": 6148
+        },
+        {
+          "id": "world-000003-payment-2",
+          "status": "pending",
+          "amount": 6148
+        }
+      ]
+    },
+    {
+      "id": "trip-synthetic-000004",
+      "date": "Oct 21, 2026",
+      "time": "04:04",
+      "destination": "Fictional District 5",
+      "pickup": "Fictional Stop 8405",
+      "vehicle": "Standard",
+      "status": "Completed",
+      "total": 13076,
+      "estimated": 6538,
+      "duration": "13 min",
+      "distance": "35 mi",
+      "issue": "payment",
+      "arrival_disputed": false,
+      "caption": "Synthetic ride-support event record.",
+      "color": "sand",
+      "policy_scope": "payment-r1",
+      "payments": [
+        {
+          "id": "world-000004-payment-1",
+          "status": "settled",
+          "amount": 6538
+        },
+        {
+          "id": "world-000004-payment-2",
+          "status": "settled",
+          "amount": 6538
+        }
+      ]
+    },
+    {
+      "id": "trip-synthetic-000005",
+      "date": "Oct 21, 2026",
+      "time": "05:05",
+      "destination": "Fictional District 6",
+      "pickup": "Fictional Stop 2854",
+      "vehicle": "Comfort",
+      "status": "Canceled",
+      "total": 1335,
+      "estimated": 0,
+      "duration": "16 min",
+      "distance": "33 mi",
+      "issue": "cancellation",
+      "arrival_disputed": true,
+      "caption": "Synthetic ride-support event record.",
+      "color": "sand",
+      "policy_scope": "cancellation-r1",
+      "payments": [
+        {
+          "id": "world-000005-payment-1",
+          "status": "settled",
+          "amount": 1335
+        }
+      ]
+    },
+    {
+      "id": "trip-synthetic-000006",
+      "date": "Oct 21, 2026",
+      "time": "06:06",
+      "destination": "Fictional District 7",
+      "pickup": "Fictional Stop 8849",
+      "vehicle": "Standard",
+      "status": "Completed",
+      "total": 6633,
+      "estimated": 5982,
+      "duration": "32 min",
+      "distance": "6 mi",
+      "issue": "fare",
+      "arrival_disputed": false,
+      "caption": "Synthetic ride-support event record.",
+      "color": "sand",
+      "policy_scope": "fare-r1",
+      "payments": [
+        {
+          "id": "world-000006-payment-1",
+          "status": "settled",
+          "amount": 6633
+        }
+      ]
+    },
+    {
+      "id": "trip-synthetic-000007",
+      "date": "Oct 21, 2026",
+      "time": "07:07",
+      "destination": "Fictional District 8",
+      "pickup": "Fictional Stop 8179",
+      "vehicle": "Comfort",
+      "status": "Completed",
+      "total": 1915,
+      "estimated": 2026,
+      "duration": "63 min",
+      "distance": "30 mi",
+      "issue": "fare",
+      "arrival_disputed": false,
+      "caption": "Synthetic ride-support event record.",
+      "color": "sand",
+      "policy_scope": "fare-r1",
+      "payments": [
+        {
+          "id": "world-000007-payment-1",
+          "status": "settled",
+          "amount": 1915
+        }
+      ]
+    },
+    {
+      "id": "trip-synthetic-000008",
+      "date": "Oct 21, 2026",
+      "time": "08:08",
+      "destination": "Fictional District 9",
+      "pickup": "Fictional Stop 3222",
+      "vehicle": "Standard",
+      "status": "Canceled",
+      "total": 727,
+      "estimated": 0,
+      "duration": "74 min",
+      "distance": "7 mi",
+      "issue": "cancellation",
+      "arrival_disputed": true,
+      "caption": "Synthetic ride-support event record.",
+      "color": "sand",
+      "policy_scope": "cancellation-r2",
+      "payments": [
+        {
+          "id": "world-000008-payment-1",
+          "status": "settled",
+          "amount": 727
+        }
+      ]
+    },
+    {
+      "id": "trip-synthetic-000009",
+      "date": "Oct 21, 2026",
+      "time": "09:09",
+      "destination": "Fictional District 10",
+      "pickup": "Fictional Stop 8858",
+      "vehicle": "Comfort",
+      "status": "Completed",
+      "total": 3008,
+      "estimated": 2555,
+      "duration": "46 min",
+      "distance": "28 mi",
+      "issue": "fare",
+      "arrival_disputed": false,
+      "caption": "Synthetic ride-support event record.",
+      "color": "sand",
+      "policy_scope": "fare-r2",
+      "payments": [
+        {
+          "id": "world-000009-payment-1",
+          "status": "settled",
+          "amount": 3008
+        }
+      ]
+    },
+    {
+      "id": "trip-synthetic-000010",
+      "date": "Oct 21, 2026",
+      "time": "10:10",
+      "destination": "Fictional District 11",
+      "pickup": "Fictional Stop 9677",
+      "vehicle": "Standard",
+      "status": "Completed",
+      "total": 8868,
+      "estimated": 7792,
+      "duration": "41 min",
+      "distance": "3 mi",
+      "issue": "fare",
+      "arrival_disputed": false,
+      "caption": "Synthetic ride-support event record.",
+      "color": "sand",
+      "policy_scope": "fare-r2",
+      "payments": [
+        {
+          "id": "world-000010-payment-1",
+          "status": "settled",
+          "amount": 8868
+        }
+      ]
+    },
+    {
+      "id": "trip-synthetic-000011",
+      "date": "Oct 21, 2026",
+      "time": "11:11",
+      "destination": "Fictional District 12",
+      "pickup": "Fictional Stop 8884",
+      "vehicle": "Comfort",
+      "status": "Completed",
+      "total": 6433,
+      "estimated": 6433,
+      "duration": "33 min",
+      "distance": "15 mi",
+      "issue": "payment",
+      "arrival_disputed": false,
+      "caption": "Synthetic ride-support event record.",
+      "color": "sand",
+      "policy_scope": "payment-r2",
+      "payments": [
+        {
+          "id": "world-000011-payment-1",
+          "status": "settled",
+          "amount": 6433
+        },
+        {
+          "id": "world-000011-payment-2",
+          "status": "pending",
+          "amount": 6433
+        }
+      ]
+    },
+    {
+      "id": "trip-synthetic-000012",
+      "date": "Oct 21, 2026",
+      "time": "12:12",
+      "destination": "Fictional District 13",
+      "pickup": "Fictional Stop 1731",
+      "vehicle": "Standard",
+      "status": "Completed",
+      "total": 4884,
+      "estimated": 2442,
+      "duration": "58 min",
+      "distance": "36 mi",
+      "issue": "payment",
+      "arrival_disputed": false,
+      "caption": "Synthetic ride-support event record.",
+      "color": "sand",
+      "policy_scope": "payment-r2",
+      "payments": [
+        {
+          "id": "world-000012-payment-1",
+          "status": "settled",
+          "amount": 2442
+        },
+        {
+          "id": "world-000012-payment-2",
+          "status": "settled",
+          "amount": 2442
+        }
+      ]
+    },
+    {
+      "id": "trip-synthetic-000013",
+      "date": "Oct 21, 2026",
+      "time": "13:13",
+      "destination": "Fictional District 14",
+      "pickup": "Fictional Stop 4753",
+      "vehicle": "Comfort",
+      "status": "Canceled",
+      "total": 747,
+      "estimated": 0,
+      "duration": "26 min",
+      "distance": "35 mi",
+      "issue": "cancellation",
+      "arrival_disputed": true,
+      "caption": "Synthetic ride-support event record.",
+      "color": "sand",
+      "policy_scope": "cancellation-r2",
+      "payments": [
+        {
+          "id": "world-000013-payment-1",
+          "status": "settled",
+          "amount": 747
+        }
+      ]
+    },
+    {
+      "id": "trip-synthetic-000014",
+      "date": "Oct 21, 2026",
+      "time": "14:14",
+      "destination": "Fictional District 15",
+      "pickup": "Fictional Stop 1163",
+      "vehicle": "Standard",
+      "status": "Completed",
+      "total": 3921,
+      "estimated": 3610,
+      "duration": "45 min",
+      "distance": "38 mi",
+      "issue": "fare",
+      "arrival_disputed": false,
+      "caption": "Synthetic ride-support event record.",
+      "color": "sand",
+      "policy_scope": "fare-r2",
+      "payments": [
+        {
+          "id": "world-000014-payment-1",
+          "status": "settled",
+          "amount": 3921
+        }
+      ]
+    },
+    {
+      "id": "trip-synthetic-000015",
+      "date": "Oct 21, 2026",
+      "time": "15:15",
+      "destination": "Fictional District 16",
+      "pickup": "Fictional Stop 3016",
+      "vehicle": "Comfort",
+      "status": "Completed",
+      "total": 1890,
+      "estimated": 2008,
+      "duration": "33 min",
+      "distance": "23 mi",
+      "issue": "fare",
+      "arrival_disputed": false,
+      "caption": "Synthetic ride-support event record.",
+      "color": "sand",
+      "policy_scope": "fare-r2",
+      "payments": [
+        {
+          "id": "world-000015-payment-1",
+          "status": "settled",
+          "amount": 1890
+        }
+      ]
+    }
+  ],
+  "policies": {
+    "cancellation": {
+      "id": "demo-cancellation-v1",
+      "title": "Cancellation fee review",
+      "version": "Demo policy \u00b7 v1",
+      "region": "Chicago",
+      "text": "Conflicting pickup accounts require human review. A GPS arrival event alone does not establish that the rider could find the vehicle. No automatic adjustment is permitted while this conflict is unresolved."
+    },
+    "fare": {
+      "id": "demo-fare-v1",
+      "title": "Fare difference review",
+      "version": "Demo policy \u00b7 v1",
+      "region": "Chicago",
+      "text": "In this fictional scenario, an unsupported fare difference is eligible for an adjustment equal to the recorded excess. The rider must confirm before the simulated adjustment is recorded."
+    },
+    "payment": {
+      "id": "demo-payment-v1",
+      "title": "Payment authorization",
+      "version": "Demo policy \u00b7 v1",
+      "region": "Chicago",
+      "text": "A pending authorization and a settled charge are separate records. A matching pending authorization is not evidence of a second settled payment. A rider can request human review if their bank statement differs."
+    },
+    "cancellation-r1": {
+      "id": "synthetic-cancellation-r1",
+      "title": "Cancellation fee review",
+      "version": "Fictional policy release R1",
+      "region": "Chicago",
+      "text": "Conflicting pickup accounts require human review. A GPS arrival event alone does not establish that the rider could find the vehicle. No automatic adjustment is permitted while this conflict is unresolved. Policy release R1 applies to this catalog scope.",
+      "rules": {
+        "max_auto_adjustment_cents": 1500
+      }
+    },
+    "cancellation-r2": {
+      "id": "synthetic-cancellation-r2",
+      "title": "Cancellation fee review",
+      "version": "Fictional policy release R2",
+      "region": "Chicago",
+      "text": "Conflicting pickup accounts require human review. A GPS arrival event alone does not establish that the rider could find the vehicle. No automatic adjustment is permitted while this conflict is unresolved. Policy release R2 applies to this catalog scope.",
+      "rules": {
+        "max_auto_adjustment_cents": 500
+      }
+    },
+    "fare-r1": {
+      "id": "synthetic-fare-r1",
+      "title": "Fare difference review",
+      "version": "Fictional policy release R1",
+      "region": "Chicago",
+      "text": "In this fictional scenario, an unsupported fare difference is eligible for an adjustment equal to the recorded excess. The rider must confirm before the simulated adjustment is recorded. Policy release R1 applies to this catalog scope. Automatic simulated adjustments require a positive excess of at most 1500 cents; larger differences require specialist review.",
+      "rules": {
+        "max_auto_adjustment_cents": 1500
+      }
+    },
+    "fare-r2": {
+      "id": "synthetic-fare-r2",
+      "title": "Fare difference review",
+      "version": "Fictional policy release R2",
+      "region": "Chicago",
+      "text": "In this fictional scenario, an unsupported fare difference is eligible for an adjustment equal to the recorded excess. The rider must confirm before the simulated adjustment is recorded. Policy release R2 applies to this catalog scope. Automatic simulated adjustments require a positive excess of at most 500 cents; larger differences require specialist review.",
+      "rules": {
+        "max_auto_adjustment_cents": 500
+      }
+    },
+    "payment-r1": {
+      "id": "synthetic-payment-r1",
+      "title": "Payment authorization",
+      "version": "Fictional policy release R1",
+      "region": "Chicago",
+      "text": "A pending authorization and a settled charge are separate records. A matching pending authorization is not evidence of a second settled payment. A rider can request human review if their bank statement differs. Policy release R1 applies to this catalog scope.",
+      "rules": {
+        "max_auto_adjustment_cents": 1500
+      }
+    },
+    "payment-r2": {
+      "id": "synthetic-payment-r2",
+      "title": "Payment authorization",
+      "version": "Fictional policy release R2",
+      "region": "Chicago",
+      "text": "A pending authorization and a settled charge are separate records. A matching pending authorization is not evidence of a second settled payment. A rider can request human review if their bank statement differs. Policy release R2 applies to this catalog scope.",
+      "rules": {
+        "max_auto_adjustment_cents": 500
+      }
+    }
+  }
+}

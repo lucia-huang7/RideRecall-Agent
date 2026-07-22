@@ -1,0 +1,251 @@
+{
+  "$defs": {
+    "PaymentRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "settled",
+            "pending",
+            "released"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "amount": {
+          "maximum": 10000000,
+          "minimum": 0,
+          "title": "Amount",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "status",
+        "amount"
+      ],
+      "title": "PaymentRecord",
+      "type": "object"
+    },
+    "Policy": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        },
+        "region": {
+          "title": "Region",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "rules": {
+          "$ref": "#/$defs/PolicyRules"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "version",
+        "region",
+        "text"
+      ],
+      "title": "Policy",
+      "type": "object"
+    },
+    "PolicyRules": {
+      "additionalProperties": false,
+      "properties": {
+        "max_auto_adjustment_cents": {
+          "default": 10000,
+          "maximum": 10000000,
+          "minimum": 0,
+          "title": "Max Auto Adjustment Cents",
+          "type": "integer"
+        }
+      },
+      "title": "PolicyRules",
+      "type": "object"
+    },
+    "Trip": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 100,
+          "pattern": "^trip-[a-z0-9-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "date": {
+          "title": "Date",
+          "type": "string"
+        },
+        "time": {
+          "title": "Time",
+          "type": "string"
+        },
+        "destination": {
+          "title": "Destination",
+          "type": "string"
+        },
+        "pickup": {
+          "title": "Pickup",
+          "type": "string"
+        },
+        "vehicle": {
+          "title": "Vehicle",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "Canceled",
+            "Completed"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "total": {
+          "maximum": 10000000,
+          "minimum": 0,
+          "title": "Total",
+          "type": "integer"
+        },
+        "estimated": {
+          "maximum": 10000000,
+          "minimum": 0,
+          "title": "Estimated",
+          "type": "integer"
+        },
+        "duration": {
+          "title": "Duration",
+          "type": "string"
+        },
+        "distance": {
+          "title": "Distance",
+          "type": "string"
+        },
+        "issue": {
+          "enum": [
+            "cancellation",
+            "fare",
+            "payment"
+          ],
+          "title": "Issue",
+          "type": "string"
+        },
+        "arrival_disputed": {
+          "title": "Arrival Disputed",
+          "type": "boolean"
+        },
+        "eligibility": {
+          "default": "review",
+          "enum": [
+            "review",
+            "adjust",
+            "explain"
+          ],
+          "title": "Eligibility",
+          "type": "string"
+        },
+        "caption": {
+          "title": "Caption",
+          "type": "string"
+        },
+        "color": {
+          "title": "Color",
+          "type": "string"
+        },
+        "policy_scope": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Policy Scope"
+        },
+        "payments": {
+          "items": {
+            "$ref": "#/$defs/PaymentRecord"
+          },
+          "title": "Payments",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "date",
+        "time",
+        "destination",
+        "pickup",
+        "vehicle",
+        "status",
+        "total",
+        "estimated",
+        "duration",
+        "distance",
+        "issue",
+        "arrival_disputed",
+        "caption",
+        "color"
+      ],
+      "title": "Trip",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "dataset_id": {
+      "title": "Dataset Id",
+      "type": "string"
+    },
+    "trips": {
+      "items": {
+        "$ref": "#/$defs/Trip"
+      },
+      "minItems": 1,
+      "title": "Trips",
+      "type": "array"
+    },
+    "policies": {
+      "additionalProperties": {
+        "$ref": "#/$defs/Policy"
+      },
+      "title": "Policies",
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "dataset_id",
+    "trips",
+    "policies"
+  ],
+  "title": "CatalogDocument",
+  "type": "object"
+}

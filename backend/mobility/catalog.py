@@ -53,6 +53,7 @@ class Trip(BaseModel):
     eligibility: Literal['review','adjust','explain'] = 'review'
     caption: str
     color: str
+    rider_id: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_-]{1,80}$")
     policy_scope: str | None = None
     payments: list[PaymentRecord] = Field(default_factory=list)
 

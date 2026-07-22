@@ -1,0 +1,19 @@
+// Access credentials live only in this page's memory, never browser storage.
+let credential = ''
+export function setCredential(value) { credential = value.trim() }
+export function clearCredential() { credential = '' }
+export function credentialHeaders() { return credential ? { Authorization: `Bearer ${credential}` } : null }
+export async function runtimeConfig() {
+  const root = import.meta.env?.VITE_RIDE_API_URL || '/ride-api'
+  const response = await fetch(root + '/runtime-config', { signal: AbortSignal.timeout(10000), cache: 'no-store' })
+  if (!response.ok) throw new Error('The workspace configuration could not be loaded.')
+  return response.json()
+}
+
+export function roleHome(roles) { return roles.includes('rider') ? '#/trips' : roles.includes('specialist') ? '#/agent' : '#/manage' }
+export function allowsRoute(roles, page) {
+  if (page === 'account') return true
+  if (page === 'agent') return roles.includes('specialist')
+  if (page === 'manage') return roles.includes('operator')
+  return roles.includes('rider')
+}

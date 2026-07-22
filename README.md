@@ -46,6 +46,9 @@ backend/
     service.py          Case workflow and guarded financial proposals
     engine.py           Intent, roles, retrieval, context and tool execution
     catalog.py          Shared typed trip/payment/policy contract
+    security.py         Scoped identities, ownership and demo isolation
+    readiness.py        Dependency-aware readiness
+    http_limits.py      Body size/timeout limits before deserialization
     memory.py           Durable context adapter
     claims.py           Source-backed claim handling
     corrections.py      Correction resolution and ambiguity handling
@@ -61,6 +64,7 @@ backend/
   skills/               Task instructions used by the execution engine
   tests/                Unit, regression and integration checks
 frontend/
+  src/App.vue           Profile bootstrap and memory-only credential sign-in
   src/RideSupport.vue   Mobile rider and specialist experience
   src/OperationsPanel.vue
   src/lib/rideApi.js    HTTP client and retry identifiers
@@ -118,6 +122,6 @@ cd legacy-java
 
 ## Deployment boundaries
 
-The current default is a **single-node local demonstration**: SQLite, embedded retrieval and simulated payment actions. Demo session headers and the public specialist credential are not production authentication. Keep demo mode on loopback.
+The current default is a **single-node local demonstration**: SQLite, embedded retrieval and simulated payment actions. Demo session headers and the public specialist credential are not production authentication. Keep demo mode on loopback. An optional authenticated profile enforces rider ownership and distinct specialist/operator roles.
 
 Local runtime data is under `.runtime/`. The macOS background installation uses `~/Library/Application Support/kinder-uber/<instance>/` for its copied application, database, logs and environment. Run Start again after source updates. Do not commit credentials, local databases, dependency caches or generated build output.

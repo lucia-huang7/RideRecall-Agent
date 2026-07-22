@@ -80,7 +80,7 @@ def main():
         if file.exists() and file.stat().st_size>10*1024*1024:
             file.replace(file.with_suffix('.previous.log'))
     env=os.environ.copy()
-    env.update(KINDER_UBER_RIDE_MODEL_MODE='demo',KINDER_UBER_RIDE_DB=str(HOME/'data'/'rides.sqlite3'),KINDER_UBER_INSTANCE_ID=config['instance'],PYTHONUNBUFFERED='1')
+    env.update(KINDER_UBER_ENV='development',KINDER_UBER_RIDE_MODEL_MODE='demo',KINDER_UBER_RIDE_DB=str(HOME/'data'/'rides.sqlite3'),KINDER_UBER_INSTANCE_ID=config['instance'],PYTHONUNBUFFERED='1')
     commands={
         'backend':[sys.executable,'-m','uvicorn','mobility.app:app','--host','127.0.0.1','--port','8010'],
         'frontend':[sys.executable,str(HOME/'runtime'/'frontend.py')],

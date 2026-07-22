@@ -25,7 +25,7 @@ flowchart TD
 ## Ownership
 
 - The catalog owns fictional recorded trips, settled/pending payment records and policy scopes. Payment amounts use integer cents. Startup validation rejects inconsistent settled totals, missing policy references and extra label fields.
-- The case store owns rider identity, conversation, evidence, history, handoff and simulated adjustments. Case transitions and idempotency receipts are committed transactionally.
+- The case store owns the authenticated rider subject, conversation, evidence, history, handoff and simulated adjustments. Case transitions and idempotency receipts are committed transactionally.
 - Memory distinguishes rider assertions, withdrawn claims and recorded tool facts. Evidence attachments remain unverified; upload does not establish truth.
 - The engine requests information through read-only tools. Agent text does not itself execute a financial action. Explicit rider confirmation and server-side state validation guard simulated adjustments.
 - The independent MCP process loads the same catalog as the API and exposes recorded trip information. Transport failures remain observable and can yield partial runs.
@@ -40,4 +40,4 @@ The macOS supervisor restarts failed local services and probes MCP separately. A
 
 ## Current limits
 
-Single-node SQLite and in-process coordination do not provide distributed locking or multi-region availability. Demo identity headers and a public specialist credential are role-play controls. Correction parsing has finite English grammar; deterministic output cannot establish general reasoning quality. Evidence validation does not include receipt OCR or fraud detection. External payments and real ride-provider accounts are not connected.
+Single-node SQLite and in-process coordination do not provide distributed locking or multi-region availability. Default demo identity headers and a public specialist credential are role-play controls. The optional authenticated profile uses expiring opaque credentials and scoped roles; [security details](SECURITY.md) document its controls and limits. Correction parsing has finite English grammar; deterministic output cannot establish general reasoning quality. Evidence validation does not include receipt OCR or fraud detection. External payments and real ride-provider accounts are not connected.

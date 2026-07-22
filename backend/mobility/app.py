@@ -8,8 +8,10 @@ from pathlib import Path
 from typing import Literal
 
 from fastapi import FastAPI, File, Header, HTTPException, UploadFile
+from fastapi.responses import JSONResponse
+from mobility.security import Security, principal_context, staff_receipt_owner
 from fastapi.responses import Response
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from mobility.catalog import RideCatalog
 from mobility.service import RideSupport
@@ -17,17 +19,20 @@ from mobility.store import Store
 
 
 class NewCase(BaseModel):
-    trip_id: str
+    model_config = ConfigDict(extra="forbid")
+    trip_id: str = Field(pattern=r"^trip-[a-z0-9-]+$",max_length=100)
     description: str = Field(min_length=5, max_length=4000)
     topic: Literal["cancellation", "fare", "payment", "other"] = "other"
 
 
 class Action(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     action: Literal["message", "handoff", "confirm", "close", "evidence"]
     text: str = Field(default="", max_length=4000)
 
 
 class PolicyDocument(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     topic: str = Field(min_length=1,max_length=100)
     document_id: str = Field(min_length=1, max_length=100)
     title: str = Field(min_length=1, max_length=200)
@@ -35,48 +40,101 @@ class PolicyDocument(BaseModel):
 
 
 class MCPProbe(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     trip_id: str = Field(pattern=r"^trip-[a-z0-9-]+$",max_length=100)
 
 
 class SkillDocument(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     content: str = Field(min_length=20, max_length=12000)
 
 
 class StaffAction(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     action: Literal["accept", "reply", "resolve", "propose_adjustment"]
     text: str = Field(default="", max_length=4000)
 
 
-def create_app(db_path=None, catalog_path=None):
+def create_app(db_path=None, catalog_path=None, *, security=None):
+    security = security or Security()
+    catalog = RideCatalog(catalog_path or os.getenv("KINDER_UBER_RIDE_CATALOG_PATH"))
+    security.validate_catalog(catalog)
     store = Store(db_path or os.getenv("KINDER_UBER_RIDE_DB", str(Path(__file__).resolve().parents[2] / ".runtime/rides.sqlite3")))
-    service = RideSupport(store, RideCatalog(catalog_path or os.getenv("KINDER_UBER_RIDE_CATALOG_PATH")))
+    service = RideSupport(store, catalog)
 
     @asynccontextmanager
     async def lifespan(app):
         try:
             await service.engine.operations.start()
+            app.state.started = True
             yield
         finally:
+            app.state.started = False
             await service.tools._client.close()
             await service.engine.close()
 
-    app = FastAPI(title="KinderUber Ride Support", version="0.1.0", lifespan=lifespan)
+    app = FastAPI(title="kinder-uber Ride Support", version="0.2.0", lifespan=lifespan,
+        docs_url=None if security.production else "/docs",
+        redoc_url=None if security.production else "/redoc",
+        openapi_url=None if security.production else "/openapi.json")
+    from mobility.http_limits import RequestBodyLimit
+    app.add_middleware(RequestBodyLimit)
+    app.state.security = security
+    app.state.started = False
     app.state.store = store
     app.state.service = service
+
+    from fastapi.exceptions import RequestValidationError
+    @app.exception_handler(RequestValidationError)
+    async def invalid_request(request, error):
+        issues=[dict(location=list(item['loc']), message=item['msg'], type=item['type']) for item in error.errors()[:20]]
+        return JSONResponse({'detail':'Please check the request fields.', 'errors':issues}, status_code=422)
 
     @app.middleware("http")
     async def local_api_prefix(request, call_next):
         if request.scope["path"].startswith("/ride-api/"):
             request.scope["path"] = request.scope["path"][len("/ride-api"):]
             request.scope["raw_path"] = request.scope["path"].encode()
-        return await call_next(request)
+        context_token = None
+        try:
+            if security.production and request.scope['path'].startswith('/api/'):
+                principal = security.authenticate(request.headers.get('authorization', ''))
+                security.authorize(request.scope['path'], request.method, principal)
+                context_token = principal_context.set(principal)
+            elif not security.production:
+                security.check_demo_peer(request.client.host if request.client else '')
+            response = await call_next(request)
+        except HTTPException as error:
+            response = JSONResponse({'detail': error.detail}, status_code=error.status_code, headers=error.headers)
+        finally:
+            if context_token is not None:
+                principal_context.reset(context_token)
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['Referrer-Policy'] = 'no-referrer'
+        response.headers['X-Frame-Options'] = 'DENY'
+        response.headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=()'
+        if security.production:
+            response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+        if request.scope['path'].startswith('/api/'):
+            response.headers['Cache-Control'] = 'no-store'
+        return response
 
     def owner(value):
+        if security.production:
+            principal = principal_context.get()
+            if principal is None:
+                raise HTTPException(401, 'A valid access token is required.')
+            return principal.subject
         if not value or len(value) > 100 or not all(c.isalnum() or c in "-_" for c in value):
             raise HTTPException(401, "A local demo session is required.")
         return value
 
     def staff(token):
+        if security.production:
+            principal = principal_context.get()
+            if principal is None or not principal.roles.intersection({"specialist", "operator"}):
+                raise HTTPException(403, "Staff access is required.")
+            return
         # Deliberately public demo credentials, not production authentication.
         if token != "local-demo-agent":
             raise HTTPException(403, "Open the local Agent desk to use this demo-only endpoint.")
@@ -87,8 +145,31 @@ def create_app(db_path=None, catalog_path=None):
         fingerprint = hashlib.sha256(json.dumps(data, sort_keys=True).encode()).hexdigest()
         return store.write(actor, request_id, fingerprint, fn)
 
+    @app.get('/runtime-config')
+    def runtime_config():
+        return dict(auth_mode='production' if security.production else 'demo', product='kinder-uber')
+
+    @app.get('/api/session')
+    def session():
+        principal = principal_context.get()
+        return dict(subject=principal.subject if principal else None,
+                    roles=sorted(principal.roles) if principal else ['rider','specialist','operator'],
+                    auth_mode='production' if security.production else 'demo')
+
+    @app.get('/livez')
+    def liveness():
+        return dict(status='ok')
+
+    @app.get('/readyz')
+    async def ready():
+        from mobility.readiness import readiness
+        data, status = await readiness(app)
+        return JSONResponse(data, status_code=status, headers={'Cache-Control':'no-store'})
+
     @app.get("/health")
     def health():
+        if security.production:
+            return dict(status='ok', auth_mode='production')
         return dict(status="ok", dataset_id=service.catalog.dataset_id, catalog_trips=len(service.catalog.trips), mode=service.engine.mode, model=service.engine.model, api_key_required=service.engine.mode == "live", pipeline="original-intent-orchestrator-rag", retrieval="embedded-chroma-local-hash")
 
     @app.get("/api/agent/operations")
@@ -172,14 +253,14 @@ def create_app(db_path=None, catalog_path=None):
                 raise HTTPException(422, "Provide a valid Skill document with a heading and content.")
         payload = ["skill", body.content]
         fingerprint = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
-        cached = store.replay("agent", x_request_id, fingerprint)
+        cached = store.replay(staff_receipt_owner(), x_request_id, fingerprint)
         if cached is not None:
             return cached
         temporary = service.skill_file.with_suffix(".pending")
         temporary.write_text(body.content)
         temporary.replace(service.skill_file)
         service.skills.reload()
-        return write("agent", x_request_id, payload, lambda db: skills(x_demo_agent))
+        return write(staff_receipt_owner(), x_request_id, payload, lambda db: skills(x_demo_agent))
 
     @app.get("/api/agent/knowledge/{topic}")
     def knowledge(topic: str, x_demo_agent: str = Header(default="")):
@@ -201,7 +282,7 @@ def create_app(db_path=None, catalog_path=None):
             raise HTTPException(404,"Policy scope not found.")
         payload = ["knowledge", body.model_dump()]
         fingerprint = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
-        cached = store.replay("agent", x_request_id, fingerprint)
+        cached = store.replay(staff_receipt_owner(), x_request_id, fingerprint)
         if cached is not None:
             return cached
         import re
@@ -210,7 +291,7 @@ def create_app(db_path=None, catalog_path=None):
         chunks = await service.engine.knowledge[body.topic].add_documents_async([dict(document_id=body.document_id, title=body.title, content=body.content)])
         service.engine.save_policy_source(body.topic, body.model_dump())
         service.engine.rag_tools.invalidate_cache("ride_policy_search")
-        return write("agent", x_request_id, payload, lambda db: dict(scope=body.topic, added_chunks=chunks, document_id=body.document_id))
+        return write(staff_receipt_owner(), x_request_id, payload, lambda db: dict(scope=body.topic, added_chunks=chunks, document_id=body.document_id))
 
     @app.post("/api/agent/evaluations")
     async def evaluate(x_demo_agent: str = Header(default="")):
@@ -220,10 +301,15 @@ def create_app(db_path=None, catalog_path=None):
 
     @app.get("/api/trips")
     def trips():
-        return service.catalog.list()
+        records = service.catalog.list()
+        if security.production:
+            subject = principal_context.get().subject
+            records = [t for t in records if t.get('rider_id') == subject]
+        return records
 
     @app.get("/api/trips/{trip_id}")
     def trip(trip_id: str):
+        security.require_trip(catalog, trip_id)
         return service.trip(trip_id)
 
     @app.get("/api/cases")
@@ -237,6 +323,7 @@ def create_app(db_path=None, catalog_path=None):
     @app.post("/api/cases")
     async def create(body: NewCase, x_demo_session: str = Header(default=""), x_request_id: str = Header(default="")):
         actor = owner(x_demo_session)
+        security.require_trip(catalog, body.trip_id)
         if not x_request_id or len(x_request_id) > 100:
             raise HTTPException(400, "A request ID is required for every change.")
         if not body.description.strip() or len(body.description.strip()) < 5:
@@ -306,9 +393,13 @@ def create_app(db_path=None, catalog_path=None):
 
     @app.get("/api/cases/{case_id}/attachments/{evidence_id}")
     def download(case_id: str, evidence_id: str, x_demo_session: str = Header(default=""), x_demo_agent: str = Header(default="")):
-        if x_demo_agent:
+        principal = principal_context.get()
+        specialist = security.production and principal and 'specialist' in principal.roles
+        if specialist or (not security.production and x_demo_agent):
             staff(x_demo_agent)
             record = store.get(case_id)
+            if security.production and not record['handoff']:
+                raise HTTPException(404, 'Attachment not found.')
         else:
             record = store.get(case_id, owner(x_demo_session))
         item = next((e for e in record["evidence"] if e["id"] == evidence_id and e.get("content")), None)
@@ -326,10 +417,14 @@ def create_app(db_path=None, catalog_path=None):
         staff(x_demo_agent)
         def apply(db):
             record = store.load(db, case_id)
-            service.staff(record, body.action, body.text.strip())
+            if security.production and not record['handoff']:
+                raise HTTPException(404, 'Case not found.')
+            service.staff(record, body.action, body.text.strip(), staff_id=principal_context.get().subject if security.production else None)
+            if security.production and record['messages'] and record['messages'][-1]['role']=='agent':
+                record['messages'][-1]['staff_subject']=principal_context.get().subject
             store.save(db, record)
             return public(record)
-        return write("agent", x_request_id, [case_id, body.model_dump()], apply)
+        return write(staff_receipt_owner(), x_request_id, [case_id, body.model_dump()], apply)
 
     # The original FastAPI application remains available as api.main:app.
     # This entry point never reads .env; live provider access is explicitly opt-in.

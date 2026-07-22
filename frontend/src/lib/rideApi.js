@@ -1,15 +1,16 @@
+import { credentialHeaders } from './auth.js'
 const root = import.meta.env?.VITE_RIDE_API_URL || '/ride-api'
 const sessionKey = 'kinderuber.rides.session'
-let session = localStorage.getItem(sessionKey)
-if (!session) {
-  session = crypto.randomUUID()
+let session = crypto.randomUUID()
+try {
+  session = localStorage.getItem(sessionKey) || session
   localStorage.setItem(sessionKey, session)
-}
+} catch { /* A blocked browser store falls back to this page's demo session. */ }
 const attempts = new Map()
+export function resetRequests() { attempts.clear() }
 
 export async function request(path, { body, agent = false, file } = {}) {
-  const headers = { 'X-Demo-Session': session }
-  if (agent) headers['X-Demo-Agent'] = 'local-demo-agent'
+  const headers = credentialHeaders() || { 'X-Demo-Session': session, ...(agent ? { 'X-Demo-Agent': 'local-demo-agent' } : {}) }
   const key = JSON.stringify([path, body, file?.name, file?.size, file?.lastModified])
   if (body || file) {
     if (!attempts.has(key)) attempts.set(key, crypto.randomUUID())
@@ -30,7 +31,7 @@ export async function request(path, { body, agent = false, file } = {}) {
 }
 
 export async function downloadEvidence(caseId, evidence, agent = false) {
-  const response = await fetch(`${root}/api/cases/${caseId}/attachments/${evidence.id}`, { headers: { 'X-Demo-Session': session, ...(agent ? { 'X-Demo-Agent': 'local-demo-agent' } : {}) } })
+  const response = await fetch(`${root}/api/cases/${caseId}/attachments/${evidence.id}`, { headers: credentialHeaders() || { 'X-Demo-Session': session, ...(agent ? { 'X-Demo-Agent': 'local-demo-agent' } : {}) } })
   if (!response.ok) throw new Error('The attachment could not be downloaded.')
   const url = URL.createObjectURL(await response.blob())
   const link = document.createElement('a'); link.href = url; link.download = evidence.filename; link.click()

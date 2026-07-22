@@ -48,3 +48,51 @@ test('only specialist calls carry public local-demo role credentials', async () 
   assert.equal(seen[0]['X-Demo-Agent'], undefined)
   assert.equal(seen[1]['X-Demo-Agent'], 'local-demo-agent')
 })
+
+test('authenticated requests omit demo identity headers and never persist credentials', async () => {
+  const { setCredential, clearCredential } = await import('../src/lib/auth.js')
+  const { resetRequests } = await import('../src/lib/rideApi.js')
+  const token = 'ephemeral-test-credential-' + 'z'.repeat(32)
+  const seen = []
+  globalThis.fetch = async (url, options) => {
+    seen.push(options.headers)
+    return { ok: true, json: async () => [] }
+  }
+  try {
+    setCredential(token);resetRequests()
+    await request('/api/cases')
+    await request('/api/agent/cases', { agent: true })
+    assert.equal(seen[0].Authorization, `Bearer ${token}`)
+    assert.equal(seen[1].Authorization, `Bearer ${token}`)
+    assert.equal(seen[0]['X-Demo-Session'], undefined)
+    assert.equal(seen[1]['X-Demo-Agent'], undefined)
+    assert.ok(![...storage.values()].includes(token))
+  } finally { clearCredential();resetRequests() }
+  await request('/api/cases')
+  assert.equal(seen[2].Authorization, undefined)
+})
+
+test('navigation follows explicit roles and preserves permitted deep links', async () => {
+  const { roleHome, allowsRoute } = await import('../src/lib/auth.js')
+  assert.equal(roleHome(['rider']), '#/trips')
+  assert.equal(roleHome(['specialist']), '#/agent')
+  assert.equal(roleHome(['operator']), '#/manage')
+  assert.equal(allowsRoute(['rider'], 'case'), true)
+  assert.equal(allowsRoute(['rider'], 'agent'), false)
+  assert.equal(allowsRoute(['specialist'], 'manage'), false)
+  assert.equal(allowsRoute(['operator'], 'agent'), false)
+  assert.equal(allowsRoute(['specialist', 'operator'], 'manage'), true)
+  assert.equal(allowsRoute(['operator'], 'account'), true)
+})
+
+test('blocked browser storage does not prevent requests or credential sign-in', async () => {
+  const original = globalThis.localStorage
+  let sent
+  try {
+    globalThis.localStorage = { getItem() { throw new Error('Storage blocked') }, setItem() { throw new Error('Storage blocked') } }
+    const isolated = await import('../src/lib/rideApi.js?storage-denied')
+    globalThis.fetch = async (url, options) => { sent = options.headers; return { ok: true, json: async () => [] } }
+    await isolated.request('/api/cases')
+    assert.ok(sent['X-Demo-Session'])
+  } finally { globalThis.localStorage = original }
+})

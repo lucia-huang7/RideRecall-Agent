@@ -46,6 +46,13 @@ class Store:
         finally:
             db.close()
 
+    def ping(self):
+        # URI mode=rw prevents a health check from creating a missing database.
+        uri = Path(self.path).resolve().as_uri() + '?mode=rw'
+        with sqlite3.connect(uri, uri=True, timeout=0.25) as db:
+            db.execute('SELECT 1 FROM cases LIMIT 1').fetchone()
+        return True
+
     def list(self, owner=None):
         with self.connect() as db:
             rows = db.execute("SELECT data FROM cases" if owner is None else "SELECT data FROM cases WHERE owner=?", () if owner is None else (owner,)).fetchall()

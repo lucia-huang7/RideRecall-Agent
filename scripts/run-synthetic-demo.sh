@@ -26,7 +26,7 @@ export KINDER_UBER_RIDE_CATALOG_PATH="$CATALOG"
 CATALOG_KEY="$("$RIDE_PYTHON" -c 'import hashlib,sys; print(hashlib.sha256(open(sys.argv[1],"rb").read()).hexdigest()[:12])' "$CATALOG")"
 export KINDER_UBER_RIDE_DB="$ROOT/.runtime/synthetic-preview/$CATALOG_KEY/rides.sqlite3"
 mkdir -p "$(dirname "$KINDER_UBER_RIDE_DB")"
-echo "Synthetic mobile preview: http://127.0.0.1:$PORT/#/trips"
+echo "Mobile preview: http://127.0.0.1:$PORT/#/trips"
 echo "Catalog: $CATALOG"
 echo 'Keep this terminal open; press Ctrl+C to stop. Default demo data is separate.'
 cd "$ROOT/backend"

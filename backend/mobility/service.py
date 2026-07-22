@@ -89,7 +89,7 @@ class RideSupport:
                     if existing["status"] == "resolved":
                         self.handoff(existing)
                 return existing
-        case = dict(id="EM-" + uuid4().hex[:8].upper(), owner=owner, trip_id=trip["id"], topic=topic,
+        case = dict(id="KU-" + uuid4().hex[:8].upper(), owner=owner, trip_id=trip["id"], trip_issue=trip["issue"], topic=topic,
                     title={"cancellation": "Cancellation fee review", "fare": "Unexpected fare", "payment": "Payment clarification"}[trip["issue"]],
                     description=description, status="reviewing", created_at=now(), updated_at=now(),
                     messages=[], events=[], evidence=[], trace=trace, adjustment=None, assigned_to=None,
@@ -185,14 +185,17 @@ class RideSupport:
         else:
             raise HTTPException(400, "Unknown action.")
 
-    def staff(self, case, action, text):
+    def staff(self, case, action, text, staff_id=None):
+        actor = staff_id or 'agent'
+        if staff_id and action != 'accept' and case.get('assigned_to') != staff_id:
+            raise HTTPException(403, 'Only the assigned specialist can update this case.')
         if action == "accept":
             if case["status"] != "waiting_for_agent":
                 raise HTTPException(409, "This case is not waiting for an agent.")
-            case["assigned_to"] = "Alex · Demo specialist"
+            case["assigned_to"] = staff_id or "Alex · Demo specialist"
             case["status"] = "in_review"
-            event(case, "assigned", "Alex accepted your case", "The specialist has the full case history.", "agent")
-            message(case, "agent", "Hi, I'm Alex, your simulated support specialist. I have your trip, explanation, and evidence in front of me. You do not need to repeat them.")
+            event(case, "assigned", f"{staff_id or 'Alex'} accepted your case", "The specialist has the full case history.", actor)
+            message(case, "agent", f"Hi, I'm {staff_id}, your support specialist. I have your trip, explanation, and evidence in front of me. You do not need to repeat them." if staff_id else "Hi, I'm Alex, your simulated support specialist. I have your trip, explanation, and evidence in front of me. You do not need to repeat them.")
         elif action == "propose_adjustment":
             if case["status"] != "in_review" or case["adjustment"] or self.trip(case["trip_id"])["issue"] != "cancellation":
                 raise HTTPException(409, "This case is not eligible for a new specialist adjustment proposal.")
@@ -201,7 +204,7 @@ class RideSupport:
             amount = self.trip(case["trip_id"])["total"]
             case["proposal"] = dict(amount=amount, reason=text.strip(), policy_id=case["policy"]["id"])
             case["status"] = "awaiting_confirmation"
-            event(case, "proposal", "Specialist offered a fee adjustment", text.strip(), "agent")
+            event(case, "proposal", "Specialist offered a fee adjustment", text.strip(), actor)
             message(case, "agent", f"After reviewing the evidence, I am proposing a {money(amount)} demo fee adjustment. Reason: {text.strip()} Please review and confirm the proposal. No payment action has been taken.")
         elif action in ("reply", "resolve"):
             if case["status"] != "in_review":
@@ -209,7 +212,7 @@ class RideSupport:
             if not text.strip():
                 raise HTTPException(422, "A written explanation is required.")
             message(case, "agent", text)
-            event(case, "decision" if action == "resolve" else "reply", "Specialist decision" if action == "resolve" else "Specialist replied", text, "agent")
+            event(case, "decision" if action == "resolve" else "reply", "Specialist decision" if action == "resolve" else "Specialist replied", text, actor)
             if action == "resolve":
                 case["status"] = "resolved"
         else:

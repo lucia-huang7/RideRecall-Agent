@@ -15,3 +15,5 @@
 legacy-java/.mvn/apache-maven-*/
 legacy-java/.mvn/*-bin.zip
 artifacts/
+**/access-credentials.json
+**/identities.json

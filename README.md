@@ -97,6 +97,7 @@ datasets/
 docs/
   ARCHITECTURE.md       Request path, module ownership and boundaries
   DATASETS.md           Dataset contract and reproduction commands
+CHANGELOG.md            Release changes
 ```
 
 ## Data and evaluation

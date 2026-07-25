@@ -118,6 +118,12 @@ class Security:
         if not allowed:
             raise HTTPException(403, 'Demo mode accepts loopback connections only.')
 
+    def check_demo_authority(self, host, origin=None, *, test_client=False):
+        from core.http_boundary import loopback_authority, loopback_origin
+        allowed_host=loopback_authority(host) or (test_client and host=='testserver')
+        if not allowed_host or not loopback_origin(origin):
+            raise HTTPException(403, 'Demo requests require a loopback host and origin.')
+
     def validate_catalog(self, catalog):
         if not self.production:
             return

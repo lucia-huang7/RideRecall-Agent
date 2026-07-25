@@ -145,6 +145,9 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
                     context_token=principal_context.set(principal)
                 elif not security.production:
                     security.check_demo_peer(request.client.host if request.client else '')
+                    if len(request.headers.getlist('host'))!=1 or len(request.headers.getlist('origin'))>1:
+                        raise HTTPException(403, 'Demo requests require a loopback host and origin.')
+                    security.check_demo_authority(request.headers.get('host',''),request.headers.get('origin'),test_client=bool(request.client and request.client.host=='testclient'))
                 response=await call_next(request)
             except HTTPException as error:
                 response=JSONResponse({'detail':error.detail},status_code=error.status_code,headers=error.headers)

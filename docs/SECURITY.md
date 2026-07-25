@@ -2,7 +2,7 @@
 
 ## Two explicit profiles
 
-The default development profile is a loopback-only, no-key demonstration. Its `X-Demo-Session` and public specialist header are role-play controls. A remote network peer is rejected even if it knows those headers. The macOS supervisor explicitly starts this profile on loopback.
+The default development profile is a loopback-only, no-key demonstration. Its `X-Demo-Session` and public specialist header are role-play controls. A remote network peer is rejected even if it knows those headers. The API and local static proxy also require a loopback Host and, when present, a loopback HTTP(S) Origin; foreign hostnames, foreign/null origins and duplicate authority headers are rejected before forwarding or engine execution. This limits browser DNS-rebinding access to the unauthenticated local demo. Local ports may differ because the frontend proxies to a separate backend. CLI requests normally omit Origin. The macOS supervisor explicitly starts this profile on loopback.
 
 `KINDER_UBER_ENV=production` enables the authenticated profile. Startup fails unless an owner-only identity registry and an explicitly owned runtime catalog are valid. Model-provider configuration is separate: this profile can still run the deterministic model without a model API key. Financial actions remain simulations.
 

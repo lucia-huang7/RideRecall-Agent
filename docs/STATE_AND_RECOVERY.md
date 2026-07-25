@@ -33,6 +33,8 @@ Diagnostic memory and quality fixtures also use a temporary canonical case store
 
 `PRAGMA user_version` identifies the schema. Startup migration is transactional and preserves legacy case JSON and receipts; legacy cases begin at revision zero. An application refuses to downgrade a newer database. Normal connections open an existing database in `rw` mode, so polling a missing file cannot silently create an empty replacement. Startup also refuses to initialize a missing primary database when its derived index directory remains. Case databases and embedded index directories are owner-only on POSIX systems.
 
+A catalog release must retain every trip referenced by a stored case. Authenticated deployments also require the recorded case owner to remain the trip's rider. Startup refuses an incompatible release before initializing retrieval or tools; it does not delete, reassign or rewrite cases to make a release fit. Retain historical trip records, restore the matching configuration, or perform an explicitly reviewed migration. A fresh isolated dataset should use a fresh database.
+
 An OS-owned lock is acquired **before** initializing storage or embedded indexes. Only one application process may own a data directory. The OS releases the lock when the process dies. Use one Uvicorn worker with the embedded storage profile. This is an enforced single-node design, not distributed locking or horizontal scalability.
 
 ## Verified failure paths

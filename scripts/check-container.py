@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import socket
 import subprocess
@@ -26,7 +27,7 @@ def main():
     with socket.socket() as listener:listener.bind(('127.0.0.1',0));port=listener.getsockname()[1]
     environment={**os.environ,'KINDER_UBER_HTTP_PORT':str(port)}
     base=['docker','compose','-p',project,'--profile','tools']
-    checks=[]
+    checks=[];correlations=[]
     def compose(*arguments):
         result=subprocess.run([*base,*arguments],cwd=ROOT,env=environment,capture_output=True,text=True,timeout=180)
         if result.returncode:raise RuntimeError('Compose command failed: '+' '.join(arguments[:3])+'\n'+result.stderr[-2000:])
@@ -43,6 +44,7 @@ def main():
         try:response=urllib.request.urlopen(request,timeout=45)
         except urllib.error.HTTPError as error:response=error
         with response:
+            correlations.append(response.headers.get('X-Correlation-ID'))
             payload=response.read()
             return response.status,json.loads(payload) if 'application/json' in response.headers.get('content-type','') else payload
     try:
@@ -103,6 +105,10 @@ def main():
         check(any('CONTAINER-POLICY-RECOVERY' in item['content'] for item in policy_index['documents']),'restart preserves indexed policy release')
         identity=json.loads(compose('exec','-T','app','python','-c',"import os,json; print(json.dumps(dict(uid=os.getuid(),data_mode=oct(os.stat('/data/state.sqlite3').st_mode & 0o777))))"))
         check(identity['uid']==10001 and identity['data_mode']=='0o600','non-root owner-only persistence')
+        status,metrics=call('GET','/api/agent/metrics',role='preview-operator')
+        check(status==200 and b'kinderuber_http_requests_total' in metrics,'HTTP metrics share the protected operator endpoint')
+        check(b'kinderuber_process_resident_memory_bytes' in metrics,'Linux process resource metrics are exported')
+        check(all(isinstance(value,str) and re.fullmatch('[a-f0-9]{32}',value) for value in correlations) and len(correlations)==len(set(correlations)),'application responses have independent server correlation IDs')
         compose('stop','app')
         compose('run','--rm','--no-deps','app','python','-m','mobility.backup','create','/data/state.sqlite3','/data/offline-snapshot')
         compose('run','--rm','--no-deps','app','python','-m','mobility.backup','verify','/data/offline-snapshot')

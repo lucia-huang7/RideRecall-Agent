@@ -1,6 +1,7 @@
 """Original memory algorithms with transactional case snapshots and embedded Redis semantics."""
 import hashlib
 import json
+import re
 
 from fakeredis.aioredis import FakeRedis
 
@@ -81,6 +82,12 @@ class CaseMemory:
         # A message cannot change the linked trip or establish a verified payment amount.
         entities["order_id"] = [self.case.get("trip_id", "") or self.trip_id]
         state = merge_state(self.context.state, entities, intent.intent_group, text, result["id"])
+        # Classification changes cannot erase or resurrect a source-backed claim.
+        # These remain unverified rider amounts, never payment authority.
+        state['entities']['amount'] = list(dict.fromkeys(
+            value for claim in self.context.claims['active_claims']
+            if claim['field'] == 'disputed amount'
+            for value in re.findall(r'\$\d+(?:\.\d{1,2})?', claim['value'])))
         await m.commit_turn(uid, cid, result["id"], text,
             dict(status=result["status"], response=result["response"], request_id=result["id"]), state=state)
         await m.maintain(uid, cid)

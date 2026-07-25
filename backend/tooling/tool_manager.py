@@ -259,7 +259,7 @@ class MCPToolManager:
             tool.stats.failed += 1
             tool.stats.consecutive_fails += 1
             tool.breaker.record_failure(generation)
-            logger.error(f"工具异常: {name} — {ex}")
+            logger.error("Tool %s failed (%s)", name, type(ex).__name__)
             return await self._fallback_result(tool, params, context, str(ex))
 
     async def _fallback_result(
@@ -283,7 +283,7 @@ class MCPToolManager:
                 error=error,
             )
         except Exception as ex:
-            logger.error(f"工具降级失败: {tool.name} — {ex}")
+            logger.error("Tool %s fallback failed (%s)", tool.name, type(ex).__name__)
             return ToolResult(success=False, data=None, tool_name=tool.name, error=f"{error}; fallback失败: {ex}")
 
     async def _run_handler(
@@ -334,7 +334,7 @@ class MCPToolManager:
             # 原始查询也保留，去重
             return list(dict.fromkeys([query] + [q[:2000] for q in queries if isinstance(q, str) and q.strip()][:n]))
         except Exception as ex:
-            logger.warning(f"查询改写失败，使用原始查询: {ex}")
+            logger.warning("Query rewrite failed (%s); retaining the original query", type(ex).__name__)
             return [query]
 
     async def search_with_rewrite(
@@ -355,7 +355,7 @@ class MCPToolManager:
             return ToolResult(False, [], tool_name, error="query 必须是 1–2000 字符的非空文本")
         # 1. 查询改写：生成多角度子查询
         sub_queries = await self.rewrite_query(query, n=3)
-        logger.info(f"查询改写: {query!r} → {sub_queries}")
+        logger.info("Query rewrite produced %s variants", len(sub_queries))
 
         # 2. 并行召回：所有子查询同时检索
         recall_k = max(top_k, 5)

@@ -52,3 +52,12 @@ Keep one worker per database/index namespace. Do not share embedded state betwee
 ## CI
 
 `.github/workflows/verify.yml` is manual (`workflow_dispatch`) to avoid unexpected hosted runs in a private repository. It installs locked runtime dependencies, runs Python/frontend/Java checks, and optionally builds and exercises the container. Actions are pinned by commit SHA and granted read-only repository access. The same commands can be run locally without hosted CI charges. A workflow definition is not evidence that GitHub Actions has run; local execution results are recorded separately.
+
+
+## Local recovery and diagnostics
+
+On a quiescent macOS no-key demo, `python scripts/check-local-recovery.py --output artifacts/local-recovery.json` verifies this repository's installation ownership and demo mode, kills only its owned backend/frontend/MCP one at a time, waits for actual health and compares source case/receipt/evidence/index hashes. Do not run fault injection against a real deployment or while another user is editing the demo. Successful recovery still has a measured outage; it is not zero-downtime availability.
+
+The supervisor uses liveness for process restart decisions and readiness for service availability. A retrying configuration release or database dependency failure does not itself cause a restart storm. Known persistent MCP failure can restart its owner after grace/threshold checks. Backend/frontend output is drained through the supervisor into three bounded files per component (10 MiB each), inside owner-only application/log directories. Container logs use the same 10 MiB/three-file retention budget through the JSON-file driver.
+
+Protected metrics include bounded-label HTTP counts, preparation latency and active requests, with standard Linux process/GC resource metrics where supported. Correlation IDs identify one HTTP attempt; they are not command idempotency keys. They are never metric labels. The deterministic adapter retains only its latest 512 metadata-only call stamps while a separate lifetime attempt count continues to increase. Runtime counters reset on restart; canonical business records and replay receipts persist.

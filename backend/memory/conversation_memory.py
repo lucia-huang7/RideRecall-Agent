@@ -289,7 +289,7 @@ class MemoryManager:
             )
             logger.info(f"用户画像已更新: {user_id}")
         except Exception as ex:
-            logger.warning(f"更新用户画像失败: {ex}")
+            logger.warning("Profile update failed (%s)", type(ex).__name__)
 
     # ── 读取 ──────────────────────────────────────────────────────────────────
 
@@ -428,7 +428,7 @@ class MemoryManager:
                 docs.extend(self._extract_docs(fallback))
             return self._dedupe_texts(docs)[: self.HISTORY_TOP_K]
         except Exception as ex:
-            logger.warning(f"情景记忆检索失败: {ex}")
+            logger.warning("Episodic retrieval failed (%s)", type(ex).__name__)
             return []
 
     async def _store_episodic(self, user_id: str, conv_id: str, text: str, summary: str) -> None:
@@ -448,7 +448,7 @@ class MemoryManager:
                             "ts": datetime.now().isoformat(), "full_text": self._safe_text(text[:500])}],
             )
         except Exception as ex:
-            logger.warning(f"存储情景记忆失败: {ex}")
+            logger.warning("Episodic persistence failed (%s)", type(ex).__name__)
 
     async def _get_profile(self, user_id: str) -> Dict[str, Any]:
         """获取用户画像（取最新一条）。"""
@@ -591,7 +591,7 @@ class MemoryManager:
             if merged:
                 return merged[: self.SUMMARY_MAX_CHARS]
         except Exception as ex:
-            logger.warning(f"合并摘要失败，回退为截断拼接: {ex}")
+            logger.warning("Summary merge failed (%s); retaining bounded source context", type(ex).__name__)
 
         merged = self._safe_text(f"{old_summary}\n{new_summary}").strip()
         return merged[-self.SUMMARY_MAX_CHARS :]

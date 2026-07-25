@@ -79,8 +79,10 @@ def ensure_frontend_dependencies(frontend,installation):
 def install():
     if sys.version_info[:2] not in [(3,11),(3,12)]:
         raise RuntimeError('Use Python 3.11 or 3.12 to install the pinned demo dependencies.')
-    INSTALL.mkdir(parents=True,exist_ok=True)
-    (INSTALL/'logs').mkdir(exist_ok=True)
+    INSTALL.mkdir(parents=True,exist_ok=True,mode=0o700)
+    INSTALL.chmod(0o700)
+    (INSTALL/'logs').mkdir(exist_ok=True,mode=0o700)
+    (INSTALL/'logs').chmod(0o700)
     python=INSTALL/'venv'/'bin'/'python'
     requirements=ROOT/'backend'/'requirements.txt'
     fingerprint=hashlib.sha256(requirements.read_bytes()).hexdigest()

@@ -20,9 +20,9 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import RideSupport from './RideSupport.vue'
-import { runtimeConfig, setCredential, clearCredential, roleHome, allowsRoute } from './lib/auth.js'
+import { runtimeConfig, setCredential, clearCredential, roleHome, allowsRoute, sessionExpiredEvent } from './lib/auth.js'
 import { request, resetRequests } from './lib/rideApi.js'
 
 const booting=ref(true), busy=ref(false), error=ref(''), token=ref(''), configuration=ref(null), identity=ref(null)
@@ -47,5 +47,10 @@ async function signIn() {
   finally { busy.value=false }
 }
 function signOut() { clearCredential();resetRequests();identity.value=null;token.value='';window.location.hash='#/trips' }
-onMounted(bootstrap)
+function sessionExpired() {
+  if (!identity.value) return
+  signOut();error.value='Your access expired or was revoked. Sign in again.'
+}
+onMounted(()=>{window.addEventListener(sessionExpiredEvent,sessionExpired);bootstrap()})
+onUnmounted(()=>window.removeEventListener(sessionExpiredEvent,sessionExpired))
 </script>

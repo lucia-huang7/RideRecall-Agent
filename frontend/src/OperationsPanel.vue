@@ -19,7 +19,7 @@
     <template v-else-if="tab==='mcp'">
       <h2>Connected services</h2><p>Standard MCP over stdio. A separate local process serves fictional trip records. No API key or external account is needed.</p>
       <article v-for="server in operations?.mcp.servers" :key="server.name" class="ops-record"><strong>{{ server.name }} · {{ server.state }}</strong><p>{{ server.transport }} · Protocol {{ server.protocol_version || 'Not negotiated' }}</p><p v-if="server.error">Connection error: {{ server.error }}</p><p>Allowed roles: {{ server.agents.join(', ') }}</p><div v-for="tool in server.tools" :key="tool.name" class="source-record"><code>{{ tool.name }}</code><small>Remote tool: {{ tool.remote_name }}</small></div></article>
-      <label class="field-label" for="probeTrip">Fictional trip to inspect</label><select id="probeTrip" v-model="probeTrip"><option value="trip-river">River North</option><option value="trip-airport">O’Hare Airport</option><option value="trip-museum">Art Institute</option></select><button class="secondary" :disabled="busy" @click="probe">Call discovered tool</button><pre v-if="probeResult" class="ops-metrics">{{ probeResult }}</pre><button class="primary" :disabled="busy" @click="reconnect">{{ busy ? 'Connecting…' : 'Reconnect demo service' }}</button><p class="footnote">Only the fixed read-only service is allowed. The model cannot select a different trip or execute payments. If verification fails, analysis is marked incomplete.</p>
+      <label class="field-label" for="probeTrip">Fictional trip to inspect</label><select id="probeTrip" v-model="probeTrip"><option v-for="item in probeTrips" :key="item.id" :value="item.id">{{ item.label }}</option></select><button class="secondary" :disabled="busy || !probeTrip" @click="probe">Call discovered tool</button><pre v-if="probeResult" class="ops-metrics">{{ probeResult }}</pre><button class="primary" :disabled="busy" @click="reconnect">{{ busy ? 'Connecting…' : 'Reconnect demo service' }}</button><p class="footnote">Only the fixed read-only service is allowed. The model cannot select a different trip or execute payments. If verification fails, analysis is marked incomplete.</p>
     </template>
     <template v-else-if="tab==='policies'">
       <h2>Policy index</h2><label class="field-label" for="policyScope">Policy scope</label><select id="policyScope" v-model="scope" :disabled="busy" @change="loadKnowledge"><option v-for="item in policyScopes" :key="item.id" :value="item.id">{{ item.title }}</option></select>
@@ -46,10 +46,10 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { request } from './lib/rideApi.js'
 defineProps({identity:{type:Object,required:true}})
-const policyScopes=ref([]), configStatus=ref(null)
+const policyScopes=ref([]), configStatus=ref(null), probeTrips=ref([])
 const protectedDocument=computed(()=>knowledge.value?.protected_document_ids?.includes(documentId.value.trim()))
 const tabs=[{id:'monitor',label:'Monitor'},{id:'mcp',label:'MCP'},{id:'policies',label:'Policies'},{id:'skills',label:'Skills'},{id:'checks',label:'Checks'}]
-const tab=ref('monitor'), operations=ref(null), knowledge=ref(null), skillData=ref(null), skillContent=ref(''), scope=ref('fare'), documentId=ref(''), documentTitle=ref(''), documentContent=ref(''), busy=ref(false), error=ref(''), notice=ref(''), metricText=ref(''), probeTrip=ref('trip-river'), probeResult=ref(''), qualityJob=ref(null), qualityHistory=ref([]), qualityRunning=ref(false)
+const tab=ref('monitor'), operations=ref(null), knowledge=ref(null), skillData=ref(null), skillContent=ref(''), scope=ref('fare'), documentId=ref(''), documentTitle=ref(''), documentContent=ref(''), busy=ref(false), error=ref(''), notice=ref(''), metricText=ref(''), probeTrip=ref(''), probeResult=ref(''), qualityJob=ref(null), qualityHistory=ref([]), qualityRunning=ref(false)
 const agentRows=computed(()=>Object.entries(operations.value?.agent_stats||{}).sort((a,b)=>b[1].total-a[1].total))
 let timer, qualityTimer, alive=true, qualityPolling=false, monitorPolling=false
 const percent=value=>(Number(value)*100).toFixed(1)+'%'
@@ -66,6 +66,27 @@ async function loadMetrics(){await work(async()=>{const data=await request('/api
 async function savePolicy(){await work(async()=>{await request('/api/agent/knowledge',{agent:true,body:{topic:scope.value,document_id:documentId.value.trim(),title:documentTitle.value.trim(),content:documentContent.value.trim()}});const [docs,state]=await Promise.all([request('/api/agent/knowledge/'+scope.value,{agent:true}),request('/api/agent/configuration',{agent:true})]);knowledge.value=docs;configStatus.value=state;notice.value=state.pending?'Document committed. The retrieval update is pending recovery.':'Document committed and indexed. Retrieval cache invalidated.'})}
 async function saveSkill(){await work(async()=>{skillData.value=await request('/api/agent/skills',{agent:true,body:{content:skillContent.value}});skillContent.value=skillData.value.editable_content;configStatus.value=await request('/api/agent/configuration',{agent:true});notice.value=configStatus.value.pending?'Skill committed. Runtime application is pending recovery.':'Skill committed and reloaded. The next analysis uses these rules.'})}
 async function reloadSkills(){await work(async()=>{skillData.value=await request('/api/agent/skills/reload',{agent:true,body:{}});skillContent.value=skillData.value.editable_content;notice.value='Saved Skills reloaded.'})}
-onMounted(async()=>{await work(async()=>{const [ops,docs,skills,scopes,state]=await Promise.all([request('/api/agent/operations',{agent:true}),request('/api/agent/knowledge/'+scope.value,{agent:true}),request('/api/agent/skills',{agent:true}),request('/api/agent/knowledge',{agent:true}),request('/api/agent/configuration',{agent:true})]);if(!alive)return;configStatus.value=state;policyScopes.value=scopes.scopes;operations.value=ops;knowledge.value=docs;skillData.value=skills;skillContent.value=skills.editable_content});if(!alive)return;timer=setInterval(async()=>{if(busy.value||monitorPolling||tab.value!=='monitor')return;monitorPolling=true;try{const data=await request('/api/agent/operations',{agent:true});if(alive){operations.value=data;configStatus.value=data.configuration}}catch{/* Manual refresh surfaces connection errors. */}finally{monitorPolling=false}},5000)})
+onMounted(async()=>{
+ await work(async()=>{
+  const sections=['Monitor','Skills','Policy scopes','Configuration','MCP catalog']
+  const results=await Promise.allSettled([request('/api/agent/operations',{agent:true}),request('/api/agent/skills',{agent:true}),request('/api/agent/knowledge',{agent:true}),request('/api/agent/configuration',{agent:true}),request('/api/agent/mcp/catalog',{agent:true})])
+  if(!alive)return
+  const errors=results.flatMap((result,index)=>result.status==='rejected'?[sections[index]+': '+result.reason.message]:[])
+  const values=results.map(result=>result.status==='fulfilled'?result.value:null)
+  if(values[0])operations.value=values[0]
+  if(values[1]){skillData.value=values[1];skillContent.value=values[1].editable_content}
+  if(values[3])configStatus.value=values[3]
+  if(values[4]){probeTrips.value=values[4].trips;probeTrip.value=probeTrips.value.some(item=>item.id===probeTrip.value)?probeTrip.value:probeTrips.value[0]?.id||''}
+  if(values[2]){
+   policyScopes.value=values[2].scopes
+   scope.value=policyScopes.value.some(item=>item.id===scope.value)?scope.value:policyScopes.value[0]?.id||''
+   if(scope.value)try{knowledge.value=await request('/api/agent/knowledge/'+scope.value,{agent:true})}catch(e){errors.push('Policy index: '+e.message)}
+  }
+  if(errors.length)error.value=errors.join(' ')
+ })
+ if(!alive)return
+ timer=setInterval(async()=>{if(busy.value||monitorPolling||tab.value!=='monitor')return;monitorPolling=true;try{const data=await request('/api/agent/operations',{agent:true});if(alive){operations.value=data;configStatus.value=data.configuration}}catch{/* Manual refresh surfaces connection errors. */}finally{monitorPolling=false}},5000)
+})
+
 onUnmounted(()=>{alive=false;clearInterval(timer);clearInterval(qualityTimer)})
 </script>

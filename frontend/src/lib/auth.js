@@ -3,6 +3,13 @@ let credential = ''
 export function setCredential(value) { credential = value.trim() }
 export function clearCredential() { credential = '' }
 export function credentialHeaders() { return credential ? { Authorization: `Bearer ${credential}` } : null }
+export const sessionExpiredEvent = 'kinderuber:session-expired'
+export function expireCredentialIfCurrent(sentHeaders) {
+  if (!credential || sentHeaders?.Authorization !== `Bearer ${credential}`) return false
+  credential = ''
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event(sessionExpiredEvent))
+  return true
+}
 export async function runtimeConfig() {
   const root = import.meta.env?.VITE_RIDE_API_URL || '/ride-api'
   const response = await fetch(root + '/runtime-config', { signal: AbortSignal.timeout(10000), cache: 'no-store' })

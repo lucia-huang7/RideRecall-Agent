@@ -1,4 +1,4 @@
-"""Ride adapters around the original recognition, orchestration, tool loop, and RAG."""
+"""Ride recognition, specialist orchestration, guarded tool loops and scoped retrieval."""
 import asyncio
 import hashlib
 import json
@@ -30,7 +30,7 @@ class EnglishSkills(SkillManager):
 
 
 class RideIntent(IntentRecognizer):
-    """Retain original recognize(), _vote(), caching, and local embedding machinery."""
+    """Intent recognition with voting, caching and local embedding."""
     async def _llm_recognize(self, message, history):
         try:
             answer = await self.client.messages.create(model=self.model, max_tokens=350, temperature=0,

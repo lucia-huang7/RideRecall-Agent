@@ -31,6 +31,11 @@ services:
     read_only: true
     tmpfs: ['/tmp:size=128m,mode=1777']
     init: true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
     restart: unless-stopped
     stop_grace_period: 30s
 volumes:

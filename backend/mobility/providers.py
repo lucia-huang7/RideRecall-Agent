@@ -1,5 +1,6 @@
 """English model contracts with a deterministic, network-free Messages adapter."""
 import asyncio
+from collections import deque
 import json
 import re
 import time
@@ -57,6 +58,7 @@ class LocalMessages:
         else:
             payload = {}
         stamp = dict(id=uuid4().hex, phase=phase, started=time.monotonic())
+        self.owner.total_calls += 1
         self.owner.calls.append(stamp)
         # An asynchronous boundary exercises the original parallel dispatch path.
         await asyncio.sleep(0)
@@ -139,7 +141,8 @@ class LocalMessages:
 class LocalModel:
     """Same Messages interface as a live client; only model outputs are simulated."""
     def __init__(self):
-        self.calls = []
+        self.calls = deque(maxlen=512)
+        self.total_calls = 0
         self.messages = LocalMessages(self)
 
     async def close(self):

@@ -157,3 +157,27 @@ test('an empty migrated demo workspace can recover only IDs already saved in thi
     assert.equal(seen.at(-1).Authorization, 'Bearer production-credential-example')
   } finally { clearCredential();globalThis.localStorage = previousStore }
 })
+
+test('a rejected current credential clears authorization and signals the signed-in UI', async () => {
+  const auth = await import('../src/lib/auth.js')
+  const previousWindow = globalThis.window
+  const events = []
+  globalThis.window = { dispatchEvent: event => events.push(event.type) }
+  try {
+    auth.setCredential('revoked-production-credential')
+    globalThis.fetch = async () => ({ok:false,status:401,json:async()=>({detail:'A valid access token is required.'})})
+    await assert.rejects(request('/api/cases/index'), /valid access token/)
+    assert.equal(auth.credentialHeaders(), null)
+    assert.deepEqual(events, [auth.sessionExpiredEvent])
+  } finally { auth.clearCredential();globalThis.window = previousWindow }
+})
+
+test('a delayed rejection from an old credential cannot sign out a new account', async () => {
+  const auth = await import('../src/lib/auth.js')
+  auth.setCredential('first-production-credential')
+  const old = auth.credentialHeaders()
+  auth.setCredential('new-production-credential')
+  assert.equal(auth.expireCredentialIfCurrent(old), false)
+  assert.equal(auth.credentialHeaders().Authorization, 'Bearer new-production-credential')
+  auth.clearCredential()
+})

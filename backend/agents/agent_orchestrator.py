@@ -73,7 +73,7 @@ def _env_float(name: str, default: float) -> float:
     try:
         return float(os.getenv(name, str(default)))
     except (TypeError, ValueError):
-        logger.warning("忽略非法浮点配置 %s=%r", name, os.getenv(name))
+        logger.warning("Ignoring invalid floating-point configuration %s", name)
         return default
 
 
@@ -82,7 +82,7 @@ def _env_int(name: str, default: int) -> int:
     try:
         return int(os.getenv(name, str(default)))
     except (TypeError, ValueError):
-        logger.warning("忽略非法整数配置 %s=%r", name, os.getenv(name))
+        logger.warning("Ignoring invalid integer configuration %s", name)
         return default
 
 
@@ -302,7 +302,7 @@ class BaseAgent:
             ms = (time.monotonic() - t0) * 1000
             self.stats.record(False, ms, req.request_id)
             self.stats.total_ms += ms
-            logger.error(f"{self.agent_type.value} 处理失败: {ex}")
+            logger.error("Agent %s failed (%s)", self.agent_type.value, type(ex).__name__)
             tools_used = ex.tools_used if isinstance(ex, AgentCallError) else []
             tool_traces = ex.tool_traces if isinstance(ex, AgentCallError) else []
             return AgentResponse(
@@ -405,7 +405,7 @@ class BaseAgent:
                                 result_success = bool(result.get("success"))
                         except Exception as ex:
                             call_success = False
-                            logger.warning("Agent 工具 %s 执行失败: %s", name, ex)
+                            logger.warning("Agent tool %s failed (%s)", name, type(ex).__name__)
                             error_text = str(ex)
                             result = {"success": False, "error": error_text}
                     tool_latency_ms = (time.monotonic() - tool_t0) * 1000
@@ -713,7 +713,7 @@ class ResponseComposer:
             if content:
                 return AgentCallResult(content, status="partial" if getattr(response, "stop_reason", None) == "max_tokens" else status)
         except Exception as ex:
-            logger.warning("Response Composer 失败，使用确定性合并: %s", ex)
+            logger.warning("Response composition failed (%s); using deterministic merge", type(ex).__name__)
 
         # 汇总节点不可用时保留主次标签，避免丢失某个专业 Agent 的结论。
         return AgentCallResult("\n\n".join(

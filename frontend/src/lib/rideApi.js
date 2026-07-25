@@ -1,4 +1,4 @@
-import { credentialHeaders } from './auth.js'
+import { credentialHeaders, expireCredentialIfCurrent } from './auth.js'
 import { readDemoWorkspace, saveDemoWorkspace } from './demoSession.js'
 const root = import.meta.env?.VITE_RIDE_API_URL || '/ride-api'
 const workspace = readDemoWorkspace()
@@ -18,6 +18,7 @@ export async function request(path, { body, agent = false, file, revision } = {}
   if (file) { payload = new FormData(); payload.append('file', file) }
   else if (body) { headers['Content-Type'] = 'application/json'; payload = JSON.stringify(body) }
   let response = await fetch(root + path, { method: payload ? 'POST' : 'GET', headers, body: payload, signal: AbortSignal.timeout(path.includes('evaluations') ? 90000 : 45000) })
+  if (response.status === 401) expireCredentialIfCurrent(headers)
   let result
   try { result = await response.json() } catch { throw new Error('The service returned an unreadable response. Please try again.') }
   const recoverable = !payload && !headers.Authorization && (
@@ -51,7 +52,9 @@ export async function request(path, { body, agent = false, file, revision } = {}
 }
 
 export async function downloadEvidence(caseId, evidence, agent = false) {
-  const response = await fetch(`${root}/api/cases/${caseId}/attachments/${evidence.id}`, { headers: credentialHeaders() || { 'X-Demo-Session': session, ...(agent ? { 'X-Demo-Agent': 'local-demo-agent' } : {}) } })
+  const headers = credentialHeaders() || { 'X-Demo-Session': session, ...(agent ? { 'X-Demo-Agent': 'local-demo-agent' } : {}) }
+  const response = await fetch(`${root}/api/cases/${caseId}/attachments/${evidence.id}`, { headers })
+  if (response.status === 401) expireCredentialIfCurrent(headers)
   if (!response.ok) throw new Error('The attachment could not be downloaded.')
   const url = URL.createObjectURL(await response.blob())
   const link = document.createElement('a'); link.href = url; link.download = evidence.filename; link.click()

@@ -1,4 +1,4 @@
-"""Original end-to-end evaluator and job queue with explicit offline rubric contracts."""
+"""Catalog-aware regression jobs with explicit offline rubric contracts."""
 import hashlib
 import json
 import re
@@ -12,6 +12,7 @@ from core.intent_recognizer import IntentCategory
 from evaluation.evaluator import EndToEndEvaluator, LLMJudge, IntentTestCase
 from evaluation.jobs import EvaluationJobs
 from mobility.providers import response
+from mobility.diagnostics import select_trip
 
 
 class RubricModel:
@@ -41,11 +42,12 @@ class EvaluationAdapter:
     def __init__(self, engine):
         self.engine = engine
         self.records = {}
+        self.trip_id=(select_trip(engine.support.catalog,'cancellation') or select_trip(engine.support.catalog))['id']
         from mobility.diagnostics import DiagnosticCases
         self.fixtures = DiagnosticCases(engine)
 
     async def run(self, req):
-        record = self.records.setdefault(req.conv_id, dict(id=uuid4().hex, owner=uuid4().hex, trip_id='trip-river', messages=[]))
+        record = self.records.setdefault(req.conv_id, dict(id=uuid4().hex, owner=uuid4().hex, trip_id=self.trip_id, messages=[]))
         run = await self.fixtures.turn(record,req.message)
         req.conversation_state = run.get('memory',{}).get('state',{})
         req.entities = req.conversation_state.get('entities',{})
@@ -67,7 +69,9 @@ class RideEvaluator(EndToEndEvaluator):
 
     def _suite_id(self, intent_cases, dialog_cases):
         base = super()._suite_id(intent_cases, dialog_cases)
-        return hashlib.sha256((base+RideJudge.JUDGE_PROMPT+RideJudge.few_shot_prompt()).encode()).hexdigest()
+        catalog=self._orchestrator.engine.support.catalog
+        release=json.dumps(dict(dataset_id=catalog.dataset_id,trips=catalog.trips,policies=catalog.policies),sort_keys=True,separators=(',',':'))
+        return hashlib.sha256((base+RideJudge.JUDGE_PROMPT+RideJudge.few_shot_prompt()+release).encode()).hexdigest()
 
 
 class RideQuality:
@@ -84,7 +88,7 @@ class RideQuality:
             baseline = bool(self.evaluator._comparison_baseline(self.evaluator._suite_id(intents,cases)))
             report = await self.evaluator.run(intent_cases=intents, dialog_cases=cases, progress=progress)
             data = asdict(report)
-            data.update(status=report.status, baseline_compared=baseline, rubric='Mechanical citation and boundary checks; not LLM-as-judge or real-world quality.', regression_note='Compared with the same fixture and rubric configuration.' if baseline else 'First run: a comparable baseline will be saved.', recommendations=['Review failed execution or rubric checks.' if report.passed<report.total else 'All current fixture checks passed. Expand independent fixtures before making quality claims.'])
+            data.update(dataset_id=self.engine.support.catalog.dataset_id,fixture_trip_id=self.adapter.trip_id,status=report.status, baseline_compared=baseline, rubric='Mechanical citation and boundary checks; not LLM-as-judge or real-world quality.', regression_note='Compared with the same fixture, rubric and catalog release.' if baseline else 'First run: a comparable baseline will be saved.', recommendations=['Review failed execution or rubric checks.' if report.passed<report.total else 'All current fixture checks passed. Expand independent fixtures before making quality claims.'])
             data['regressions'] = [re.sub(r'\([^)]*\)$', '(decreased)', item) for item in data['regressions']]
             for item in data['results']:
                 item['detail'] = 'Passed execution and rubric checks.' if item['passed'] else 'Execution or rubric checks need attention.'

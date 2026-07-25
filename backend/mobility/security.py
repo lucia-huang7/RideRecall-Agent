@@ -125,6 +125,17 @@ class Security:
         if not catalog.path or any(t.get('rider_id') not in riders for t in catalog.trips):
             raise ValueError('Production requires an explicit catalog with registered rider ownership for every trip')
 
+    def validate_stored_cases(self, store, catalog):
+        """A catalog release cannot orphan cases or silently transfer their trip."""
+        trips = {trip['id']: trip for trip in catalog.trips}
+        with store.connect() as db:
+            for owner, trip_id in db.execute('SELECT DISTINCT owner,trip_id FROM case_index'):
+                trip = trips.get(trip_id)
+                if trip is None:
+                    raise ValueError('Catalog release omits a stored case trip. Retain historical records or use a fresh database.')
+                if self.production and trip.get('rider_id') != owner:
+                    raise ValueError('Catalog release changes stored case ownership. An explicitly reviewed data migration is required.')
+
     def require_trip(self, catalog, trip_id):
         if not self.production:
             return

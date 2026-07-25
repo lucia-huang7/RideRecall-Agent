@@ -33,7 +33,7 @@ Roles do not imply each other. An operator cannot act as a specialist without th
 
 ## Browser session
 
-The authenticated UI asks for a workspace credential. It remains in page memory, never local/session storage or a URL. Sign-out clears the credential and retry state; refreshing requires signing in again. Navigation is role-aware, and server authorization remains authoritative. Browser refresh is not server-side token revocation: an unexpired opaque token remains valid until registry revocation/restart or expiry.
+The authenticated UI asks for a workspace credential. It remains in page memory, never local/session storage or a URL. Sign-out clears the credential and retry state; refreshing requires signing in again. Navigation is role-aware, and server authorization remains authoritative. A 401 for the current credential clears it, unmounts protected content and returns to sign-in; a delayed rejection for an earlier credential cannot sign out a newly authenticated account. Browser refresh is not server-side token revocation: an unexpired opaque token remains valid until registry revocation/restart or expiry.
 
 No cookies are used for these credentials. Deployment assumes a trusted same-origin HTTPS gateway. The direct HTTP authenticated preview is for loopback development only. This is not an OIDC identity provider, self-service account system, or multi-tenant authorization service.
 
@@ -45,6 +45,7 @@ No cookies are used for these credentials. Deployment assumes a trusted same-ori
 - Request models reject unknown fields. Validation responses omit submitted values and cap the error list.
 - Authenticated API responses use `Cache-Control: no-store`. Responses disable framing and sensitive browser permissions; production applies a same-origin Content Security Policy.
 - Interactive API documentation is disabled in the authenticated profile.
+- Server-issued correlation IDs are independent of caller headers. HTTP logs use fixed route templates and omit raw URLs, query strings, request bodies, account IDs and credentials. Unexpected failures expose a generic response and log only their category plus bounded source-frame locations. Reusable tool/model error logs omit arbitrary exception payloads.
 - Ride analysis admission: four active commands globally, two per account, no unbounded inference waiting queue, and a 35-second analysis deadline. Busy work is rejected with a retry hint; timed-out analysis commits no result. Human handoff and inexpensive case actions do not consume analysis slots. Shipped Uvicorn entry points also cap concurrent connections/tasks at 64.
 - Core financial-policy documents are read-only in the authenticated management API and checked against their release before startup. Confirmation revalidates a positive authoritative amount and current release. Management updates commit canonical content and a durable delivery outbox before altering files/indexes; new analyses pause on pending configuration.
 

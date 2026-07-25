@@ -1,5 +1,7 @@
 """No-key ride support API. Run with uvicorn mobility.app:app --port 8010."""
 import hashlib
+import asyncio
+import time
 import json
 import os
 import re
@@ -66,6 +68,8 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
     if security.production and not database_path:
         raise ValueError('Production requires an explicit KINDER_UBER_RIDE_DB')
     database_path=database_path or str(Path(__file__).resolve().parents[2]/'.runtime/rides.sqlite3')
+    from mobility.http_observation import HttpObservation, configure_logging
+    observation=HttpObservation()
     store=service=projections=configuration=None
 
     @asynccontextmanager
@@ -73,8 +77,10 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
         nonlocal store, service, projections, configuration
         from mobility.runtime_lock import embedded_writer_lock
         from mobility.projections import ProjectionWorker
+        configure_logging()
         with embedded_writer_lock(database_path):
             store=Store(database_path)
+            security.validate_stored_cases(store,catalog)
             service=RideSupport(store,catalog,model_settings=model_settings)
             projections=ProjectionWorker(store,service.engine.chroma,service.engine.hash_embedding)
             from mobility.configuration import ConfigurationWorker
@@ -103,6 +109,7 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
         openapi_url=None if security.production else "/openapi.json")
     from mobility.http_limits import RequestBodyLimit
     app.add_middleware(RequestBodyLimit)
+    app.state.observation = observation
     app.state.security = security
     app.state.started = False
     app.state.store = store
@@ -113,6 +120,7 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
     import sqlite3
     @app.exception_handler(sqlite3.DatabaseError)
     async def unavailable_database(request, error):
+        request.state.diagnostic_error=error
         return JSONResponse({'detail':'Persistence is unavailable. Retry the same request ID after recovery.'},status_code=503,headers={'Retry-After':'2'})
 
     from fastapi.exceptions import RequestValidationError
@@ -123,32 +131,44 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
 
     @app.middleware("http")
     async def local_api_prefix(request, call_next):
-        if request.scope["path"].startswith("/ride-api/"):
-            request.scope["path"] = request.scope["path"][len("/ride-api"):]
-            request.scope["raw_path"] = request.scope["path"].encode()
-        context_token = None
+        began=time.monotonic();correlation_id=uuid4().hex;context_token=None;response=None;failure=None;cancelled=False
+        request.state.correlation_id=correlation_id
+        observation.active.inc()
         try:
-            if security.production and request.scope['path'].startswith('/api/'):
-                principal = security.authenticate(request.headers.get('authorization', ''))
-                security.authorize(request.scope['path'], request.method, principal)
-                context_token = principal_context.set(principal)
-            elif not security.production:
-                security.check_demo_peer(request.client.host if request.client else '')
-            response = await call_next(request)
-        except HTTPException as error:
-            response = JSONResponse({'detail': error.detail}, status_code=error.status_code, headers=error.headers)
+            if request.scope['path'].startswith('/ride-api/'):
+                request.scope['path']=request.scope['path'][len('/ride-api'):]
+                request.scope['raw_path']=request.scope['path'].encode()
+            try:
+                if security.production and request.scope['path'].startswith('/api/'):
+                    principal=security.authenticate(request.headers.get('authorization',''))
+                    security.authorize(request.scope['path'],request.method,principal)
+                    context_token=principal_context.set(principal)
+                elif not security.production:
+                    security.check_demo_peer(request.client.host if request.client else '')
+                response=await call_next(request)
+            except HTTPException as error:
+                response=JSONResponse({'detail':error.detail},status_code=error.status_code,headers=error.headers)
+            except asyncio.CancelledError:
+                cancelled=True
+                raise
+            except Exception as error:
+                failure=error
+                response=JSONResponse({'detail':'An unexpected service error occurred. Retry safely or contact the workspace operator.'},status_code=500)
+            response.headers['X-Correlation-ID']=correlation_id
+            response.headers['X-Content-Type-Options']='nosniff'
+            response.headers['Referrer-Policy']='no-referrer'
+            response.headers['X-Frame-Options']='DENY'
+            response.headers['Permissions-Policy']='camera=(), microphone=(), geolocation=()'
+            if security.production:
+                response.headers['Content-Security-Policy']="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+            if request.scope['path'].startswith('/api/'):
+                response.headers['Cache-Control']='no-store'
+            return response
         finally:
-            if context_token is not None:
-                principal_context.reset(context_token)
-        response.headers['X-Content-Type-Options'] = 'nosniff'
-        response.headers['Referrer-Policy'] = 'no-referrer'
-        response.headers['X-Frame-Options'] = 'DENY'
-        response.headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=()'
-        if security.production:
-            response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
-        if request.scope['path'].startswith('/api/'):
-            response.headers['Cache-Control'] = 'no-store'
-        return response
+            if context_token is not None:principal_context.reset(context_token)
+            route=getattr(request.scope.get('route'),'path',None)
+            status=response.status_code if response is not None else 499 if cancelled else 500
+            observation.finish(correlation_id,request.method,route,status,time.monotonic()-began,failure or getattr(request.state,'diagnostic_error',None))
 
     def owner(value):
         if security.production:
@@ -227,6 +247,8 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
         from mobility.configuration import status
         result['configuration']=status(store)
         result['analysis_admission']=service.admission.status()
+        if service.engine.mode=='demo':
+            result['demo_model_calls']=dict(total=service.engine.client.total_calls,retained=len(service.engine.client.calls),retention_limit=512)
         return result
 
     @app.post("/api/agent/quality/jobs")
@@ -254,17 +276,22 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
     @app.get("/api/agent/metrics")
     def metrics(x_demo_agent: str = Header(default="")):
         staff(x_demo_agent)
-        return Response(service.engine.operations.metrics(), media_type="text/plain")
+        return Response(service.engine.operations.metrics()+observation.render(), media_type="text/plain")
 
     @app.get("/api/agent/metrics-view")
     def metrics_view(x_demo_agent: str = Header(default="")):
         staff(x_demo_agent)
-        return dict(text=service.engine.operations.metrics().decode())
+        return dict(text=(service.engine.operations.metrics()+observation.render()).decode())
 
     @app.post("/api/agent/mcp/reconnect")
     async def reconnect(x_demo_agent: str = Header(default="")):
         staff(x_demo_agent)
         return await service.engine.operations.reconnect()
+
+    @app.get('/api/agent/mcp/catalog')
+    def probe_catalog(x_demo_agent: str=Header(default='')):
+        staff(x_demo_agent)
+        return dict(dataset_id=catalog.dataset_id,trips=[dict(id=trip['id'],label=trip['id'] if security.production else trip['destination']+' · '+trip['id']) for trip in catalog.trips])
 
     @app.post("/api/agent/mcp/probe")
     async def probe(body: MCPProbe, x_demo_agent: str = Header(default="")):

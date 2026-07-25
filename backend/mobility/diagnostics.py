@@ -16,6 +16,11 @@ from mobility.projections import ProjectionWorker
 from mobility.store import Store
 
 
+def select_trip(catalog,issue=None):
+    """Select an actual configured record; never inject a seed-only trip ID."""
+    return next((trip for trip in catalog.trips if issue is None or trip['issue']==issue),None)
+
+
 class DiagnosticCases:
     def __init__(self, engine):
         self.engine=engine

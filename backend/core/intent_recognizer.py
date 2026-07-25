@@ -236,7 +236,7 @@ class IntentRecognizer:
             self._embedding.local_templates.clear()
             self._cache.clear()  # 模板更新后旧缓存可能对应过时结果
             self._cache_expiries.clear()
-            logger.info(f"学习新样本 → {correct.value}: {message[:40]}")
+            logger.info("Intent example learned for category %s", correct.value)
 
     # ── 三路识别策略 ──────────────────────────────────────────────────────────
 
@@ -296,7 +296,7 @@ class IntentRecognizer:
                 raise ValueError("意图 confidence 必须是 0 到 1 的有限数字")
             return data
         except Exception as ex:
-            logger.warning(f"LLM 识别失败: {ex}")
+            logger.warning("Model intent recognition failed (%s)", type(ex).__name__)
             return {"intent": IntentCategory.OTHER, "confidence": 0.0, "reasoning": "LLM 失败", "failed": True}
 
     async def _embedding_recognize(self, message: str) -> Dict[str, Any]:
@@ -313,7 +313,7 @@ class IntentRecognizer:
 
             return {"intent": best_cat, "confidence": min(1.0, max(0.0, best_score)), "source": source}
         except Exception as ex:
-            logger.warning(f"Embedding 识别失败: {ex}")
+            logger.warning("Embedding recognition failed (%s)", type(ex).__name__)
             return {"intent": IntentCategory.OTHER, "confidence": 0.0}
 
     def _pattern_recognize(self, message: str) -> Dict[str, Any]:

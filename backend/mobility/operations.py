@@ -1,4 +1,4 @@
-"""English operations adapter around the original monitor and MCP client."""
+"""English operations monitor and independent MCP client lifecycle."""
 import asyncio
 import sys
 from pathlib import Path

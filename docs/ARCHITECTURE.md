@@ -6,7 +6,8 @@
 flowchart TD
   UI[Vue mobile rider / specialist UI] --> API[FastAPI mobility.app]
   API --> CASE[RideSupport: state and financial guards]
-  CASE --> DB[(SQLite cases and idempotency receipts)]
+  CASE --> DB[(SQLite source state, blobs, receipts and outboxes)]
+  CASE --> INDEX[Transactional activity summaries]
   CASE --> ENGINE[RideEngine]
   ENGINE --> INTENT[Intent routing]
   ENGINE --> ROLES[Specialist role orchestration]
@@ -18,13 +19,18 @@ flowchart TD
   CATALOG --> RAG
   CATALOG --> MCP
   ENGINE --> OPS[Metrics, traces and operational controls]
+  DB --> WORKER[Ordered memory projection worker]
+  WORKER --> MEMORY
+  OPS --> CONFIG[Committed policy / Skill releases]
+  CONFIG --> GATE[Exclusive runtime delivery gate]
+  GATE --> RAG
 ```
 
 `backend/mobility/app.py` is the active product entry point. The separate Java service does not serve the mobile ride workflow.
 
 ## Ownership
 
-- The catalog owns fictional recorded trips, settled/pending payment records and policy scopes. Payment amounts use integer cents. Startup validation rejects inconsistent settled totals, missing policy references and extra label fields.
+- The catalog owns fictional recorded trips, settled/pending payment records and policy scopes. Payment amounts use integer cents. Startup validation rejects inconsistent settled totals, missing policy references and extra label fields. Existing case trips must remain available; an authenticated release cannot silently transfer their rider ownership. Operator discovery and diagnostics use the configured records and scopes rather than seed-only identifiers.
 - The case store owns the authenticated rider subject, conversation, evidence, history, handoff and simulated adjustments. Case transitions and idempotency receipts are committed transactionally.
 - Memory distinguishes rider assertions, withdrawn claims and recorded tool facts. Evidence attachments remain unverified; upload does not establish truth.
 - The engine requests information through read-only tools. Agent text does not itself execute a financial action. Explicit rider confirmation and server-side state validation guard simulated adjustments.
@@ -36,7 +42,7 @@ flowchart TD
 
 `KINDER_UBER_RIDE_MODEL_MODE=demo` enables the deterministic no-key model. Live provider mode is opt-in. `KINDER_UBER_RIDE_DB` selects the case database; `KINDER_UBER_RIDE_CATALOG_PATH` selects an immutable runtime release.
 
-The macOS supervisor restarts failed local services and probes MCP separately. A synthetic preview runs against isolated storage. Existing local data is not a deployment artifact.
+The macOS supervisor distinguishes process liveness from dependency readiness. It restarts unresponsive/crashed services and recovers a persistently failed MCP owner without restarting a healthy backend merely because database/configuration readiness is degraded. Child output drains into bounded rotating logs in a private application directory. A synthetic preview runs against isolated storage. Existing local data is not a deployment artifact. Case memory and management releases commit canonical content and a delivery outbox before changing derived indexes/files. See [state and recovery](STATE_AND_RECOVERY.md) for revision, migration, cursor and backup contracts.
 
 ## Current limits
 

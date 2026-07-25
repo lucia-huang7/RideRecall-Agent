@@ -11,6 +11,12 @@ HOP_HEADERS = {'connection', 'keep-alive', 'proxy-authenticate', 'proxy-authoriz
 
 
 class Frontend(SimpleHTTPRequestHandler):
+    def log_request(self,code='-',size='-'):
+        # URL/query strings may contain user data; log fixed groups only.
+        import sys
+        method=self.command if self.command in ('GET','POST','HEAD') else 'OTHER'
+        sys.stderr.write(json.dumps(dict(event='frontend_request',method=method,status=str(code),route='api_proxy' if self.path.startswith('/ride-api/') else 'static'))+'\n')
+
     def do_GET(self):
         if self.path == '/__kinderuber_health':
             body = json.dumps({'service':'kinderuber-frontend', 'instance':os.environ['KINDER_UBER_INSTANCE_ID']}).encode()

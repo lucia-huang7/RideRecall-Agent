@@ -30,4 +30,4 @@ echo "Mobile preview: http://127.0.0.1:$PORT/#/trips"
 echo "Catalog: $CATALOG"
 echo 'Keep this terminal open; press Ctrl+C to stop. Default demo data is separate.'
 cd "$ROOT/backend"
-exec "$RIDE_PYTHON" -m uvicorn mobility.app:app --host 127.0.0.1 --port "$PORT" --limit-concurrency 64 --timeout-keep-alive 5 --no-proxy-headers
+exec "$RIDE_PYTHON" -m uvicorn mobility.app:app --host 127.0.0.1 --port "$PORT" --limit-concurrency 64 --timeout-keep-alive 5 --no-proxy-headers --no-access-log

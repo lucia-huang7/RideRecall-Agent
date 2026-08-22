@@ -120,6 +120,12 @@ Frozen source `e1b30c2` executed **1,000 synthetic worlds / 2,000 dialogues / 27
 
 This completes seed `20261022`, whose test split had already been inspected. It is not a fresh blind test, human-reviewed accuracy or evidence of a multi-agent quality advantage. See automated checks.
 
+### Paired agent and memory comparison
+
+On the same 2,000 dialogues, four frozen configurations completed **8,000 replays**. Recent-four context achieved **67% strict task completion and 33% final-context loss**; durable case context achieved **100% and 0%**, with either agent configuration. Multi-agent versus a capability-matched single generalist tied on every dialogue in both memory conditions, while using about **38% more local engine-client calls**. All four passed the business-state checks; that alone did not establish answer quality.
+
+See [split/family results, failure analysis, timings and limitations](docs/ABLATION_RESULTS.md). This is a deterministic synthetic comparison, not live-model reasoning accuracy or a production speed claim.
+
 ## Verify
 
 Install the hashed runtime and test-only requirements in separate commands:

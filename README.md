@@ -114,6 +114,12 @@ From the root, `bash scripts/run-synthetic-demo.sh` opens the existing UI agains
 
 Generated outcomes are reference-state checks, not human-reviewed ground truth or production accuracy. Historical measurements remain preserved outside this repository. New runs belong to their actual source version and are saved in ignored `artifacts/` directories.
 
+### Full replay result — 2026-10-22
+
+Frozen source `e1b30c2` executed **1,000 synthetic worlds / 2,000 dialogues / 27,772 API requests** without an API key. Specified mechanical checks passed for development **1,212/1,212**, calibration **438/438** and test **350/350**; zero episode exceptions. Wall time was **948.892 seconds**. All episode IDs, split isolation, raw-log counts and frozen source/data hashes were verified.
+
+This completes seed `20261022`, whose test split had already been inspected. It is not a fresh blind test, human-reviewed accuracy or evidence of a multi-agent quality advantage. See automated checks.
+
 ## Verify
 
 Install the hashed runtime and test-only requirements in separate commands:

@@ -41,7 +41,7 @@ def test_original_memory_compresses_restores_and_isolates(tmp_path, monkeypatch)
         case = send(client, case, "Please connect me to a human representative.")
         run = case["engine_runs"][-1]
         assert "CEDAR-17" in run["response"]
-        assert run["agents"] == ["escalation"]
+        assert run["agents"] == ["general"]
         assert run["memory"]["state"]["entities"]["amount"] == ["$5.25"]
     assert len(calls) == 5 and all(calls.values())
 

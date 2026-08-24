@@ -57,6 +57,7 @@ class RideSupport:
             raise HTTPException(503,'The analysis deadline was reached. Retry the same operation; no result was committed.',headers={'Retry-After':'2'}) from None
 
     def attach_analysis(self, case, analysis):
+        case["agent_mode"] = analysis.get("agent_mode", "single")
         effects = analysis.pop("_memory_effects", [])
         if effects:
             case.setdefault("_pending_projections", []).append(dict(id=analysis["id"], effects=effects))

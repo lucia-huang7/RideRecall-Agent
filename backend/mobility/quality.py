@@ -70,7 +70,7 @@ class RideEvaluator(EndToEndEvaluator):
     def _suite_id(self, intent_cases, dialog_cases):
         base = super()._suite_id(intent_cases, dialog_cases)
         catalog=self._orchestrator.engine.support.catalog
-        release=json.dumps(dict(dataset_id=catalog.dataset_id,trips=catalog.trips,policies=catalog.policies),sort_keys=True,separators=(',',':'))
+        release=json.dumps(dict(execution_profile='single-durable-v1',dataset_id=catalog.dataset_id,trips=catalog.trips,policies=catalog.policies),sort_keys=True,separators=(',',':'))
         return hashlib.sha256((base+RideJudge.JUDGE_PROMPT+RideJudge.few_shot_prompt()+release).encode()).hexdigest()
 
 
@@ -83,7 +83,7 @@ class RideQuality:
 
     async def run(self, progress):
         try:
-            cases = [dict(conv_id='correction', turns=['The driver never arrived. I dispute $6.50.', 'Correction: the amount I dispute is $5.25.', 'Please connect me to a human representative.'], expected_agent='escalation', expected_intent='human_handoff', expected_entities={'amount':['$5.25']}, required_tools=['get_case_context','search_knowledge_base','mcp_rides_read_trip_record']), dict(conv_id='compound', turns=['The app crashed with error 500 and I was charged a cancellation fee.'], expected_agent='technical', required_tools=['get_trip','search_knowledge_base','mcp_rides_read_trip_record'])]
+            cases = [dict(conv_id='correction', turns=['The driver never arrived. I dispute $6.50.', 'Correction: the amount I dispute is $5.25.', 'Please connect me to a human representative.'], expected_agent='general', expected_intent='human_handoff', expected_entities={'amount':['$5.25']}, required_tools=['get_case_context','search_knowledge_base','mcp_rides_read_trip_record']), dict(conv_id='compound', turns=['The app crashed with error 500 and I was charged a cancellation fee.'], expected_agent='general', required_tools=['get_trip','search_knowledge_base','mcp_rides_read_trip_record'])]
             intents = [IntentTestCase(message='Please connect me to a human representative.', expected_intent='human_handoff'),IntentTestCase(message='The app crashed with error 500.',expected_intent='technical_crash')]
             baseline = bool(self.evaluator._comparison_baseline(self.evaluator._suite_id(intents,cases)))
             report = await self.evaluator.run(intent_cases=intents, dialog_cases=cases, progress=progress)

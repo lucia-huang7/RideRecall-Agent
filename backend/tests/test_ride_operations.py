@@ -27,7 +27,8 @@ def test_real_mcp_calls_feed_original_monitor_and_metrics(tmp_path, monkeypatch)
         result=client.get('/api/agent/operations',headers=headers(agent=True)).json()
         assert result['active']
         assert result['mcp']['servers'][0]['state']=='connected'
-        assert result['agent_stats']['billing_0']['total']>=1
+        assert result['agent_stats']['general_0']['total']>=1
+        assert result['agent_stats']['billing_0']['total']==0
         assert result['tool_stats']['mcp_rides_read_trip_record']['total']==len(remote)
         assert calls['_call_remote']==len(remote) and calls['_collect']
         metrics=client.get('/api/agent/metrics',headers=headers(agent=True))

@@ -24,7 +24,7 @@ async def evaluate_engine(engine):
             rows.append(dict(name=scenario['name'],status='not_applicable',passed=False,checks={},intent=scenario['intent'],agents=[],sources=0,reason='No configured trip supports this record-specific fixture.'))
             continue
         run = await engine.run(trip['id'], scenario["text"])
-        checks = dict(intent=run["intent"] == scenario["intent"], roles=scenario["roles"].issubset(run["agents"]), retrieval=bool(run["citations"]), complete=run["status"] == "success")
+        checks = dict(intent=run["intent"] == scenario["intent"], roles=run["agents"] == ["general"] if run.get("agent_mode") == "single" else scenario["roles"].issubset(run["agents"]), retrieval=bool(run["citations"]), complete=run["status"] == "success")
         rows.append(dict(trip_id=trip['id'],name=scenario["name"], passed=all(checks.values()), checks=checks, intent=run["intent"], agents=run["agents"], sources=len(run["citations"]), latency_ms=run["latency_ms"]))
     rows.extend(await evaluate_memory(engine))
     applicable=[row for row in rows if row.get('status')!='not_applicable']
@@ -54,7 +54,7 @@ async def evaluate_memory(engine):
         run = await turn("What pickup landmark did I already provide?")
         check("Earlier claims remain in the actual answer", dict(answer="CEDAR-17" in run["response"], amount=run["memory"]["state"]["entities"]["amount"] == ["$5.25"]), run)
         run = await turn("Connect me to a human representative without asking me to repeat my account.")
-        check("Handoff receives the existing account", dict(role="escalation" in run["agents"], account="CEDAR-17" in run["response"]), run)
+        check("Handoff receives the existing account", dict(role=run["agents"] == ["general"] if run.get("agent_mode") == "single" else "escalation" in run["agents"], account="CEDAR-17" in run["response"]), run)
         other = dict(id=uuid4().hex, owner=case["owner"], trip_id=alternate["id"], messages=[])
         run = await turn("What landmark did I provide for this trip?", other)
         check("Another case cannot retrieve these claims", dict(answer="CEDAR-17" not in run["response"], episodes=run["memory"]["episodic_count"] == 0), run)

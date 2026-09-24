@@ -1,94 +1,87 @@
-# LLM-Agent-System
+# LLM-Agent-System: Stateful Ride-Support Agent
 
-A stateful ride-support application built with **Python, FastAPI, Vue 3, SQLite, ChromaDB and MCP**. Trip records, rider corrections, evidence, simulated adjustments and specialist handoff stay in one case.
-
-Single agent with durable case context is the default. Adaptive multi-agent routing is an explicit option with the same read-only tools. Multiple agents are not presented as a quality improvement. The local demo uses a deterministic model adapter and requires no model API key.
-
-Independent prototype, not affiliated with Uber. Supplied trips and policies are fictional; no real payment is executed.
+A support agent where rider claims stay separate from recorded trip facts, policy answers carry retrieved evidence, and model text cannot execute an adjustment.
 
 ![Mobile ride-support workspace](docs/assets/mobile-trips.png)
 
-## Run
+## Why this is hard
 
-On macOS, double-click `Start LLM-Agent-System.command`, or run:
+A rider can correct an earlier statement, contradict a recorded pickup, and request a refund in the same conversation. A useful support system must preserve the correction, distinguish claims from facts, retrieve the applicable policy, and hand the case to a specialist without losing its history.
 
-```bash
-bash scripts/one-click.sh start --no-open
-bash scripts/one-click.sh status
-bash scripts/one-click.sh stop
+## Architecture
+
+```mermaid
+flowchart LR
+    UI[Vue mobile views] --> API[FastAPI routes]
+    API --> P[Case pipeline]
+    P --> I[Intent recognition]
+    I --> O[Single / optional multi-agent]
+    O --> T[Read-only tools]
+    T --> R[Policy retrieval · Chroma]
+    T --> M[Independent MCP service]
+    O --> V[Evidence validation]
+    V --> S[SQLite case + projection outbox]
 ```
 
-Open [Trips](http://127.0.0.1:5175/#/trips), [Help](http://127.0.0.1:5175/#/help) or [Account](http://127.0.0.1:5175/#/account). First setup needs Python 3.11/3.12, Node.js compatible with Vite 7, and dependency-registry access. The background installation supervises the frontend, backend and separate stdio MCP process. The Mac must remain awake and logged in. Run Start again after source updates; saved cases are retained.
+The [API](backend/ride_agent/api/app.py) assembles middleware, lifespan management and route groups. The [pipeline](backend/ride_agent/agent/pipeline.py) loads case context, recognizes intent, builds scoped tools, orchestrates the analysis, validates evidence and prepares durable memory effects. [Case transitions](backend/ride_agent/domain/case.py) apply separate server-controlled commands; analysis never grants financial authority.
 
-For foreground development, stop the background installation, then run `bash scripts/run-rides.sh --dev`.
+The [claim ledger](backend/ride_agent/domain/claims.py) records statement versions and corrections independently of trip records. [Memory](backend/ride_agent/agent/memory.py) restores the case snapshot and derives source-backed context. [Persistence](backend/ride_agent/persistence/store.py) commits case changes and projection work together; Chroma indexes remain derived state.
 
-## Use
+## Key design decisions
 
-Select a trip, describe a dispute, add evidence, review a proposed simulated adjustment or request a specialist. A specialist can read the existing history, accept the case and record a decision.
+| Decision | Reason | Implementation |
+|---|---|---|
+| Separate rider claims and recorded facts | A corrected statement must not silently overwrite verified trip data | [Claim ledger](backend/ride_agent/domain/claims.py) |
+| Require indexed policy anchors | Missing payment or topic evidence downgrades the analysis to partial | [Policy validation](backend/ride_agent/agent/pipeline.py), [case tools](backend/ride_agent/agent/case_tools.py) |
+| Isolate adjustments from model output | Only a valid server proposal and explicit rider confirmation can change simulated payment state | [Case workflow](backend/ride_agent/domain/case.py) |
+| Request IDs plus revisions and ETags | Retries must not duplicate an adjustment; stale writes must be rejected | [Case routes](backend/ride_agent/api/routes/cases.py), [store](backend/ride_agent/persistence/store.py) |
+| Default to one agent with durable memory | Multiple agents added latency without task-completion gains in the offline comparison | [Orchestrator](backend/ride_agent/agent/orchestrator.py) |
+| Keep oracle labels outside agent inputs | Evaluation answers must not enter the production request pipeline | [Replay and oracle](backend/ride_agent/evaluation/simulation/) |
 
-**Support approach** on Account, new-case and conversation screens selects the next analysis. Single agent is the default; multi-agent is optional. Both keep durable context. An explicit browser preference survives reload. Each case and execution records its actual mode.
+## Evaluation
 
-API clients can pass `agent_mode: "single"` or `"multi"` on case creation or a `message` action. Omitting it defaults new/older cases to single and preserves an existing explicit case choice on follow-ups. State changes use request IDs and case revisions; model text cannot execute payments.
+The supplied dataset contains **1,000 synthetic worlds and 2,000 dialogue variants across eight failure families**. Both variants of a world remain in one development, calibration or test split. Replay sends requests through the real API; a separate oracle scores the resulting records.
 
-## Structure
+The following are **historical frozen offline measurements**, taken before this repository restructuring. Each condition ran all 2,000 dialogues. The deterministic model adapter requires no API key; the measured latency includes local processing, not hosted-model inference. [Recorded metrics, split counts and evidence hashes](datasets/ride_support_v1/baseline.json).
 
-| Path | Responsibility |
-|---|---|
-| `backend/mobility/` | Active ride API, workflow guards, persistence, execution, context and operational controls |
-| `backend/agents/`, `backend/core/` | Agent execution, intent recognition, access and concurrency primitives |
-| `backend/memory/`, `backend/tooling/` | Conversation memory, policy retrieval, tool guards and MCP transport |
-| `backend/evaluation/`, `backend/monitor/` | Runnable evaluation and monitoring components |
-| `backend/skills/` | Runtime instructions loaded by the engine; `SKILL.md` files are required inputs |
-| `frontend/` | Vue mobile rider interface, specialist desk and control room |
-| `datasets/ride_support_v1/` | Synthetic catalog, 1,000 worlds, 2,000 dialogue variants and separate scorer labels |
-| `legacy-java/` | Separate Java 21 service; does not serve the active mobile ride API |
-| `scripts/` | Launchers, provisioning, recovery, replay and deployment tools |
+| Agent mode | Memory | Strict task completion | Context loss per eligible checkpoint | Median dialogue time |
+|---|---|---:|---:|---:|
+| Single | Recent 4 rider rounds | 1,340/2,000 · 67% | 34.09% | 408.2 ms |
+| Multi | Recent 4 rider rounds | 1,340/2,000 · 67% | 34.09% | 498.9 ms |
+| **Single (default)** | **Durable** | **2,000/2,000 · 100%** | **0%** | **382.6 ms** |
+| Multi (optional) | Durable | 2,000/2,000 · 100% | 0% | 456.3 ms |
 
-The application receives catalog records. Scenario steps and oracle labels are consumed by replay/scoring tools, not by the agent. Related dialogue variants stay in the same split. Synthetic results do not establish real-user accuracy.
+The held-out test split contains 175 worlds / 350 dialogues: recent-window conditions completed 234/350; durable conditions completed 350/350. Multiple agents produced no completion improvement under either memory condition.
 
-## Develop
+Limitations:
 
-```bash
-python -m pip install --require-hashes -r backend/requirements.txt
-python -m pip install -r backend/requirements-dev.txt
-(cd backend && python -m pytest tests -q)
-(cd frontend && npm ci && npm test && npm run lint && npm run build)
-```
+- Synthetic fixtures and a deterministic adapter do not establish real-user accuracy, live-model reliability or universal policy grounding.
+- Business invariants passed in these runs, but this is not a general safety guarantee. No real payment was executed.
+- SQLite and embedded Chroma target one state namespace and one worker; deployment needs managed identity, TLS, upload scanning and offsite recovery.
 
-For the separate Java service, use JDK 21 and run `(cd legacy-java && ./mvnw clean test)`. `python scripts/check-java.py --with-chroma` starts isolated Redis/Chroma/MCP dependencies for additional integration coverage; it requires `redis-server` and the Python dependencies.
+## Quickstart
 
-Replay the supplied synthetic data through the real API pipeline:
-
-```bash
-cd backend
-python -m mobility.simulation audit --dataset ../datasets/ride_support_v1
-python -m mobility.simulation replay --dataset ../datasets/ride_support_v1 --output ../artifacts/my-replay
-```
-
-Existing dataset/result directories are never overwritten. Generated results, databases, credentials, caches and build output stay outside the tracked tree.
-
-## Optional authenticated and container previews
+Requires Python 3.11/3.12 and Node.js compatible with Vite 7. First setup downloads pinned dependencies.
 
 ```bash
-python scripts/provision-auth-preview.py
-bash scripts/run-authenticated-demo.sh
+git clone https://github.com/lucia-huang7/LLM-Agent-System.git
+cd LLM-Agent-System
+bash scripts/dev/one-click.sh start --no-open
 ```
 
-Open `http://127.0.0.1:8012`. Generated fictional credentials are stored in the owner-only, ignored `.runtime/auth-preview/access-credentials.json`. They expire after 24 hours; browser sign-in holds them in memory only. For rotation, provision a new `--output` directory and pass it to the run script; existing registries are not overwritten.
+Open [Trips](http://127.0.0.1:5175/#/trips). On macOS, double-click [Start LLM-Agent-System.command](scripts/macos/Start%20LLM-Agent-System.command). Frontend, backend and the independent MCP process run under the local supervisor. No model API key is required. See [operations](docs/operations.md) for stopping, development, authenticated previews, containers, backup and optional live-model configuration.
 
-With Docker Engine and Compose, `bash scripts/container-demo.sh` starts a separate authenticated preview on `http://127.0.0.1:8013`. Read the required account credential locally:
+## Repository layout
 
-```bash
-docker compose --profile tools run --rm --no-deps init python -c \
-  'import json; print(json.load(open("/config/profile/access-credentials.json"))["credentials"]["preview-rider"])'
+```text
+backend/ride_agent/  api · domain · agent · retrieval · integrations · persistence · ops · evaluation
+backend/tests/       unit · integration · regression
+datasets/            synthetic worlds, dialogue steps, separate oracle and recorded baseline
+frontend/src/        Vue Router views, workspace composable and shared components/styles
+scripts/             dev · ops · bench · macos
+docs/                screenshot and operations guide
 ```
 
-Other preview accounts are `preview-specialist` and `preview-operator`. Keep credentials out of screenshots, URLs and source control. Container rotation requires a newly provisioned configuration directory selected through a Compose override. `docker compose stop app` preserves state; removing volumes deletes it.
+Java is preserved on the [`archive/java`](https://github.com/lucia-huang7/LLM-Agent-System/tree/archive/java/legacy-java) branch and does not serve this application.
 
-## Runtime boundaries
-
-The default public demo identities are role-play controls. Keep demo mode on loopback. The authenticated preview enforces ownership and staff roles, but is not managed identity or OIDC. Storage is single-node SQLite with embedded Chroma; use one worker per state namespace. Real deployments still need TLS, identity lifecycle management, upload scanning, dependency review and offsite recovery. No production availability or live-model quality claim is made.
-
-`/livez` checks the process; `/readyz` also checks storage, policy indexes, projections and actual MCP access. Local data lives under `.runtime/`; the persistent macOS installation uses `~/Library/Application Support/LLM-Agent-System/<instance>/`. Use `python -m mobility.backup --help` from `backend/` for offline backup/restore commands and stop the relevant instance before copying embedded state.
-
-Live model access is separate from agent count: set `LLM_AGENT_SYSTEM_RIDE_MODEL_MODE=live`, `LLM_AGENT_SYSTEM_RIDE_MODEL` and `LLM_AGENT_SYSTEM_RIDE_API_KEY` explicitly. The default remains no-key `demo`; live model access never grants financial permissions.
+Independent prototype; fictional trips and policies. Not affiliated with Uber.

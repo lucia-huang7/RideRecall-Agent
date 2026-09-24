@@ -2,188 +2,536 @@
   <div class="ride-layout">
     <aside class="desktop-intro">
       <a :href="homePath" class="wordmark">LLM-Agent-System</a>
-      <div><p class="eyebrow">SUPPORT, WITHOUT THE RUNAROUND</p><h1>A better way<br>forward.</h1><p>One trip. One conversation.<br>A clear path to resolution.</p><div class="intro-points"><span><Icon name="check"/> Your context stays with you</span><span><Icon name="check"/> Every decision has a reason</span><span><Icon name="check"/> A human, when you need one</span></div></div>
-      <div class="desktop-foot"><span class="demo-dot"></span> {{ isDemo ? 'Local demo · No API key needed' : 'Authenticated workspace' }} <a v-if="canSpecialist" href="#/agent">Open Agent desk <Icon name="northeast"/></a></div>
+      <div>
+        <p class="eyebrow">SUPPORT, WITHOUT THE RUNAROUND</p>
+        <h1>A better way<br />forward.</h1>
+        <p>One trip. One conversation.<br />A clear path to resolution.</p>
+        <div class="intro-points">
+          <span><Icon name="check" /> Your context stays with you</span
+          ><span><Icon name="check" /> Every decision has a reason</span
+          ><span><Icon name="check" /> A human, when you need one</span>
+        </div>
+      </div>
+      <div class="desktop-foot">
+        <span class="demo-dot"></span>
+        {{
+          isDemo ? "Local demo · No API key needed" : "Authenticated workspace"
+        }}
+        <a v-if="canSpecialist" href="#/agent"
+          >Open Agent desk <Icon name="northeast"
+        /></a>
+      </div>
     </aside>
 
-    <main class="phone-app" :class="{ 'chat-screen': route.page === 'chat', 'desk-screen': route.page === 'agent' }">
+    <main
+      class="phone-app"
+      :class="{
+        'chat-screen': route.page === 'chat',
+        'desk-screen': route.page === 'agent',
+      }"
+    >
       <header class="app-header">
-        <button v-if="!['trips','help','account','agent'].includes(route.page)" class="icon-button" aria-label="Go back" @click="back"><Icon name="chevron" class="reverse"/></button>
+        <button
+          v-if="!['trips', 'help', 'account', 'agent'].includes(route.page)"
+          class="icon-button"
+          aria-label="Go back"
+          @click="back"
+        >
+          <Icon name="chevron" class="reverse" />
+        </button>
         <a v-else class="mobile-brand" :href="homePath">LLM-Agent-System</a>
-        <span v-if="!['trips','help','account','agent'].includes(route.page)" class="header-label">{{ route.page === 'chat' ? 'Your conversation' : route.page === 'new' ? 'Trip support' : route.page === 'trip' ? 'Trip details' : route.page === 'manage' ? 'Control room' : 'Case details' }}</span>
-        <div class="header-actions"><button class="theme-toggle" :aria-pressed="theme==='rainbow'" aria-label="Toggle Rainbow Mode" :title="theme==='rainbow' ? 'Switch to black and white' : 'Switch to Rainbow Mode'" @click="setTheme(theme==='rainbow' ? 'mono' : 'rainbow')"><span class="theme-swatch" aria-hidden="true"></span></button><button class="avatar" aria-label="Open your profile" @click="go('/account')">{{ identity.subject?.[0]?.toUpperCase() || 'J' }}</button></div>
+        <span
+          v-if="!['trips', 'help', 'account', 'agent'].includes(route.page)"
+          class="header-label"
+          >{{
+            route.page === "chat"
+              ? "Your conversation"
+              : route.page === "new"
+                ? "Trip support"
+                : route.page === "trip"
+                  ? "Trip details"
+                  : route.page === "manage"
+                    ? "Control room"
+                    : "Case details"
+          }}</span
+        >
+        <div class="header-actions">
+          <button
+            class="theme-toggle"
+            :aria-pressed="theme === 'rainbow'"
+            aria-label="Toggle Rainbow Mode"
+            :title="
+              theme === 'rainbow'
+                ? 'Switch to black and white'
+                : 'Switch to Rainbow Mode'
+            "
+            @click="setTheme(theme === 'rainbow' ? 'mono' : 'rainbow')"
+          >
+            <span class="theme-swatch" aria-hidden="true"></span></button
+          ><button
+            class="avatar"
+            aria-label="Open your profile"
+            @click="go('/account')"
+          >
+            {{ identity.subject?.[0]?.toUpperCase() || "J" }}
+          </button>
+        </div>
       </header>
-      <div class="demo-bar"><span class="demo-dot"></span> {{ engineStatus.mode==='live' ? 'LIVE MODEL · DEMO DATA' : 'LOCAL ENGINE · DEMO DATA' }} <span>Fictional trips. No real payments.</span></div>
-      <div v-if="error" class="error-banner" role="alert"><Icon name="alert"/><span>{{ error }}</span><button aria-label="Dismiss error" @click="error=''">×</button></div>
+      <div class="demo-bar">
+        <span class="demo-dot"></span>
+        {{
+          engineStatus.mode === "live"
+            ? "LIVE MODEL · DEMO DATA"
+            : "LOCAL ENGINE · DEMO DATA"
+        }}
+        <span>Fictional trips. No real payments.</span>
+      </div>
+      <div v-if="error" class="error-banner" role="alert">
+        <Icon name="alert" /><span>{{ error }}</span
+        ><button aria-label="Dismiss error" @click="error = ''">×</button>
+      </div>
       <div v-if="notice" class="toast" role="status">{{ notice }}</div>
 
-      <div v-if="denied" class="empty-state"><Icon name="alert"/><h2>Access restricted</h2><p>This page requires a different account role.</p><button class="primary" @click="go('/account')">View account</button></div>
-      <div v-else-if="loading && ((canRider && !trips.length) || (['case','chat'].includes(route.page) && !currentCase))" class="empty-state"><span class="spinner"></span><h2>Getting things ready</h2><p>Connecting to your local support service.</p></div>
-      <div v-else-if="canRider && !trips.length && !['account','agent','manage'].includes(route.page)" class="empty-state"><Icon name="alert"/><h2>Let's reconnect</h2><p>Your trips could not be loaded.</p><button class="primary" @click="refresh">Try again</button></div>
+      <div v-if="denied" class="empty-state">
+        <Icon name="alert" />
+        <h2>Access restricted</h2>
+        <p>This page requires a different account role.</p>
+        <button class="primary" @click="go('/account')">View account</button>
+      </div>
+      <div
+        v-else-if="
+          loading &&
+          ((canRider && !trips.length) ||
+            (['case', 'chat'].includes(route.page) && !currentCase))
+        "
+        class="empty-state"
+      >
+        <span class="spinner"></span>
+        <h2>Getting things ready</h2>
+        <p>Connecting to your local support service.</p>
+      </div>
+      <div
+        v-else-if="
+          canRider &&
+          !trips.length &&
+          !['account', 'agent', 'manage'].includes(route.page)
+        "
+        class="empty-state"
+      >
+        <Icon name="alert" />
+        <h2>Let's reconnect</h2>
+        <p>Your trips could not be loaded.</p>
+        <button class="primary" @click="refresh">Try again</button>
+      </div>
 
-      <template v-else-if="route.page === 'trips'">
-        <section class="page-heading"><p class="eyebrow">YOUR JOURNEY, TAKEN CARE OF</p><h1>Your trips</h1><p>Good rides. Better support.</p></section>
-        <section v-if="activeCases.length" class="active-strip" aria-label="Active cases"><button @click="openCase(activeCases[0].id)"><span class="round-icon"><Icon name="chat"/></span><span><strong>Your case is moving forward</strong><small>{{ statusLabel(activeCases[0].status) }} · {{ activeCases[0].id }}</small></span><Icon name="chevron"/></button></section>
-        <div class="section-title"><h2>Recent activity</h2><span>October 2026</span></div>
-        <section class="trip-list">
-          <article v-for="(trip,index) in trips" :key="trip.id" class="trip-card">
-            <button class="trip-open" :aria-label="`View trip to ${trip.destination}`" @click="go('/trip/'+trip.id)"><div class="vehicle-tile" :class="trip.color"><svg viewBox="0 0 90 50" aria-hidden="true"><ellipse cx="46" cy="42" rx="36" ry="4" fill="#000000" opacity=".08"/><path d="m12 29 10-7 9-12h27l15 14 7 5v10H10V31Z" fill="#383838"/><path d="m33 13-7 10h19V13Zm16 0v10h18L56 13Z" fill="#c3c3c3"/><path d="M13 29h64" stroke="#787878" stroke-width="2"/><circle cx="26" cy="38" r="7" fill="#1a1a1a"/><circle cx="65" cy="38" r="7" fill="#1a1a1a"/><circle cx="26" cy="38" r="3" fill="#acacac"/><circle cx="65" cy="38" r="3" fill="#acacac"/></svg></div><span class="trip-text"><strong>{{ trip.destination }}</strong><small>{{ trip.date }} · {{ trip.time }}</small><span class="trip-meta">{{ trip.vehicle }} <span v-if="trip.status==='Canceled'" class="canceled">Canceled</span></span></span><span class="trip-price">{{ money(trip.total) }}<Icon name="chevron"/></span></button>
-            <button class="trip-help" @click="start(trip)"><Icon name="chat"/>{{ index === 0 ? 'Charged for a canceled trip?' : 'Get help with this trip' }}<Icon name="arrow" class="arrow-right"/></button>
-          </article>
-        </section>
-        <section class="support-promise"><span class="round-icon"><Icon name="route"/></span><h2>You explain it once.<br>We take it from there.</h2><p>Your trip, messages, and evidence stay together—even when a specialist steps in.</p><button class="text-button" @click="go('/help')">How support works <Icon name="northeast"/></button></section>
-      </template>
+      <RouterView v-else />
 
-      <template v-else-if="route.page === 'trip' && trip">
-        <RideMap :tone="trip.color" :canceled="trip.status==='Canceled'"/>
-        <section class="content-block"><p class="eyebrow">{{ trip.date }} · {{ trip.time }}</p><h1>{{ trip.destination }}</h1><p>{{ trip.vehicle }} · {{ trip.duration }}</p><div class="route-summary"><span class="route-dot"></span><div><small>Pickup</small><strong>{{ trip.pickup }}</strong></div><span class="route-square"></span><div><small>Destination</small><strong>{{ trip.destination }}</strong></div></div><div class="receipt"><div><span>{{ trip.status==='Canceled' ? 'Cancellation fee' : 'Trip fare' }}</span><strong>{{ money(trip.total) }}</strong></div><div v-if="trip.estimated"><span>Original estimate</span><span>{{ money(trip.estimated) }}</span></div><div><span>Payment status</span><span>Settled · Demo card</span></div></div><button class="primary" @click="start(trip)"><Icon name="chat"/> Get help with this trip</button><button v-if="tripCase" class="secondary" @click="openCase(tripCase.id)">View existing case <Icon name="chevron"/></button><p class="footnote">All trip and payment records are fictional.</p></section>
-      </template>
-
-      <template v-else-if="route.page === 'new' && trip">
-        <section class="content-block"><p class="eyebrow">LET'S MAKE THIS RIGHT</p><h1>What happened?</h1><p>You don't need to find the perfect category.<br>Just tell us in your own words.</p><div class="linked-trip"><Icon name="route"/><div><strong>{{ trip.destination }}</strong><small>{{ trip.date }} · {{ money(trip.total) }}</small></div><span>Linked</span></div><fieldset class="topic-options"><legend>What can we help with?</legend><button v-for="option in topics" :key="option.id" :class="{selected:topic===option.id}" @click="selectTopic(option)">{{ option.label }}<Icon v-if="topic===option.id" name="check"/></button></fieldset><label class="field-label" for="description">Tell us a little more</label><textarea id="description" v-model="description" maxlength="4000" rows="5" placeholder="Tell us what happened and what you would like us to review."></textarea><p class="field-hint">Your trip details are already attached. No need to repeat them.</p><AgentModePicker v-model="agentMode" :disabled="busy"/><button class="primary" :disabled="busy || description.trim().length<5" @click="createCase()">{{ busy ? 'Opening your case…' : 'Continue with support' }}<Icon name="arrow" class="arrow-right"/></button><button class="text-button centered" :disabled="busy" @click="createCase(true)">I'd prefer a human review <Icon name="chevron"/></button><p class="footnote">{{ engineStatus.mode==='live' ? 'A model provider analyzes this fictional case. Uber is not contacted.' : 'Local execution. No information is sent to Uber or an AI provider.' }}</p></section>
-      </template>
-
-      <template v-else-if="route.page === 'case' && currentCase">
-        <section class="content-block case-heading"><div class="case-overline"><span class="eyebrow">{{ currentCase.id }}</span><button class="text-button" @click="sheet='trace'">Behind the scenes <Icon name="panel"/></button></div><h1>{{ currentCase.title }}</h1><span class="status-pill" :class="currentCase.status"><span class="tiny-dot"></span>{{ statusLabel(currentCase.status) }}</span><p class="case-description">{{ currentCase.description }}</p></section>
-        <section class="next-card"><span class="round-icon dark"><Icon :name="currentCase.status==='resolved' ? 'check' : currentCase.status==='awaiting_confirmation' ? 'document' : 'chat'"/></span><div><p class="eyebrow">{{ currentCase.status==='resolved' ? 'YOUR OUTCOME' : 'WHAT HAPPENS NEXT' }}</p><h2>{{ nextStep.title }}</h2><p>{{ nextStep.text }}</p></div><button v-if="currentCase.status==='awaiting_confirmation'" class="primary" :disabled="busy" @click="sheet='confirm'">Review {{ money(currentCase.proposal.amount) }} adjustment <Icon name="arrow" class="arrow-right"/></button><button v-else-if="currentCase.status==='needs_review'" class="primary" :disabled="busy" @click="act('handoff')">Request human review <Icon name="arrow" class="arrow-right"/></button><button v-else-if="currentCase.status==='awaiting_rider'" class="primary" :disabled="busy" @click="act('close')">This explains my charge <Icon name="check"/></button><button v-if="['waiting_for_agent','in_review'].includes(currentCase.status)" class="secondary" @click="go('/agent')">Try the simulated Agent desk <Icon name="northeast"/></button></section>
-        <section class="content-block"><div class="section-title flush"><h2>Your trip</h2><button class="text-button" @click="go('/trip/'+trip.id)">Details <Icon name="chevron"/></button></div><div class="linked-trip"><Icon name="route"/><div><strong>{{ trip.destination }}</strong><small>{{ trip.date }} · {{ trip.status }}</small></div><strong>{{ money(trip.total) }}</strong></div><h2 class="subheading">What we've checked</h2><div v-for="fact in currentCase.facts" :key="fact.label" class="fact-row"><Icon :name="fact.source==='Requires verification' ? 'alert' : 'check'"/><div><strong>{{ fact.label }}</strong><p>{{ fact.text }}</p><small>{{ fact.source }}</small></div></div><section v-if="latestRun?.citations.length" class="retrieved-evidence"><h2 class="subheading">Sources used in this analysis</h2><details v-for="d in latestRun.citations" :key="d.document_id+':'+d.chunk" class="source-record"><summary>{{ d.title }} <small>[{{ d.document_id.slice(0,8) }}:{{ d.chunk }}]</small></summary><p>{{ d.content }}</p><small>Retrieved from the local policy index · {{ latestRun.mode==='demo' ? 'Hash vectors, not neural embeddings' : 'Local hash vector retrieval' }}</small></details></section><button class="policy-link" @click="sheet='policy'"><Icon name="book"/><span>See the policy behind this review<small>Fictional demo policy · Chicago</small></span><Icon name="chevron"/></button>
-          <div class="section-title"><h2>Your evidence</h2><button class="text-button" @click="sheet='evidence'">Add <Icon name="plus"/></button></div><p v-if="!currentCase.evidence.length" class="muted">Add a note or screenshot. Your original explanation is already saved.</p><div v-for="e in currentCase.evidence" :key="e.id" class="evidence-item"><Icon name="document"/><div><strong>{{ e.filename || 'Your note' }}</strong><p>{{ e.text }}</p><small>Rider-provided · Not independently verified</small></div><button v-if="e.filename" class="icon-button" aria-label="Download attachment" @click="download(e)"><Icon name="northeast"/></button></div>
-          <h2 class="subheading">Every step, in one place</h2><ol class="timeline"><li v-for="(item,index) in currentCase.events" :key="item.id"><span class="timeline-dot" :class="{latest:index===currentCase.events.length-1}"></span><strong>{{ item.title }}</strong><p>{{ item.detail }}</p><small>{{ time(item.at) }} · {{ item.actor === 'agent' ? 'Demo specialist' : item.actor === 'rider' ? 'You' : item.actor === 'system' ? 'LLM-Agent-System' : item.actor }}</small></li></ol>
-          <button class="primary" @click="go('/case/'+currentCase.id+'/chat')"><Icon name="chat"/> Continue the conversation</button><button v-if="!['waiting_for_agent','in_review'].includes(currentCase.status)" class="secondary" :disabled="busy" @click="act('handoff')">{{ currentCase.status==='resolved' ? 'Request another review' : 'Talk to a specialist' }}</button><p class="footnote">No real support request or payment is sent to Uber.</p>
-        </section>
-      </template>
-
-      <template v-else-if="route.page==='chat' && currentCase">
-        <button class="chat-case-bar" @click="openCase(currentCase.id)"><span class="round-icon"><Icon name="document"/></span><span><strong>{{ currentCase.title }}</strong><small>{{ statusLabel(currentCase.status) }} · {{ currentCase.id }}</small></span><Icon name="chevron"/></button>
-        <section class="messages" aria-label="Case conversation" aria-live="polite"><p class="chat-date">Your context stays with this case</p><article v-for="m in currentCase.messages" :key="m.id" class="message" :class="m.role"><span v-if="m.role!=='rider'" class="sender">{{ m.role==='agent' ? (m.staff_subject ? m.staff_subject+' · Specialist' : 'Alex · Demo specialist') : m.role==='system' ? 'Case update' : !m.analysis_id ? 'Saved assistant response' : m.model_mode==='live' ? 'LLM-Agent-System · Model analysis' : 'LLM-Agent-System · Offline model adapter' }}</span><div>{{ m.content }}</div><small>{{ time(m.at) }}</small></article></section>
-        <div class="composer-wrap"><AgentModePicker v-model="agentMode" :disabled="busy" compact/><div class="chat-quick"><button :disabled="busy || ['waiting_for_agent','in_review'].includes(currentCase.status)" @click="act('handoff')">{{ ['waiting_for_agent','in_review'].includes(currentCase.status) ? 'Human review requested' : 'Request human review' }}</button><button @click="sheet='evidence'">Add evidence</button></div><form class="composer" @submit.prevent="sendMessage"><input v-model="draft" aria-label="Message support" placeholder="Message about this case…" maxlength="4000"/><button type="submit" :disabled="busy || !draft.trim()" aria-label="Send message"><Icon name="arrow"/></button></form><p>{{ agentMode==='multi' ? 'Optional multi-agent' : 'Single agent' }} · Durable context · {{ engineStatus.mode==='live' ? 'Live model analysis · Simulated data' : 'Offline model adapter' }}</p></div>
-      </template>
-
-      <template v-else-if="route.page==='help'">
-        <section class="page-heading"><p class="eyebrow">WE'RE HERE TO HELP</p><h1>Let's sort it out.</h1><p>No searching in circles.</p></section><section class="content-block top-zero"><button class="help-hero" @click="sheet='trips'"><span class="round-icon dark"><Icon name="chat"/></span><div><h2>Get help with a trip</h2><p>Tell us what happened.<br>We'll connect the dots.</p></div><Icon name="chevron"/></button><div class="section-title"><h2>Your cases</h2><span>{{ cases.length }} of {{ casesTotal }} total</span></div><div v-if="!cases.length" class="empty-card"><Icon name="document"/><h3>A fresh start</h3><p>When you open a case, you'll find every update here.</p></div><button v-for="c in cases" :key="c.id" class="case-list-item" @click="openCase(c.id)"><span class="round-icon"><Icon :name="c.status==='resolved'?'check':'chat'"/></span><div><strong>{{ c.title }}</strong><small>{{ c.id }} · {{ statusLabel(c.status) }}</small></div><Icon name="chevron"/></button><button v-if="casesNext" class="secondary" :disabled="busy" @click="loadMoreCases">Load more cases</button><h2 class="subheading">Support that stays with you</h2><details><summary>How does human review work?</summary><p>Request a review from any case. A simulated specialist can accept it in the Agent desk, read the complete record, and reply. No real Uber employee is contacted.</p></details><details><summary>Will I need to explain everything again?</summary><p>No. Your trip, original explanation, evidence, and conversation are saved to one case. You can correct the summary at any time in the conversation.</p></details><details><summary>Are these real refunds?</summary><p>No. All trips, policies, and adjustments in this demo are fictional. No money moves.</p></details></section>
-      </template>
-
-      <template v-else-if="route.page==='account'">
-        <section class="page-heading"><p class="eyebrow">YOUR SPACE</p><h1>{{ identity.subject || 'Jamie' }}</h1><p>{{ isDemo ? 'Local demo rider' : identity.roles.join(' · ') }}</p></section><section class="content-block top-zero"><div class="profile-card"><span class="large-avatar">{{ identity.subject?.[0]?.toUpperCase() || 'J' }}</span><div><h2>Everything in one place.</h2><p>Your case history follows your workspace account.</p></div></div><AgentModePicker v-model="agentMode" :disabled="busy"/><section class="appearance-card" aria-labelledby="appearance-title"><div class="appearance-heading"><div><h2 id="appearance-title">Appearance</h2><p>Same clarity. A different expression.</p></div><span class="theme-swatch" aria-hidden="true"></span></div><div class="theme-options" role="group" aria-label="Color theme"><button :aria-pressed="theme==='mono'" :class="{selected:theme==='mono'}" @click="setTheme('mono')"><span class="mono-preview" aria-hidden="true"></span>Black &amp; white<Icon v-if="theme==='mono'" name="check"/></button><button :aria-pressed="theme==='rainbow'" :class="{selected:theme==='rainbow'}" @click="setTheme('rainbow')"><span class="rainbow-preview" aria-hidden="true"></span>Rainbow Mode<Icon v-if="theme==='rainbow'" name="check"/></button></div></section><button v-if="canRider" class="settings-row" @click="go('/help')"><Icon name="chat"/><span>My support cases</span><Icon name="chevron"/></button><button v-if="canSpecialist" class="settings-row" @click="go('/agent')"><Icon name="panel"/><span>Open simulated Agent desk</span><Icon name="chevron"/></button><button v-if="canOperator" class="settings-row" @click="go('/manage')"><Icon name="sliders"/><span>Open control room</span><Icon name="chevron"/></button><button v-if="canOperator" class="settings-row" @click="runEvaluation"><Icon name="chart"/><span>Run pipeline checks</span><Icon name="chevron"/></button><button class="settings-row" @click="sheet='about'"><Icon name="book"/><span>About this demo</span><Icon name="chevron"/></button><button v-if="!isDemo" class="settings-row" @click="emit('sign-out')"><Icon name="close"/><span>Sign out</span><Icon name="chevron"/></button><div class="demo-info"><p class="eyebrow">CONTEXT THAT STAYS WITH YOU</p><h2>Real workflows.<br>Fictional rides.</h2><p>Vue mobile interface. Single-agent support, durable case context, and policy retrieval. Multi-agent routing is optional. No API key required in offline mode.</p></div></section>
-      </template>
-
-      <template v-else-if="route.page==='manage'"><OperationsPanel :identity="identity"/></template>
-      <template v-else-if="route.page==='agent'">
-        <section class="page-heading"><p class="eyebrow">SIMULATED SPECIALIST WORKSPACE</p><h1>Agent desk</h1><p>Pick up where the rider left off.</p></section><section class="content-block top-zero"><div v-if="isDemo" class="agent-note"><Icon name="alert"/><p>This is a local role-play workspace with public demo access. It is not production authentication or a live support team.</p></div><button class="secondary" @click="run(()=>loadQueue({reset:true}))">Refresh queue <Icon name="refresh"/></button><div v-if="!queue.length" class="empty-card"><Icon name="check"/><h3>All clear for now</h3><p>Request human review from a rider case to see it here.</p><button v-if="canRider" class="text-button" @click="go('/trips')">Explore trips <Icon name="chevron"/></button></div><p v-if="queueTotal" class="footnote">{{ queue.length }} of {{ queueTotal }} cases loaded</p><button v-for="c in queue" :key="c.id" class="case-list-item" :class="{selected:selectedAgentId===c.id}" :disabled="busy" @click="selectAgent(c.id)"><span class="round-icon"><Icon name="document"/></span><div><strong>{{ c.title }}</strong><small>{{ c.id }} · {{ statusLabel(c.status) }}</small></div><Icon name="chevron"/></button>
-        <button v-if="queueNext" class="secondary" :disabled="busy" @click="run(()=>loadQueue({more:true}))">Load more cases</button><article v-if="agentCase" class="agent-case"><p class="eyebrow">{{ agentCase.id }} · FULL CONTEXT ATTACHED</p><h2>{{ agentCase.title }}</h2><blockquote>{{ agentCase.description }}</blockquote><div class="agent-summary"><strong>Open question</strong><p>{{ agentCase.handoff.open_question }}</p><strong>Evidence</strong><p>{{ agentCase.evidence.length }} items · {{ agentCase.messages.length }} messages preserved</p></div><div v-for="e in agentCase.evidence" :key="e.id" class="evidence-item"><Icon name="document"/><div><strong>{{ e.filename || 'Rider note' }}</strong><p>{{ e.text }}</p></div><button v-if="e.filename" class="icon-button" aria-label="Download rider attachment" @click="download(e,true)"><Icon name="northeast"/></button></div><details open><summary>Conversation history</summary><div v-for="m in agentCase.messages" :key="m.id" class="agent-history"><small>{{ m.role==='rider'?'Rider':m.role==='agent'?'Specialist':m.role==='system'?'Case update':m.analysis_id?'Model analysis':'Saved response' }}</small><p>{{ m.content }}</p></div></details><details><summary>Actions and decision history</summary><div v-for="e in agentCase.events" :key="e.id" class="agent-history"><strong>{{ e.title }}</strong><p>{{ e.detail }}</p></div></details><button v-if="agentCase.status==='waiting_for_agent'" class="primary" :disabled="busy" @click="staffAct('accept')">{{ isDemo ? 'Accept case as Alex' : 'Accept case' }} <Icon name="check"/></button><template v-else-if="agentCase.status==='in_review' && (isDemo || agentCase.assigned_to===identity.subject)"><label class="field-label" for="staffReply">Reply or explain your decision</label><textarea id="staffReply" v-model="staffReply" rows="4" placeholder="Address the evidence and explain the next step."></textarea><button class="primary" :disabled="busy || !staffReply.trim()" @click="staffAct('reply')">Send reply</button><button v-if="agentOptions.includes('propose_adjustment')" class="secondary" :disabled="busy || !staffReply.trim()" @click="staffAct('propose_adjustment')">Offer cancellation fee adjustment</button><button class="secondary" :disabled="busy || !staffReply.trim()" @click="staffAct('resolve')">Send decision and resolve</button></template><p v-else class="success-note">{{ agentCase.status==='in_review' ? 'This case is assigned to another specialist.' : agentCase.status==='awaiting_confirmation' ? 'An adjustment is awaiting rider confirmation. No payment has been made.' : 'This case has been resolved. Its history remains available.' }}</p><button v-if="isDemo" class="text-button centered" @click="openCase(agentCase.id)">View as rider <Icon name="northeast"/></button></article></section>
-      </template>
-      <div v-else class="empty-state"><h2>Page not found</h2><button class="primary" @click="go('/trips')">Back to trips</button></div>
-
-      <nav v-if="route.page!=='chat'" class="bottom-nav" aria-label="Main navigation"><button v-if="canRider" :class="{active:['trips','trip','new'].includes(route.page)}" @click="go('/trips')"><Icon name="route"/><span>Trips</span></button><button v-if="canRider" :class="{active:['help','case'].includes(route.page)}" @click="go('/help')"><Icon name="chat"/><span>Help<span v-if="activeCaseCount" class="nav-count">{{ activeCaseCount }}</span></span></button><button :class="{active:['account','agent','manage'].includes(route.page)}" @click="go('/account')"><Icon name="sliders"/><span>Account</span></button></nav>
+      <nav
+        v-if="route.page !== 'chat'"
+        class="bottom-nav"
+        aria-label="Main navigation"
+      >
+        <button
+          v-if="canRider"
+          :class="{ active: ['trips', 'trip', 'new'].includes(route.page) }"
+          @click="go('/trips')"
+        >
+          <Icon name="route" /><span>Trips</span></button
+        ><button
+          v-if="canRider"
+          :class="{ active: ['help', 'case'].includes(route.page) }"
+          @click="go('/help')"
+        >
+          <Icon name="chat" /><span
+            >Help<span v-if="activeCaseCount" class="nav-count">{{
+              activeCaseCount
+            }}</span></span
+          ></button
+        ><button
+          :class="{
+            active: ['account', 'agent', 'manage'].includes(route.page),
+          }"
+          @click="go('/account')"
+        >
+          <Icon name="sliders" /><span>Account</span>
+        </button>
+      </nav>
     </main>
 
-    <div v-if="sheet" class="sheet-backdrop" @click.self="sheet=''" @keydown.esc="sheet=''">
-      <section ref="sheetEl" class="bottom-sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" tabindex="-1" @keydown.tab="trapFocus">
-        <div class="sheet-handle"></div><button class="sheet-close icon-button" aria-label="Close dialog" @click="sheet=''"><Icon name="close"/></button>
-        <template v-if="sheet==='trips'"><p class="eyebrow">LET'S START HERE</p><h2 id="sheet-title">Which trip?</h2><button v-for="t in trips" :key="t.id" class="case-list-item" @click="sheet='';start(t)"><Icon name="route"/><div><strong>{{ t.destination }}</strong><small>{{ t.date }} · {{ money(t.total) }}</small></div><Icon name="chevron"/></button></template>
-        <template v-else-if="sheet==='evidence'"><p class="eyebrow">KEEP IT ALL TOGETHER</p><h2 id="sheet-title">Add evidence</h2><p>A note, screenshot, or receipt can help a specialist understand what happened.</p><label class="field-label" for="evidenceNote">Your note</label><textarea id="evidenceNote" v-model="evidenceNote" rows="4" maxlength="4000" placeholder="What should we know?"></textarea><button class="primary" :disabled="busy || !evidenceNote.trim()" @click="addNote">Save note <Icon name="plus"/></button><label class="upload-button"><Icon name="upload"/>{{ busy?'Uploading…':'Attach a screenshot or document' }}<input type="file" accept="image/png,image/jpeg,application/pdf" :disabled="busy" @change="upload"/></label><p class="footnote">PNG, JPEG, or PDF · Up to 3 MB · Saved locally. Use fictional information.</p></template>
-        <template v-else-if="sheet==='policy'"><p class="eyebrow">TRANSPARENT BY DESIGN</p><h2 id="sheet-title">{{ currentCase.policy.title }}</h2><span class="status-pill">{{ currentCase.policy.version }}</span><p class="policy-copy">{{ currentCase.policy.text }}</p><div v-if="isDemo" class="agent-note"><Icon name="book"/><p>This is a fictional policy written for this project. It is not Uber policy or a promise of eligibility.</p></div></template>
-        <template v-else-if="sheet==='confirm' && currentCase.proposal"><p class="eyebrow">YOU'RE IN CONTROL</p><h2 id="sheet-title">Review your adjustment</h2><div class="adjustment-amount">{{ money(currentCase.proposal.amount) }}</div><p>{{ currentCase.proposal.reason }}</p><div v-if="isDemo" class="agent-note"><Icon name="alert"/><p>Confirming records a simulated adjustment. No money moves and Uber is not contacted.</p></div><button class="primary" :disabled="busy" @click="act('confirm')">{{ busy?'Recording…':'Confirm demo adjustment' }}<Icon name="check"/></button><button class="secondary" @click="sheet=''">Not now</button></template>
-        <template v-else-if="sheet==='trace'"><p class="eyebrow">ACTUAL EXECUTION RECORD</p><h2 id="sheet-title">How this review worked</h2><template v-if="latestRun"><span class="status-pill">{{ latestRun.mode==='demo' ? 'Offline model adapter' : 'Live model' }} · {{ latestRun.status }}</span><p>{{ latestRun.agent_mode==='multi' ? 'Optional multi-agent routing' : latestRun.agent_mode==='single' ? 'Single-agent support' : 'Historical agent configuration' }} ran with intent recognition, policy retrieval and durable case context. Offline mode simulates model outputs; it does not simulate tool execution.</p><h3>Intent fusion</h3><div class="trace-row"><strong>{{ latestRun.intent }}</strong><span>{{ latestRun.embedding_source || 'Local vector branch' }}</span></div><div v-for="(score,source) in latestRun.source_scores" :key="source" class="trace-row"><span>{{ source==='llm' ? (latestRun.mode==='demo' ? 'Simulated model branch' : 'Model branch') : source==='embedding' ? 'Local vector branch' : 'Pattern branch' }}</span><strong>{{ Number(score).toFixed(3) }}</strong></div><p class="footnote">Fusion scores are not calibrated probabilities or accuracy measurements.</p><h3>Roles actually executed</h3><span v-for="a in latestRun.agents" :key="a" class="role-chip">{{ latestRun.roles[a] || a }}</span><p>{{ latestRun.routing_reason }}</p><h3>Executed tool calls</h3><div v-for="(t,index) in latestRun.tools" :key="index" class="trace-row"><code>{{ t.tool_name || t.event }}</code><span>{{ t.agent_type }} · {{ t.success && t.result_success!==false ? 'Success' : 'Needs attention' }} · {{ t.latency_ms }} ms</span></div><h3>Retrieval passes</h3><div v-for="(q,index) in latestRun.retrievals" :key="index" class="trace-row"><span>{{ q.scope }} · {{ q.documents }} sources</span><strong>{{ q.reranked ? 'Rewritten + reranked' : 'Retrieved' }}</strong></div><h3>Retrieved sources</h3><details v-for="d in latestRun.citations" :key="d.document_id+':'+d.chunk" class="source-record"><summary>{{ d.title }}</summary><p>{{ d.content }}</p><code>{{ d.document_id }}:{{ d.chunk }}</code><small>Version {{ d.version.slice(0,12) }} · Similarity {{ d.score }}</small></details><template v-if="latestRun.memory"><h3>Case memory</h3><p>{{ latestRun.memory.scope }} · {{ latestRun.memory.recent_count }} recent messages · {{ latestRun.memory.episodic_count }} retrieved episodes</p><p class="footnote">{{ latestRun.memory.backend }}. {{ latestRun.memory.mode }}. Rider claims remain unverified.</p><h3>Saved conversation summary</h3><p>{{ latestRun.memory.summary || 'Compression starts after 15 messages. Recent context is already available.' }}</p><h3>Tracked rider information</h3><div v-for="(values,key) in latestRun.memory.state.entities" :key="key" class="trace-row"><span>{{ key==='order_id' ? 'Linked trip' : key.replaceAll('_', ' ') }}</span><strong>{{ values.join(', ') || 'Not provided' }}</strong></div><p class="footnote">Amounts above are rider claims, not verified charges. The linked trip stays fixed.</p></template><h3>Loaded Skills</h3><p>{{ latestRun.skills.join(', ') }}</p><h3>Core methods used</h3><code v-for="method in latestRun.methods" :key="method" class="method-name">{{ method }}</code><p class="footnote">{{ latestRun.model }} · {{ latestRun.latency_ms }} ms · {{ currentCase.engine_runs.length }} saved runs</p></template><p v-else>This older case has no integrated analysis yet. Send a new message in the conversation to run the support pipeline.</p><button v-if="canOperator" class="secondary" :disabled="busy" @click="runEvaluation">Run pipeline checks <Icon name="chart"/></button></template>
-        <template v-else-if="sheet==='evaluation'"><p class="eyebrow">PIPELINE CHECKS</p><h2 id="sheet-title">Verify the execution.</h2><p v-if="busy">Running single-turn and multi-turn memory, correction, isolation, and handoff checks…</p><template v-else-if="evaluationReport"><span class="status-pill">{{ evaluationReport.passed }} / {{ evaluationReport.total }} integration cases passed</span><p>{{ evaluationReport.caveat }}</p><p v-if="evaluationReport.skipped" class="footnote">{{ evaluationReport.skipped }} checks are not applicable to this catalog. No result was inferred for missing trip categories.</p><div v-for="item in evaluationReport.cases" :key="item.name" class="evaluation-row"><strong>{{ item.name }}</strong><span>{{ item.status==='not_applicable' ? 'Not applicable' : item.passed ? 'Passed' : 'Needs attention' }}</span><small>{{ item.intent }} · {{ item.agents.join(' + ') }} · {{ item.sources }} sources</small></div><p class="footnote">IntentEvaluator · Fixture accuracy {{ (evaluationReport.intent_metrics.accuracy*100).toFixed(0) }}% · This is not a real-world quality claim.</p><button class="secondary" @click="runEvaluation">Run again <Icon name="refresh"/></button></template><p v-else>Unable to complete the checks. Close this dialog to see the error.</p></template>
-        <template v-else><p class="eyebrow">INDEPENDENT PROTOTYPE</p><h2 id="sheet-title">A clearer path to resolution.</h2><p>A ride-support workspace for disputes, evidence and specialist handoff. Not affiliated with Uber. Single agent with durable case context is the default. Multi-agent routing is optional; offline experiments found no task-completion gain. Offline mode runs with a deterministic local model adapter. Live model mode is opt-in.</p><p>Cases and attachments persist in a local SQLite database. Demo session isolation and a public Agent desk are for role-play only, not production security.</p></template>
+    <div
+      v-if="sheet"
+      class="sheet-backdrop"
+      @click.self="sheet = ''"
+      @keydown.esc="sheet = ''"
+    >
+      <section
+        ref="sheetEl"
+        class="bottom-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="sheet-title"
+        tabindex="-1"
+        @keydown.tab="trapFocus"
+      >
+        <div class="sheet-handle"></div>
+        <button
+          class="sheet-close icon-button"
+          aria-label="Close dialog"
+          @click="sheet = ''"
+        >
+          <Icon name="close" />
+        </button>
+        <template v-if="sheet === 'trips'"
+          ><p class="eyebrow">LET'S START HERE</p>
+          <h2 id="sheet-title">Which trip?</h2>
+          <button
+            v-for="t in trips"
+            :key="t.id"
+            class="case-list-item"
+            @click="
+              sheet = '';
+              start(t);
+            "
+          >
+            <Icon name="route" />
+            <div>
+              <strong>{{ t.destination }}</strong
+              ><small>{{ t.date }} · {{ money(t.total) }}</small>
+            </div>
+            <Icon name="chevron" /></button
+        ></template>
+        <template v-else-if="sheet === 'evidence'"
+          ><p class="eyebrow">KEEP IT ALL TOGETHER</p>
+          <h2 id="sheet-title">Add evidence</h2>
+          <p>
+            A note, screenshot, or receipt can help a specialist understand what
+            happened.
+          </p>
+          <label class="field-label" for="evidenceNote">Your note</label
+          ><textarea
+            id="evidenceNote"
+            v-model="evidenceNote"
+            rows="4"
+            maxlength="4000"
+            placeholder="What should we know?"
+          ></textarea
+          ><button
+            class="primary"
+            :disabled="busy || !evidenceNote.trim()"
+            @click="addNote"
+          >
+            Save note <Icon name="plus" /></button
+          ><label class="upload-button"
+            ><Icon name="upload" />{{
+              busy ? "Uploading…" : "Attach a screenshot or document"
+            }}<input
+              type="file"
+              accept="image/png,image/jpeg,application/pdf"
+              :disabled="busy"
+              @change="upload"
+          /></label>
+          <p class="footnote">
+            PNG, JPEG, or PDF · Up to 3 MB · Saved locally. Use fictional
+            information.
+          </p></template
+        >
+        <template v-else-if="sheet === 'policy'"
+          ><p class="eyebrow">TRANSPARENT BY DESIGN</p>
+          <h2 id="sheet-title">{{ currentCase.policy.title }}</h2>
+          <span class="status-pill">{{ currentCase.policy.version }}</span>
+          <p class="policy-copy">{{ currentCase.policy.text }}</p>
+          <div v-if="isDemo" class="agent-note">
+            <Icon name="book" />
+            <p>
+              This is a fictional policy written for this project. It is not
+              Uber policy or a promise of eligibility.
+            </p>
+          </div></template
+        >
+        <template v-else-if="sheet === 'confirm' && currentCase.proposal"
+          ><p class="eyebrow">YOU'RE IN CONTROL</p>
+          <h2 id="sheet-title">Review your adjustment</h2>
+          <div class="adjustment-amount">
+            {{ money(currentCase.proposal.amount) }}
+          </div>
+          <p>{{ currentCase.proposal.reason }}</p>
+          <div v-if="isDemo" class="agent-note">
+            <Icon name="alert" />
+            <p>
+              Confirming records a simulated adjustment. No money moves and Uber
+              is not contacted.
+            </p>
+          </div>
+          <button class="primary" :disabled="busy" @click="act('confirm')">
+            {{ busy ? "Recording…" : "Confirm demo adjustment"
+            }}<Icon name="check" /></button
+          ><button class="secondary" @click="sheet = ''">
+            Not now
+          </button></template
+        >
+        <template v-else-if="sheet === 'trace'"
+          ><p class="eyebrow">ACTUAL EXECUTION RECORD</p>
+          <h2 id="sheet-title">How this review worked</h2>
+          <template v-if="latestRun"
+            ><span class="status-pill"
+              >{{
+                latestRun.mode === "demo"
+                  ? "Offline model adapter"
+                  : "Live model"
+              }}
+              · {{ latestRun.status }}</span
+            >
+            <p>
+              {{
+                latestRun.agent_mode === "multi"
+                  ? "Optional multi-agent routing"
+                  : latestRun.agent_mode === "single"
+                    ? "Single-agent support"
+                    : "Historical agent configuration"
+              }}
+              ran with intent recognition, policy retrieval and durable case
+              context. Offline mode simulates model outputs; it does not
+              simulate tool execution.
+            </p>
+            <h3>Intent fusion</h3>
+            <div class="trace-row">
+              <strong>{{ latestRun.intent }}</strong
+              ><span>{{
+                latestRun.embedding_source || "Local vector branch"
+              }}</span>
+            </div>
+            <div
+              v-for="(score, source) in latestRun.source_scores"
+              :key="source"
+              class="trace-row"
+            >
+              <span>{{
+                source === "llm"
+                  ? latestRun.mode === "demo"
+                    ? "Simulated model branch"
+                    : "Model branch"
+                  : source === "embedding"
+                    ? "Local vector branch"
+                    : "Pattern branch"
+              }}</span
+              ><strong>{{ Number(score).toFixed(3) }}</strong>
+            </div>
+            <p class="footnote">
+              Fusion scores are not calibrated probabilities or accuracy
+              measurements.
+            </p>
+            <h3>Roles actually executed</h3>
+            <span v-for="a in latestRun.agents" :key="a" class="role-chip">{{
+              latestRun.roles[a] || a
+            }}</span>
+            <p>{{ latestRun.routing_reason }}</p>
+            <h3>Executed tool calls</h3>
+            <div
+              v-for="(t, index) in latestRun.tools"
+              :key="index"
+              class="trace-row"
+            >
+              <code>{{ t.tool_name || t.event }}</code
+              ><span
+                >{{ t.agent_type }} ·
+                {{
+                  t.success && t.result_success !== false
+                    ? "Success"
+                    : "Needs attention"
+                }}
+                · {{ t.latency_ms }} ms</span
+              >
+            </div>
+            <h3>Retrieval passes</h3>
+            <div
+              v-for="(q, index) in latestRun.retrievals"
+              :key="index"
+              class="trace-row"
+            >
+              <span>{{ q.scope }} · {{ q.documents }} sources</span
+              ><strong>{{
+                q.reranked ? "Rewritten + reranked" : "Retrieved"
+              }}</strong>
+            </div>
+            <h3>Retrieved sources</h3>
+            <details
+              v-for="d in latestRun.citations"
+              :key="d.document_id + ':' + d.chunk"
+              class="source-record"
+            >
+              <summary>{{ d.title }}</summary>
+              <p>{{ d.content }}</p>
+              <code>{{ d.document_id }}:{{ d.chunk }}</code
+              ><small
+                >Version {{ d.version.slice(0, 12) }} · Similarity
+                {{ d.score }}</small
+              >
+            </details>
+            <template v-if="latestRun.memory"
+              ><h3>Case memory</h3>
+              <p>
+                {{ latestRun.memory.scope }} ·
+                {{ latestRun.memory.recent_count }} recent messages ·
+                {{ latestRun.memory.episodic_count }} retrieved episodes
+              </p>
+              <p class="footnote">
+                {{ latestRun.memory.backend }}. {{ latestRun.memory.mode }}.
+                Rider claims remain unverified.
+              </p>
+              <h3>Saved conversation summary</h3>
+              <p>
+                {{
+                  latestRun.memory.summary ||
+                  "Compression starts after 15 messages. Recent context is already available."
+                }}
+              </p>
+              <h3>Tracked rider information</h3>
+              <div
+                v-for="(values, key) in latestRun.memory.state.entities"
+                :key="key"
+                class="trace-row"
+              >
+                <span>{{
+                  key === "order_id" ? "Linked trip" : key.replaceAll("_", " ")
+                }}</span
+                ><strong>{{ values.join(", ") || "Not provided" }}</strong>
+              </div>
+              <p class="footnote">
+                Amounts above are rider claims, not verified charges. The linked
+                trip stays fixed.
+              </p></template
+            >
+            <h3>Loaded Skills</h3>
+            <p>{{ latestRun.skills.join(", ") }}</p>
+            <p class="footnote">
+              {{ latestRun.model }} · {{ latestRun.latency_ms }} ms ·
+              {{ currentCase.engine_runs.length }} saved runs
+            </p></template
+          >
+          <p v-else>
+            This older case has no integrated analysis yet. Send a new message
+            in the conversation to run the support pipeline.
+          </p>
+          <button
+            v-if="canOperator"
+            class="secondary"
+            :disabled="busy"
+            @click="runEvaluation"
+          >
+            Run pipeline checks <Icon name="chart" /></button
+        ></template>
+        <template v-else-if="sheet === 'evaluation'"
+          ><p class="eyebrow">PIPELINE CHECKS</p>
+          <h2 id="sheet-title">Verify the execution.</h2>
+          <p v-if="busy">
+            Running single-turn and multi-turn memory, correction, isolation,
+            and handoff checks…
+          </p>
+          <template v-else-if="evaluationReport"
+            ><span class="status-pill"
+              >{{ evaluationReport.passed }} /
+              {{ evaluationReport.total }} integration cases passed</span
+            >
+            <p>{{ evaluationReport.caveat }}</p>
+            <p v-if="evaluationReport.skipped" class="footnote">
+              {{ evaluationReport.skipped }} checks are not applicable to this
+              catalog. No result was inferred for missing trip categories.
+            </p>
+            <div
+              v-for="item in evaluationReport.cases"
+              :key="item.name"
+              class="evaluation-row"
+            >
+              <strong>{{ item.name }}</strong
+              ><span>{{
+                item.status === "not_applicable"
+                  ? "Not applicable"
+                  : item.passed
+                    ? "Passed"
+                    : "Needs attention"
+              }}</span
+              ><small
+                >{{ item.intent }} · {{ item.agents.join(" + ") }} ·
+                {{ item.sources }} sources</small
+              >
+            </div>
+            <p class="footnote">
+              IntentEvaluator · Fixture accuracy
+              {{ (evaluationReport.intent_metrics.accuracy * 100).toFixed(0) }}%
+              · This is not a real-world quality claim.
+            </p>
+            <button class="secondary" @click="runEvaluation">
+              Run again <Icon name="refresh" /></button
+          ></template>
+          <p v-else>
+            Unable to complete the checks. Close this dialog to see the error.
+          </p></template
+        >
+        <template v-else
+          ><p class="eyebrow">INDEPENDENT PROTOTYPE</p>
+          <h2 id="sheet-title">A clearer path to resolution.</h2>
+          <p>
+            A ride-support workspace for disputes, evidence and specialist
+            handoff. Not affiliated with Uber. Single agent with durable case
+            context is the default. Multi-agent routing is optional; offline
+            experiments found no task-completion gain. Offline mode runs with a
+            deterministic local model adapter. Live model mode is opt-in.
+          </p>
+          <p>
+            Cases and attachments persist in a local SQLite database. Demo
+            session isolation and a public Agent desk are for role-play only,
+            not production security.
+          </p></template
+        >
       </section>
     </div>
   </div>
 </template>
-
 <script setup>
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
-import Icon from './components/AppIcon.vue'
-import AgentModePicker from './components/AgentModePicker.vue'
-import { loadAgentMode, saveAgentMode, analysisPayload } from './lib/agentMode.js'
-import RideMap from './RideMap.vue'
-import OperationsPanel from './OperationsPanel.vue'
-import { loadTheme, saveTheme } from './lib/theme.js'
-import { roleHome, allowsRoute } from './lib/auth.js'
-import { request, money, statusLabel, downloadEvidence, latestCase, mergeCaseSummaries } from './lib/rideApi.js'
-
-const props=defineProps({identity:{type:Object,required:true}})
-const emit=defineEmits(['sign-out'])
-const isDemo=computed(()=>props.identity.auth_mode==='demo')
-const canRider=computed(()=>props.identity.roles.includes('rider'))
-const canSpecialist=computed(()=>props.identity.roles.includes('specialist'))
-const canOperator=computed(()=>props.identity.roles.includes('operator'))
-const homePath=computed(()=>roleHome(props.identity.roles))
-const denied=computed(()=>!isDemo.value && !allowsRoute(props.identity.roles,route.value.page))
-const theme=ref(loadTheme())
-function setTheme(value){theme.value=saveTheme(value)}
-function syncTheme(){setTheme(loadTheme())}
-const trips=ref([]), cases=ref([]), currentCase=ref(null), queue=ref([]), selectedAgentId=ref(''), loading=ref(true), busy=ref(false), error=ref(''), notice=ref(''), sheet=ref(''), sheetEl=ref(null)
-const casesTotal=ref(0), casesNext=ref(null), activeCaseCount=ref(0), featuredActive=ref(null), tripCaseRecord=ref(null), queueTotal=ref(0), queueNext=ref(null), agentOptions=ref([])
-const description=ref(''), topic=ref('other'), draft=ref(''), evidenceNote=ref(''), staffReply=ref('')
-const agentMode=ref(loadAgentMode())
-watch(agentMode,saveAgentMode)
-const engineStatus=ref({mode:'demo'}), evaluationReport=ref(null)
-const latestRun=computed(()=>currentCase.value?.engine_runs?.at(-1))
-const route=ref(parseRoute())
-const topics=[{id:'cancellation',label:'Cancellation fee',text:"My driver never picked me up, but I was charged a cancellation fee. I would like this reviewed."},{id:'fare',label:'Unexpected fare',text:'My final fare was higher than the estimate. Please check the difference.'},{id:'payment',label:'Payment issue',text:'I see two amounts on my statement. Can you check whether I was charged twice?'},{id:'other',label:'Something else',text:''}]
-let generation=0, timer, toastTimer, previousFocus
-function parseRoute(){ const parts=(location.hash.slice(1)||'/trips').split('/').filter(Boolean); return {page:parts[0]==='case'&&parts[2]==='chat'?'chat':parts[0],id:parts[1]} }
-function go(path){location.hash=path}
-function back(){ if(route.value.page==='chat')openCase(route.value.id);else if(route.value.page==='new')go('/trip/'+route.value.id);else if(route.value.page==='case')go('/help');else go('/trips') }
-const trip=computed(()=>trips.value.find(t=>t.id===(['case','chat'].includes(route.value.page)?currentCase.value?.trip_id:route.value.id)))
-const activeCases=computed(()=>featuredActive.value ? [featuredActive.value] : [])
-const tripCase=computed(()=>tripCaseRecord.value?.trip_id===trip.value?.id && tripCaseRecord.value.status!=='resolved' ? tripCaseRecord.value : cases.value.find(c=>c.trip_id===trip.value?.id && c.status!=='resolved'))
-const agentCase=ref(null)
-const nextStep=computed(()=>{
- const c=currentCase.value;if(!c)return{}
- return ({needs_review:{title:'Your side matters.',text:'The records do not tell the whole story. Add evidence or ask a specialist to review the conflict.'},awaiting_confirmation:{title:'A fairer fare is ready.',text:'Review the proposed adjustment. Nothing changes until you confirm.'},waiting_for_agent:{title:'You are in the review queue.',text:'Your full case is attached. No specialist has accepted it yet. Try the Agent desk to continue this simulation.'},in_review:{title:'Alex has your case.',text:'Your simulated specialist can see the complete history. You can keep adding information.'},awaiting_rider:{title:'One charge. Two records.',text:'A pending authorization is separate from a settled payment. Tell us if your statement shows something different.'},resolved:{title:c.adjustment?`${money(c.adjustment.amount)} demo adjustment recorded.`:'Your case has an outcome.',text:c.adjustment?'No real money moved. Your full history remains available.':'Read the explanation in your conversation. You can request another review if needed.'}})[c.status] || {title:'Review in progress',text:'Your information is saved.'}
-})
-function time(value){return new Intl.DateTimeFormat('en-US',{hour:'numeric',minute:'2-digit'}).format(new Date(value))}
-function toast(text){notice.value=text;clearTimeout(toastTimer);toastTimer=setTimeout(()=>notice.value='',3500)}
-async function run(fn){if(busy.value)return;busy.value=true;error.value='';try{await fn()}catch(e){const message=e.name==='TimeoutError'?'The request timed out. Retry to safely check the same operation.':e.message;if([409,412,428].includes(e.status))await refresh();error.value=message}finally{busy.value=false}}
-async function runEvaluation(){sheet.value='evaluation';evaluationReport.value=null;await run(async()=>{evaluationReport.value=await request('/api/agent/evaluations',{agent:true,body:{}})})}
-let queueGeneration=0, agentGeneration=0
-function adoptCase(record, force=false){if(force || route.value.id===record.id)currentCase.value=latestCase(currentCase.value,record)}
-function adoptIndex(page, append=false){cases.value=append?mergeCaseSummaries(cases.value,page.items):page.items;casesNext.value=page.next_cursor;casesTotal.value=page.total;activeCaseCount.value=page.active_total;featuredActive.value=page.featured_active}
-async function loadCases(){adoptIndex(await request('/api/cases/index'))}
-async function loadMoreCases(){await run(async()=>{if(casesNext.value)adoptIndex(await request('/api/cases/index?cursor='+encodeURIComponent(casesNext.value)),true)})}
-async function loadAgentDetail(id){const token=++agentGeneration;const detail=await request('/api/agent/cases/'+id,{agent:true});if(token!==agentGeneration||selectedAgentId.value!==id)return;if(agentCase.value?.id===id && (agentCase.value.revision??0)>(detail.case.revision??0))return;agentCase.value=detail.case;agentOptions.value=detail.available_actions}
-async function selectAgent(id){await run(async()=>{selectedAgentId.value=id;agentCase.value=null;agentOptions.value=[];await loadAgentDetail(id)})}
-async function loadQueue({reset=false,more=false}={}){
- const token=++queueGeneration
- const cursor=more?queueNext.value:null
- if(more&&!cursor)return
- const page=await request('/api/agent/cases/index'+(cursor?'?cursor='+encodeURIComponent(cursor):''),{agent:true})
- if(token!==queueGeneration)return
- const initial=!queue.value.length
- queue.value=reset?page.items:mergeCaseSummaries(queue.value,page.items);queueTotal.value=page.total
- if(reset||more||initial)queueNext.value=page.next_cursor
- if(!selectedAgentId.value&&queue.value.length)selectedAgentId.value=queue.value[0].id
- if(selectedAgentId.value)await loadAgentDetail(selectedAgentId.value)
-}
-
-async function refresh(){
- const token=++generation;loading.value=true;error.value=''
- try{
-  if(denied.value)return
-  const [t,c,h,linked]=await Promise.all([canRider.value?request('/api/trips'):[],canRider.value?request('/api/cases/index'):null,request('/health'),canRider.value&&['trip','new'].includes(route.value.page)?request('/api/cases/index?limit=1&trip_id='+encodeURIComponent(route.value.id)):null])
-  if(token!==generation)return
-  trips.value=t;if(c)adoptIndex(c);tripCaseRecord.value=linked?.items[0]||null;engineStatus.value={...h,mode:h.mode || props.identity.model_mode || 'demo'}
-  if(['case','chat'].includes(route.value.page)){const detail=await request('/api/cases/'+route.value.id);if(token===generation)adoptCase(detail)}
-  if(route.value.page==='agent' && canSpecialist.value)await loadQueue({reset:true})
- }catch(e){if(token===generation)error.value=e.message}finally{if(token===generation)loading.value=false}
-}
-async function start(t){await run(async()=>{const page=await request('/api/cases/index?limit=1&trip_id='+encodeURIComponent(t.id));const existing=page.items[0];if(existing){openCase(existing.id);return}topic.value=t.issue;description.value=topics.find(o=>o.id===t.issue).text;go('/new/'+t.id)})}
-function selectTopic(option){topic.value=option.id;description.value=option.text}
-function openCase(id){go('/case/'+id)}
-async function createCase(human=false){if(description.value.trim().length<5){error.value='Please describe what happened before continuing.';return}await run(async()=>{let c=await request('/api/cases',{body:analysisPayload({trip_id:trip.value.id,description:description.value,topic:topic.value},agentMode.value)});if(human)c=await request('/api/cases/'+c.id+'/actions',{body:{action:'handoff'},revision:c.revision});adoptCase(c,true);await loadCases();openCase(c.id)})}
-async function act(action,text=''){await run(async()=>{adoptCase(await request('/api/cases/'+currentCase.value.id+'/actions',{body:analysisPayload({action,text},agentMode.value),revision:currentCase.value.revision}));sheet.value='';await loadCases();await scrollChat()})}
-async function sendMessage(){const text=draft.value.trim();if(!text)return;await act('message',text);if(!error.value)draft.value=''}
-async function addNote(){await act('evidence',evidenceNote.value);if(!error.value){evidenceNote.value='';toast('Your evidence is saved to this case.')}}
-async function upload(event){const file=event.target.files?.[0];if(!file)return;if(file.size>3*1024*1024){error.value='Choose an attachment smaller than 3 MB.';event.target.value='';return}await run(async()=>{adoptCase(await request('/api/cases/'+currentCase.value.id+'/attachments',{file,revision:currentCase.value.revision}));sheet.value='';toast('Attachment saved locally.')});event.target.value=''}
-async function download(item,agent=false){await run(()=>downloadEvidence(agent?agentCase.value.id:currentCase.value.id,item,agent))}
-async function staffAct(action){await run(async()=>{await request('/api/agent/cases/'+agentCase.value.id+'/actions',{agent:true,body:{action,text:staffReply.value},revision:agentCase.value.revision});staffReply.value='';await loadQueue();toast(action==='accept'?'Case accepted. Full context is available.':'Your response is saved.')})}
-async function scrollChat(){await nextTick();document.querySelector('.messages')?.scrollTo({top:999999,behavior:'smooth'})}
-async function navigate(){route.value=parseRoute();sheet.value='';currentCase.value=null;error.value='';await refresh();if(route.value.page==='chat')await scrollChat();else window.scrollTo(0,0)}
-function trapFocus(event){const els=[...sheetEl.value.querySelectorAll('button:not(:disabled),input:not(:disabled),textarea,a[href],[tabindex="0"]')].filter(e=>e.getClientRects().length);if(!els.length)return;const first=els[0],last=els.at(-1);if(event.shiftKey&&(document.activeElement===first||document.activeElement===sheetEl.value)){event.preventDefault();last.focus()}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}}
-watch(sheet,async value=>{if(value){previousFocus=document.activeElement;await nextTick();sheetEl.value?.focus();document.body.style.overflow='hidden'}else{document.body.style.overflow='';previousFocus?.focus()}})
-onMounted(async()=>{window.addEventListener('storage',syncTheme);window.addEventListener('hashchange',navigate);await refresh();if(route.value.page==='chat')await scrollChat();timer=setInterval(async()=>{if(busy.value||sheet.value||denied.value)return;try{if(route.value.page==='agent')await loadQueue();else if(['case','chat'].includes(route.value.page)){const id=route.value.id;const c=await request('/api/cases/'+id);if(route.value.id===id)adoptCase(c)}}catch{/* Foreground requests surface actionable errors. */}},4000)})
-onUnmounted(()=>{window.removeEventListener('storage',syncTheme);window.removeEventListener('hashchange',navigate);clearInterval(timer);clearTimeout(toastTimer);document.body.style.overflow=''})
+import { provide } from "vue";
+import { RouterView } from "vue-router";
+import Icon from "./components/AppIcon.vue";
+import { money, statusLabel } from "./lib/rideApi.js";
+import { useRideWorkspace } from "./composables/useRideWorkspace.js";
+const props = defineProps({ identity: { type: Object, required: true } });
+const emit = defineEmits(["sign-out"]);
+const workspace = useRideWorkspace(props, emit);
+provide("rideWorkspace", workspace);
+const {
+  isDemo,
+  canRider,
+  canSpecialist,
+  canOperator,
+  homePath,
+  denied,
+  theme,
+  setTheme,
+  trips,
+  cases,
+  currentCase,
+  loading,
+  busy,
+  error,
+  notice,
+  sheet,
+  sheetEl,
+  activeCaseCount,
+  evidenceNote,
+  engineStatus,
+  evaluationReport,
+  latestRun,
+  route,
+  go,
+  back,
+  trip,
+  toast,
+  run,
+  runEvaluation,
+  refresh,
+  start,
+  act,
+  addNote,
+  upload,
+  trapFocus,
+} = workspace;
 </script>

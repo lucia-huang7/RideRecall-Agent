@@ -2,14 +2,7 @@
 !Dockerfile
 !backend
 !backend/requirements.txt
-!backend/agents/**
-!backend/core/**
-!backend/evaluation/**
-!backend/memory/**
-!backend/mobility/**
-!backend/monitor/**
-!backend/tooling/**
-!backend/skills/**
+!backend/ride_agent/**
 !frontend
 !frontend/package.json
 !frontend/package-lock.json
@@ -19,7 +12,7 @@
 !frontend/tests/**
 !frontend/src/**
 !scripts
-!scripts/provision-auth-preview.py
+!scripts/ops/provision-auth-preview.py
 **/__pycache__
 **/*.pyc
 **/.env*

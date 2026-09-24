@@ -12,8 +12,6 @@
 *.sqlite3-shm
 *.sqlite3-wal
 .DS_Store
-legacy-java/.mvn/apache-maven-*/
-legacy-java/.mvn/*-bin.zip
 artifacts/
 **/access-credentials.json
 **/identities.json
@@ -22,4 +20,3 @@ artifacts/
 **/*.egg-info/
 backend/data/
 backend/logs/
-legacy-java/data/

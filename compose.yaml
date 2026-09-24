@@ -4,7 +4,7 @@ services:
   init:
     profiles: [tools]
     image: llm-agent-system:local
-    command: [python, /app/scripts/provision-auth-preview.py, --output, /config/profile]
+    command: [python, /app/scripts/ops/provision-auth-preview.py, --output, /config/profile]
     environment:
       LLM_AGENT_SYSTEM_ENV: development
     volumes:

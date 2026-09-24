@@ -1,0 +1,73 @@
+.agent-note {
+  display: flex;
+  gap: 10px;
+  padding: 14px;
+  background: #f2f2f2;
+  border-radius: 10px;
+  margin: 16px 0;
+}
+.agent-note p {
+  font-size: 11px;
+  color: #757575;
+  line-height: 1.8;
+}
+.agent-note > .icon {
+  width: 17px;
+  color: #808080;
+  flex-shrink: 0;
+}
+.agent-case {
+  margin-top: 25px;
+  border-top: 2px solid #383838;
+  padding-top: 22px;
+}
+.agent-case > h2 {
+  margin-top: 12px;
+}
+.agent-case blockquote {
+  margin: 17px 0;
+  padding: 13px 15px;
+  border-left: 3px solid #b5b5b5;
+  background: #f6f6f6;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.agent-summary {
+  font-size: 12px;
+}
+.agent-summary > p {
+  color: #818181;
+  margin: 5px 0 14px;
+}
+.agent-history {
+  padding: 12px 0;
+  border-bottom: 1px solid #efefef;
+}
+.agent-history small {
+  color: #828282;
+  font-weight: 600;
+  font-size: 10px;
+}
+.agent-history p {
+  font-size: 12px;
+  line-height: 1.8;
+  margin-top: 5px;
+  white-space: pre-wrap;
+}
+.agent-history strong {
+  font-size: 12px;
+}
+.agent-case > .primary {
+  margin-top: 20px;
+}
+.agent-case > .field-label {
+  margin-top: 25px;
+}
+[data-theme="rainbow"] .agent-note,
+[data-theme="rainbow"] .agent-summary,
+[data-theme="rainbow"] .agent-case blockquote {
+  background: linear-gradient(115deg, #faf4ee, #f3f0fc);
+}
+[data-theme="rainbow"] .agent-case {
+  border-image: var(--spectrum) 1;
+}

@@ -1,92 +1,672 @@
 <template>
-  <section class="page-heading"><p class="eyebrow">OPERATIONS WORKSPACE</p><h1>Control room</h1><p>Inspect the system. Improve the next review.</p></section>
+  <section class="page-heading">
+    <p class="eyebrow">OPERATIONS WORKSPACE</p>
+    <h1>Control room</h1>
+    <p>Inspect the system. Improve the next review.</p>
+  </section>
   <section class="content-block top-zero operations-panel">
-    <p class="footnote">{{ identity.auth_mode==='production' ? 'Authenticated operator access. Release policy documents are read-only.' : 'Public local-demo access. Use fictional data.' }} These controls do not change payment eligibility.</p>
-    <p v-if="configStatus?.pending" class="footnote" role="status">{{ configStatus.pending }} committed configuration update(s) are waiting to apply. New analyses pause until the runtime recovers.</p>
-    <div class="ops-tabs" role="group" aria-label="Operations sections"><button v-for="item in tabs" :key="item.id" :disabled="busy" :aria-pressed="tab===item.id" :class="{selected:tab===item.id}" @click="tab=item.id;notice='';error=''">{{ item.label }}</button></div>
-    <p v-if="error" class="error-banner" role="alert">{{ error }}</p><p v-if="notice" class="status-pill" role="status">{{ notice }}</p>
-    <template v-if="tab==='monitor'">
-      <h2>Runtime health</h2><p v-if="operations">{{ operations.active ? 'Monitor running' : 'Monitor stopped' }} · Collection every {{ operations.interval_seconds }} seconds</p>
-      <button class="secondary" :disabled="busy" @click="refresh">Refresh actual metrics</button>
-      <p class="footnote">{{ operations?.scope }}. {{ operations?.persistence }}</p>
-      <h3>Analysis capacity</h3><p>{{ operations?.analysis_admission?.active ?? 0 }} / {{ operations?.analysis_admission?.capacity ?? 4 }} active. {{ operations?.analysis_admission?.rejected ?? 0 }} requests rejected while busy; {{ operations?.analysis_admission?.timeouts ?? 0 }} deadlines reached.</p>
-      <h3>Durable updates</h3><p>Memory projections: {{ operations?.memory_projection?.pending ?? 0 }} pending. Configuration releases: {{ operations?.configuration?.pending ?? 0 }} pending, {{ operations?.configuration?.retrying ?? 0 }} retrying.</p>
-      <h3>Agent performance</h3><article v-for="[key,item] in agentRows" :key="key" class="ops-record"><strong>{{ item.role || key }}</strong><div class="trace-row"><span>Requests</span><b>{{ item.total }}</b></div><div class="trace-row"><span>Success rate</span><b>{{ item.total ? percent(item.success_rate) : 'No samples' }}</b></div><div class="trace-row"><span>Average latency</span><b>{{ item.avg_ms }} ms</b></div><div class="trace-row"><span>Routing penalty</span><b>{{ item.monitor_penalty }}</b></div></article>
-      <h3>Tool performance</h3><article v-for="(item,key) in operations?.tool_stats" :key="key" class="ops-record"><code>{{ key }}</code><div class="trace-row"><span>Calls / success</span><strong>{{ item.total }} / {{ item.total ? percent(item.success_rate) : 'No samples' }}</strong></div><div class="trace-row"><span>Average latency</span><strong>{{ item.avg_latency_ms }} ms</strong></div><small>Circuit: {{ item.circuit_state }} · Consecutive failures: {{ item.consecutive_fails }}</small></article>
-      <h3>Alerts</h3><p v-if="!operations?.active_alerts.length">No active threshold alerts.</p><article v-for="(alert,index) in operations?.active_alerts" :key="index" class="ops-record"><strong>{{ alert.severity }} · {{ alert.metric }}</strong><p>{{ alert.message }}</p></article><h3>Suggestions</h3><p v-if="!operations?.suggestions.length">No optimization suggestions yet.</p><article v-for="item in operations?.suggestions" :key="item.title" class="ops-record"><strong>{{ item.title }}</strong><p>{{ item.action }}</p></article>
-      <button class="secondary" :disabled="busy" @click="loadMetrics">View Prometheus metrics</button><pre v-if="metricText" class="ops-metrics">{{ metricText }}</pre>
+    <p class="footnote">
+      {{
+        identity.auth_mode === "production"
+          ? "Authenticated operator access. Release policy documents are read-only."
+          : "Public local-demo access. Use fictional data."
+      }}
+      These controls do not change payment eligibility.
+    </p>
+    <p v-if="configStatus?.pending" class="footnote" role="status">
+      {{ configStatus.pending }} committed configuration update(s) are waiting
+      to apply. New analyses pause until the runtime recovers.
+    </p>
+    <div class="ops-tabs" role="group" aria-label="Operations sections">
+      <button
+        v-for="item in tabs"
+        :key="item.id"
+        :disabled="busy"
+        :aria-pressed="tab === item.id"
+        :class="{ selected: tab === item.id }"
+        @click="
+          tab = item.id;
+          notice = '';
+          error = '';
+        "
+      >
+        {{ item.label }}
+      </button>
+    </div>
+    <p v-if="error" class="error-banner" role="alert">{{ error }}</p>
+    <p v-if="notice" class="status-pill" role="status">{{ notice }}</p>
+    <template v-if="tab === 'monitor'">
+      <h2>Runtime health</h2>
+      <p v-if="operations">
+        {{ operations.active ? "Monitor running" : "Monitor stopped" }} ·
+        Collection every {{ operations.interval_seconds }} seconds
+      </p>
+      <button class="secondary" :disabled="busy" @click="refresh">
+        Refresh actual metrics
+      </button>
+      <p class="footnote">
+        {{ operations?.scope }}. {{ operations?.persistence }}
+      </p>
+      <h3>Analysis capacity</h3>
+      <p>
+        {{ operations?.analysis_admission?.active ?? 0 }} /
+        {{ operations?.analysis_admission?.capacity ?? 4 }} active.
+        {{ operations?.analysis_admission?.rejected ?? 0 }} requests rejected
+        while busy;
+        {{ operations?.analysis_admission?.timeouts ?? 0 }} deadlines reached.
+      </p>
+      <h3>Durable updates</h3>
+      <p>
+        Memory projections:
+        {{ operations?.memory_projection?.pending ?? 0 }} pending. Configuration
+        releases: {{ operations?.configuration?.pending ?? 0 }} pending,
+        {{ operations?.configuration?.retrying ?? 0 }} retrying.
+      </p>
+      <h3>Agent performance</h3>
+      <article v-for="[key, item] in agentRows" :key="key" class="ops-record">
+        <strong>{{ item.role || key }}</strong>
+        <div class="trace-row">
+          <span>Requests</span><b>{{ item.total }}</b>
+        </div>
+        <div class="trace-row">
+          <span>Success rate</span
+          ><b>{{ item.total ? percent(item.success_rate) : "No samples" }}</b>
+        </div>
+        <div class="trace-row">
+          <span>Average latency</span><b>{{ item.avg_ms }} ms</b>
+        </div>
+        <div class="trace-row">
+          <span>Routing penalty</span><b>{{ item.monitor_penalty }}</b>
+        </div>
+      </article>
+      <h3>Tool performance</h3>
+      <article
+        v-for="(item, key) in operations?.tool_stats"
+        :key="key"
+        class="ops-record"
+      >
+        <code>{{ key }}</code>
+        <div class="trace-row">
+          <span>Calls / success</span
+          ><strong
+            >{{ item.total }} /
+            {{ item.total ? percent(item.success_rate) : "No samples" }}</strong
+          >
+        </div>
+        <div class="trace-row">
+          <span>Average latency</span
+          ><strong>{{ item.avg_latency_ms }} ms</strong>
+        </div>
+        <small
+          >Circuit: {{ item.circuit_state }} · Consecutive failures:
+          {{ item.consecutive_fails }}</small
+        >
+      </article>
+      <h3>Alerts</h3>
+      <p v-if="!operations?.active_alerts.length">
+        No active threshold alerts.
+      </p>
+      <article
+        v-for="(alert, index) in operations?.active_alerts"
+        :key="index"
+        class="ops-record"
+      >
+        <strong>{{ alert.severity }} · {{ alert.metric }}</strong>
+        <p>{{ alert.message }}</p>
+      </article>
+      <h3>Suggestions</h3>
+      <p v-if="!operations?.suggestions.length">
+        No optimization suggestions yet.
+      </p>
+      <article
+        v-for="item in operations?.suggestions"
+        :key="item.title"
+        class="ops-record"
+      >
+        <strong>{{ item.title }}</strong>
+        <p>{{ item.action }}</p>
+      </article>
+      <button class="secondary" :disabled="busy" @click="loadMetrics">
+        View Prometheus metrics
+      </button>
+      <pre v-if="metricText" class="ops-metrics">{{ metricText }}</pre>
     </template>
-    <template v-else-if="tab==='mcp'">
-      <h2>Connected services</h2><p>Standard MCP over stdio. A separate local process serves fictional trip records. No API key or external account is needed.</p>
-      <article v-for="server in operations?.mcp.servers" :key="server.name" class="ops-record"><strong>{{ server.name }} · {{ server.state }}</strong><p>{{ server.transport }} · Protocol {{ server.protocol_version || 'Not negotiated' }}</p><p v-if="server.error">Connection error: {{ server.error }}</p><p>Allowed roles: {{ server.agents.join(', ') }}</p><div v-for="tool in server.tools" :key="tool.name" class="source-record"><code>{{ tool.name }}</code><small>Remote tool: {{ tool.remote_name }}</small></div></article>
-      <label class="field-label" for="probeTrip">Fictional trip to inspect</label><select id="probeTrip" v-model="probeTrip"><option v-for="item in probeTrips" :key="item.id" :value="item.id">{{ item.label }}</option></select><button class="secondary" :disabled="busy || !probeTrip" @click="probe">Call discovered tool</button><pre v-if="probeResult" class="ops-metrics">{{ probeResult }}</pre><button class="primary" :disabled="busy" @click="reconnect">{{ busy ? 'Connecting…' : 'Reconnect demo service' }}</button><p class="footnote">Only the fixed read-only service is allowed. The model cannot select a different trip or execute payments. If verification fails, analysis is marked incomplete.</p>
+    <template v-else-if="tab === 'mcp'">
+      <h2>Connected services</h2>
+      <p>
+        Standard MCP over stdio. A separate local process serves fictional trip
+        records. No API key or external account is needed.
+      </p>
+      <article
+        v-for="server in operations?.mcp.servers"
+        :key="server.name"
+        class="ops-record"
+      >
+        <strong>{{ server.name }} · {{ server.state }}</strong>
+        <p>
+          {{ server.transport }} · Protocol
+          {{ server.protocol_version || "Not negotiated" }}
+        </p>
+        <p v-if="server.error">Connection error: {{ server.error }}</p>
+        <p>Allowed roles: {{ server.agents.join(", ") }}</p>
+        <div
+          v-for="tool in server.tools"
+          :key="tool.name"
+          class="source-record"
+        >
+          <code>{{ tool.name }}</code
+          ><small>Remote tool: {{ tool.remote_name }}</small>
+        </div>
+      </article>
+      <label class="field-label" for="probeTrip"
+        >Fictional trip to inspect</label
+      ><select id="probeTrip" v-model="probeTrip">
+        <option v-for="item in probeTrips" :key="item.id" :value="item.id">
+          {{ item.label }}
+        </option></select
+      ><button class="secondary" :disabled="busy || !probeTrip" @click="probe">
+        Call discovered tool
+      </button>
+      <pre v-if="probeResult" class="ops-metrics">{{ probeResult }}</pre>
+      <button class="primary" :disabled="busy" @click="reconnect">
+        {{ busy ? "Connecting…" : "Reconnect demo service" }}
+      </button>
+      <p class="footnote">
+        Only the fixed read-only service is allowed. The model cannot select a
+        different trip or execute payments. If verification fails, analysis is
+        marked incomplete.
+      </p>
     </template>
-    <template v-else-if="tab==='policies'">
-      <h2>Policy index</h2><label class="field-label" for="policyScope">Policy scope</label><select id="policyScope" v-model="scope" :disabled="busy" @change="loadKnowledge"><option v-for="item in policyScopes" :key="item.id" :value="item.id">{{ item.title }}</option></select>
-      <p v-if="protectedDocument" class="footnote">This document belongs to the reviewed policy release and cannot be changed here. Import a supplemental document with a different ID.</p>
-      <p>{{ knowledge?.count || 0 }} indexed chunks. Document versions reflect saved content.</p>
-      <details v-for="doc in knowledge?.documents" :key="doc.id" class="source-record"><summary>{{ doc.metadata.title }}</summary><p>{{ doc.content }}</p><small>Version {{ doc.metadata.version?.slice(0,12) }} · Chunk {{ doc.metadata.chunk_index }}</small></details>
-      <p v-if="knowledge && new Set(knowledge.documents.map(d=>d.metadata.document_id)).size > knowledge.source_documents.length" class="footnote">Some older indexed documents have no saved source. Supply the original source and document ID to edit them safely.</p><h3>Import or replace a document</h3><label class="field-label" for="editDocument">Load a source document</label><select id="editDocument" @change="editDocument($event.target.value)"><option value="">New document</option><option v-for="doc in knowledge?.source_documents" :key="doc.document_id" :value="doc.document_id">{{ doc.title }}</option></select><p class="footnote">Reuse the original document ID to replace it. An update changes retrieved evidence, not refund rules.</p>
-      <label class="field-label" for="policyId">Document ID</label><input id="policyId" v-model="documentId" maxlength="100" placeholder="ride-fare-review-v2"/>
-      <label class="field-label" for="policyTitle">Title</label><input id="policyTitle" v-model="documentTitle" maxlength="200" placeholder="Fare review evidence"/>
-      <label class="field-label" for="policyContent">English content</label><textarea id="policyContent" v-model="documentContent" rows="8" maxlength="12000" placeholder="Write the fictional policy and its evidence requirements."></textarea>
-      <button class="primary" :disabled="busy || protectedDocument || !documentId.trim() || !documentTitle.trim() || !documentContent.trim()" @click="savePolicy">Save and reindex</button>
+    <template v-else-if="tab === 'policies'">
+      <h2>Policy index</h2>
+      <label class="field-label" for="policyScope">Policy scope</label
+      ><select
+        id="policyScope"
+        v-model="scope"
+        :disabled="busy"
+        @change="loadKnowledge"
+      >
+        <option v-for="item in policyScopes" :key="item.id" :value="item.id">
+          {{ item.title }}
+        </option>
+      </select>
+      <p v-if="protectedDocument" class="footnote">
+        This document belongs to the reviewed policy release and cannot be
+        changed here. Import a supplemental document with a different ID.
+      </p>
+      <p>
+        {{ knowledge?.count || 0 }} indexed chunks. Document versions reflect
+        saved content.
+      </p>
+      <details
+        v-for="doc in knowledge?.documents"
+        :key="doc.id"
+        class="source-record"
+      >
+        <summary>{{ doc.metadata.title }}</summary>
+        <p>{{ doc.content }}</p>
+        <small
+          >Version {{ doc.metadata.version?.slice(0, 12) }} · Chunk
+          {{ doc.metadata.chunk_index }}</small
+        >
+      </details>
+      <p
+        v-if="
+          knowledge &&
+          new Set(knowledge.documents.map((d) => d.metadata.document_id)).size >
+            knowledge.source_documents.length
+        "
+        class="footnote"
+      >
+        Some older indexed documents have no saved source. Supply the original
+        source and document ID to edit them safely.
+      </p>
+      <h3>Import or replace a document</h3>
+      <label class="field-label" for="editDocument"
+        >Load a source document</label
+      ><select id="editDocument" @change="editDocument($event.target.value)">
+        <option value="">New document</option>
+        <option
+          v-for="doc in knowledge?.source_documents"
+          :key="doc.document_id"
+          :value="doc.document_id"
+        >
+          {{ doc.title }}
+        </option>
+      </select>
+      <p class="footnote">
+        Reuse the original document ID to replace it. An update changes
+        retrieved evidence, not refund rules.
+      </p>
+      <label class="field-label" for="policyId">Document ID</label
+      ><input
+        id="policyId"
+        v-model="documentId"
+        maxlength="100"
+        placeholder="ride-fare-review-v2"
+      />
+      <label class="field-label" for="policyTitle">Title</label
+      ><input
+        id="policyTitle"
+        v-model="documentTitle"
+        maxlength="200"
+        placeholder="Fare review evidence"
+      />
+      <label class="field-label" for="policyContent">English content</label
+      ><textarea
+        id="policyContent"
+        v-model="documentContent"
+        rows="8"
+        maxlength="12000"
+        placeholder="Write the fictional policy and its evidence requirements."
+      ></textarea>
+      <button
+        class="primary"
+        :disabled="
+          busy ||
+          protectedDocument ||
+          !documentId.trim() ||
+          !documentTitle.trim() ||
+          !documentContent.trim()
+        "
+        @click="savePolicy"
+      >
+        Save and reindex
+      </button>
     </template>
-    <template v-else-if="tab==='skills'">
-      <h2>Runtime Skills</h2><p>Loaded by the runtime SkillManager. Save a rule or reload the local file; new analyses use the updated prompt.</p><article v-for="item in skillData?.skills" :key="item.name" class="ops-record"><strong>{{ item.name }}</strong><p>{{ item.description }}</p><small>{{ item.enabled ? 'Enabled' : 'Disabled' }} · {{ item.agents.join(', ') }}</small></article>
-      <p v-for="item in skillData?.errors" :key="item" role="alert">{{ item }}</p><label class="field-label" for="skillContent">English Skill document</label><textarea id="skillContent" v-model="skillContent" rows="15" maxlength="12000" spellcheck="false"></textarea><button class="primary" :disabled="busy || skillContent.length<20" @click="saveSkill">Save and hot reload</button><button class="secondary" :disabled="busy || !!configStatus?.pending" @click="reloadSkills">Reload saved file</button><p class="footnote">The runtime copy persists locally. Prompt rules cannot grant payment permissions or override server validation.</p>
+    <template v-else-if="tab === 'skills'">
+      <h2>Runtime Skills</h2>
+      <p>
+        Loaded by the runtime SkillManager. Save a rule or reload the local
+        file; new analyses use the updated prompt.
+      </p>
+      <article
+        v-for="item in skillData?.skills"
+        :key="item.name"
+        class="ops-record"
+      >
+        <strong>{{ item.name }}</strong>
+        <p>{{ item.description }}</p>
+        <small
+          >{{ item.enabled ? "Enabled" : "Disabled" }} ·
+          {{ item.agents.join(", ") }}</small
+        >
+      </article>
+      <p v-for="item in skillData?.errors" :key="item" role="alert">
+        {{ item }}
+      </p>
+      <label class="field-label" for="skillContent"
+        >English Skill document</label
+      ><textarea
+        id="skillContent"
+        v-model="skillContent"
+        rows="15"
+        maxlength="12000"
+        spellcheck="false"
+      ></textarea
+      ><button
+        class="primary"
+        :disabled="busy || skillContent.length < 20"
+        @click="saveSkill"
+      >
+        Save and hot reload</button
+      ><button
+        class="secondary"
+        :disabled="busy || !!configStatus?.pending"
+        @click="reloadSkills"
+      >
+        Reload saved file
+      </button>
+      <p class="footnote">
+        The runtime copy persists locally. Prompt rules cannot grant payment
+        permissions or override server validation.
+      </p>
     </template>
     <template v-else>
-      <h2>End-to-end regression</h2><p>The evaluator runs multi-turn cases through the ride engine, checks tool use and entities, then compares results with the same saved baseline.</p><p class="footnote">Offline rubric scores are mechanical citation and boundary checks. They are not LLM judgments or evidence of real-world accuracy. Completed reports persist; queued jobs reset on restart.</p><button class="primary" :disabled="busy || qualityRunning" @click="runQuality">{{ qualityRunning ? 'Running regression…' : 'Run end-to-end regression' }}</button><p v-if="qualityJob">{{ qualityJob.status }} · {{ qualityJob.completed }} / {{ qualityJob.total }} steps</p><button class="secondary" :disabled="busy" @click="loadHistory">Refresh report history</button><article v-for="report in qualityHistory" :key="report.timestamp" class="ops-record"><strong>{{ report.passed }} / {{ report.total }} checks passed · {{ report.status }}</strong><p>{{ report.baseline_compared ? 'Compared with saved baseline' : 'Initial baseline run' }}</p><small>{{ report.timestamp }}</small><p>{{ report.rubric }}</p><p v-for="regression in report.regressions" :key="regression">{{ regression }}</p><details class="source-record"><summary>Inspect individual checks</summary><div v-for="item in report.results" :key="item.test_id" class="ops-record"><strong>{{ item.test_id }} · {{ item.passed ? 'Passed' : 'Needs attention' }}</strong><p>{{ item.metadata.question || 'Intent recognition fixtures' }}</p><small>{{ item.detail }}</small></div></details></article>
+      <h2>End-to-end regression</h2>
+      <p>
+        The evaluator runs multi-turn cases through the ride engine, checks tool
+        use and entities, then compares results with the same saved baseline.
+      </p>
+      <p class="footnote">
+        Offline rubric scores are mechanical citation and boundary checks. They
+        are not LLM judgments or evidence of real-world accuracy. Completed
+        reports persist; queued jobs reset on restart.
+      </p>
+      <button
+        class="primary"
+        :disabled="busy || qualityRunning"
+        @click="runQuality"
+      >
+        {{
+          qualityRunning ? "Running regression…" : "Run end-to-end regression"
+        }}
+      </button>
+      <p v-if="qualityJob">
+        {{ qualityJob.status }} · {{ qualityJob.completed }} /
+        {{ qualityJob.total }} steps
+      </p>
+      <button class="secondary" :disabled="busy" @click="loadHistory">
+        Refresh report history
+      </button>
+      <article
+        v-for="report in qualityHistory"
+        :key="report.timestamp"
+        class="ops-record"
+      >
+        <strong
+          >{{ report.passed }} / {{ report.total }} checks passed ·
+          {{ report.status }}</strong
+        >
+        <p>
+          {{
+            report.baseline_compared
+              ? "Compared with saved baseline"
+              : "Initial baseline run"
+          }}
+        </p>
+        <small>{{ report.timestamp }}</small>
+        <p>{{ report.rubric }}</p>
+        <p v-for="regression in report.regressions" :key="regression">
+          {{ regression }}
+        </p>
+        <details class="source-record">
+          <summary>Inspect individual checks</summary>
+          <div
+            v-for="item in report.results"
+            :key="item.test_id"
+            class="ops-record"
+          >
+            <strong
+              >{{ item.test_id }} ·
+              {{ item.passed ? "Passed" : "Needs attention" }}</strong
+            >
+            <p>{{ item.metadata.question || "Intent recognition fixtures" }}</p>
+            <small>{{ item.detail }}</small>
+          </div>
+        </details>
+      </article>
     </template>
   </section>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { request } from './lib/rideApi.js'
-defineProps({identity:{type:Object,required:true}})
-const policyScopes=ref([]), configStatus=ref(null), probeTrips=ref([])
-const protectedDocument=computed(()=>knowledge.value?.protected_document_ids?.includes(documentId.value.trim()))
-const tabs=[{id:'monitor',label:'Monitor'},{id:'mcp',label:'MCP'},{id:'policies',label:'Policies'},{id:'skills',label:'Skills'},{id:'checks',label:'Checks'}]
-const tab=ref('monitor'), operations=ref(null), knowledge=ref(null), skillData=ref(null), skillContent=ref(''), scope=ref('fare'), documentId=ref(''), documentTitle=ref(''), documentContent=ref(''), busy=ref(false), error=ref(''), notice=ref(''), metricText=ref(''), probeTrip=ref(''), probeResult=ref(''), qualityJob=ref(null), qualityHistory=ref([]), qualityRunning=ref(false)
-const agentRows=computed(()=>Object.entries(operations.value?.agent_stats||{}).sort((a,b)=>b[1].total-a[1].total))
-let timer, qualityTimer, alive=true, qualityPolling=false, monitorPolling=false
-const percent=value=>(Number(value)*100).toFixed(1)+'%'
-async function work(fn){if(busy.value)return;busy.value=true;error.value='';notice.value='';try{await fn()}catch(e){error.value=e.message}finally{busy.value=false}}
-async function loadHistory(){await work(async()=>{qualityHistory.value=await request('/api/agent/quality/history',{agent:true})})}
-async function pollQuality(){if(qualityPolling||!alive)return;qualityPolling=true;try{const job=await request('/api/agent/quality/jobs/'+qualityJob.value.job_id,{agent:true});if(!alive)return;qualityJob.value=job;if(['completed','failed','cancelled'].includes(job.status)){qualityRunning.value=false;clearInterval(qualityTimer);qualityHistory.value=await request('/api/agent/quality/history',{agent:true});if(job.error)error.value=job.error}}catch(e){qualityRunning.value=false;clearInterval(qualityTimer);if(alive)error.value=e.message}finally{qualityPolling=false}}
-async function runQuality(){await work(async()=>{qualityJob.value=await request('/api/agent/quality/jobs',{agent:true,body:{}});if(!alive)return;qualityRunning.value=true;qualityTimer=setInterval(pollQuality,1000)})}
-async function refresh(){await work(async()=>{operations.value=await request('/api/agent/operations',{agent:true})})}
-async function loadKnowledge(){await work(async()=>{knowledge.value=await request('/api/agent/knowledge/'+scope.value,{agent:true});editDocument('')})}
-function editDocument(id){const doc=knowledge.value?.source_documents.find(item=>item.document_id===id);documentId.value=doc?.document_id||'';documentTitle.value=doc?.title||'';documentContent.value=doc?.content||''}
-async function probe(){await work(async()=>{const result=await request('/api/agent/mcp/probe',{agent:true,body:{trip_id:probeTrip.value}});probeResult.value=JSON.stringify(result,null,2);operations.value=await request('/api/agent/operations',{agent:true});notice.value='Actual MCP tool call completed. No case or payment was changed.'})}
-async function reconnect(){await work(async()=>{await request('/api/agent/mcp/reconnect',{agent:true,body:{}});operations.value=await request('/api/agent/operations',{agent:true});notice.value=operations.value.mcp.servers.every(s=>s.state==='connected')?'Service connected. Tool discovery completed.':'Service is unavailable. Check the connection status.'})}
-async function loadMetrics(){await work(async()=>{const data=await request('/api/agent/metrics-view',{agent:true});metricText.value=data.text})}
-async function savePolicy(){await work(async()=>{await request('/api/agent/knowledge',{agent:true,body:{topic:scope.value,document_id:documentId.value.trim(),title:documentTitle.value.trim(),content:documentContent.value.trim()}});const [docs,state]=await Promise.all([request('/api/agent/knowledge/'+scope.value,{agent:true}),request('/api/agent/configuration',{agent:true})]);knowledge.value=docs;configStatus.value=state;notice.value=state.pending?'Document committed. The retrieval update is pending recovery.':'Document committed and indexed. Retrieval cache invalidated.'})}
-async function saveSkill(){await work(async()=>{skillData.value=await request('/api/agent/skills',{agent:true,body:{content:skillContent.value}});skillContent.value=skillData.value.editable_content;configStatus.value=await request('/api/agent/configuration',{agent:true});notice.value=configStatus.value.pending?'Skill committed. Runtime application is pending recovery.':'Skill committed and reloaded. The next analysis uses these rules.'})}
-async function reloadSkills(){await work(async()=>{skillData.value=await request('/api/agent/skills/reload',{agent:true,body:{}});skillContent.value=skillData.value.editable_content;notice.value='Saved Skills reloaded.'})}
-onMounted(async()=>{
- await work(async()=>{
-  const sections=['Monitor','Skills','Policy scopes','Configuration','MCP catalog']
-  const results=await Promise.allSettled([request('/api/agent/operations',{agent:true}),request('/api/agent/skills',{agent:true}),request('/api/agent/knowledge',{agent:true}),request('/api/agent/configuration',{agent:true}),request('/api/agent/mcp/catalog',{agent:true})])
-  if(!alive)return
-  const errors=results.flatMap((result,index)=>result.status==='rejected'?[sections[index]+': '+result.reason.message]:[])
-  const values=results.map(result=>result.status==='fulfilled'?result.value:null)
-  if(values[0])operations.value=values[0]
-  if(values[1]){skillData.value=values[1];skillContent.value=values[1].editable_content}
-  if(values[3])configStatus.value=values[3]
-  if(values[4]){probeTrips.value=values[4].trips;probeTrip.value=probeTrips.value.some(item=>item.id===probeTrip.value)?probeTrip.value:probeTrips.value[0]?.id||''}
-  if(values[2]){
-   policyScopes.value=values[2].scopes
-   scope.value=policyScopes.value.some(item=>item.id===scope.value)?scope.value:policyScopes.value[0]?.id||''
-   if(scope.value)try{knowledge.value=await request('/api/agent/knowledge/'+scope.value,{agent:true})}catch(e){errors.push('Policy index: '+e.message)}
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { request } from "./lib/rideApi.js";
+defineProps({ identity: { type: Object, required: true } });
+const policyScopes = ref([]),
+  configStatus = ref(null),
+  probeTrips = ref([]);
+const protectedDocument = computed(() =>
+  knowledge.value?.protected_document_ids?.includes(documentId.value.trim()),
+);
+const tabs = [
+  { id: "monitor", label: "Monitor" },
+  { id: "mcp", label: "MCP" },
+  { id: "policies", label: "Policies" },
+  { id: "skills", label: "Skills" },
+  { id: "checks", label: "Checks" },
+];
+const tab = ref("monitor"),
+  operations = ref(null),
+  knowledge = ref(null),
+  skillData = ref(null),
+  skillContent = ref(""),
+  scope = ref("fare"),
+  documentId = ref(""),
+  documentTitle = ref(""),
+  documentContent = ref(""),
+  busy = ref(false),
+  error = ref(""),
+  notice = ref(""),
+  metricText = ref(""),
+  probeTrip = ref(""),
+  probeResult = ref(""),
+  qualityJob = ref(null),
+  qualityHistory = ref([]),
+  qualityRunning = ref(false);
+const agentRows = computed(() =>
+  Object.entries(operations.value?.agent_stats || {}).sort(
+    (a, b) => b[1].total - a[1].total,
+  ),
+);
+let timer,
+  qualityTimer,
+  alive = true,
+  qualityPolling = false,
+  monitorPolling = false;
+const percent = (value) => (Number(value) * 100).toFixed(1) + "%";
+async function work(fn) {
+  if (busy.value) return;
+  busy.value = true;
+  error.value = "";
+  notice.value = "";
+  try {
+    await fn();
+  } catch (e) {
+    error.value = e.message;
+  } finally {
+    busy.value = false;
   }
-  if(errors.length)error.value=errors.join(' ')
- })
- if(!alive)return
- timer=setInterval(async()=>{if(busy.value||monitorPolling||tab.value!=='monitor')return;monitorPolling=true;try{const data=await request('/api/agent/operations',{agent:true});if(alive){operations.value=data;configStatus.value=data.configuration}}catch{/* Manual refresh surfaces connection errors. */}finally{monitorPolling=false}},5000)
-})
+}
+async function loadHistory() {
+  await work(async () => {
+    qualityHistory.value = await request("/api/agent/quality/history", {
+      agent: true,
+    });
+  });
+}
+async function pollQuality() {
+  if (qualityPolling || !alive) return;
+  qualityPolling = true;
+  try {
+    const job = await request(
+      "/api/agent/quality/jobs/" + qualityJob.value.job_id,
+      { agent: true },
+    );
+    if (!alive) return;
+    qualityJob.value = job;
+    if (["completed", "failed", "cancelled"].includes(job.status)) {
+      qualityRunning.value = false;
+      clearInterval(qualityTimer);
+      qualityHistory.value = await request("/api/agent/quality/history", {
+        agent: true,
+      });
+      if (job.error) error.value = job.error;
+    }
+  } catch (e) {
+    qualityRunning.value = false;
+    clearInterval(qualityTimer);
+    if (alive) error.value = e.message;
+  } finally {
+    qualityPolling = false;
+  }
+}
+async function runQuality() {
+  await work(async () => {
+    qualityJob.value = await request("/api/agent/quality/jobs", {
+      agent: true,
+      body: {},
+    });
+    if (!alive) return;
+    qualityRunning.value = true;
+    qualityTimer = setInterval(pollQuality, 1000);
+  });
+}
+async function refresh() {
+  await work(async () => {
+    operations.value = await request("/api/agent/operations", { agent: true });
+  });
+}
+async function loadKnowledge() {
+  await work(async () => {
+    knowledge.value = await request("/api/agent/knowledge/" + scope.value, {
+      agent: true,
+    });
+    editDocument("");
+  });
+}
+function editDocument(id) {
+  const doc = knowledge.value?.source_documents.find(
+    (item) => item.document_id === id,
+  );
+  documentId.value = doc?.document_id || "";
+  documentTitle.value = doc?.title || "";
+  documentContent.value = doc?.content || "";
+}
+async function probe() {
+  await work(async () => {
+    const result = await request("/api/agent/mcp/probe", {
+      agent: true,
+      body: { trip_id: probeTrip.value },
+    });
+    probeResult.value = JSON.stringify(result, null, 2);
+    operations.value = await request("/api/agent/operations", { agent: true });
+    notice.value =
+      "Actual MCP tool call completed. No case or payment was changed.";
+  });
+}
+async function reconnect() {
+  await work(async () => {
+    await request("/api/agent/mcp/reconnect", { agent: true, body: {} });
+    operations.value = await request("/api/agent/operations", { agent: true });
+    notice.value = operations.value.mcp.servers.every(
+      (s) => s.state === "connected",
+    )
+      ? "Service connected. Tool discovery completed."
+      : "Service is unavailable. Check the connection status.";
+  });
+}
+async function loadMetrics() {
+  await work(async () => {
+    const data = await request("/api/agent/metrics-view", { agent: true });
+    metricText.value = data.text;
+  });
+}
+async function savePolicy() {
+  await work(async () => {
+    await request("/api/agent/knowledge", {
+      agent: true,
+      body: {
+        topic: scope.value,
+        document_id: documentId.value.trim(),
+        title: documentTitle.value.trim(),
+        content: documentContent.value.trim(),
+      },
+    });
+    const [docs, state] = await Promise.all([
+      request("/api/agent/knowledge/" + scope.value, { agent: true }),
+      request("/api/agent/configuration", { agent: true }),
+    ]);
+    knowledge.value = docs;
+    configStatus.value = state;
+    notice.value = state.pending
+      ? "Document committed. The retrieval update is pending recovery."
+      : "Document committed and indexed. Retrieval cache invalidated.";
+  });
+}
+async function saveSkill() {
+  await work(async () => {
+    skillData.value = await request("/api/agent/skills", {
+      agent: true,
+      body: { content: skillContent.value },
+    });
+    skillContent.value = skillData.value.editable_content;
+    configStatus.value = await request("/api/agent/configuration", {
+      agent: true,
+    });
+    notice.value = configStatus.value.pending
+      ? "Skill committed. Runtime application is pending recovery."
+      : "Skill committed and reloaded. The next analysis uses these rules.";
+  });
+}
+async function reloadSkills() {
+  await work(async () => {
+    skillData.value = await request("/api/agent/skills/reload", {
+      agent: true,
+      body: {},
+    });
+    skillContent.value = skillData.value.editable_content;
+    notice.value = "Saved Skills reloaded.";
+  });
+}
+onMounted(async () => {
+  await work(async () => {
+    const sections = [
+      "Monitor",
+      "Skills",
+      "Policy scopes",
+      "Configuration",
+      "MCP catalog",
+    ];
+    const results = await Promise.allSettled([
+      request("/api/agent/operations", { agent: true }),
+      request("/api/agent/skills", { agent: true }),
+      request("/api/agent/knowledge", { agent: true }),
+      request("/api/agent/configuration", { agent: true }),
+      request("/api/agent/mcp/catalog", { agent: true }),
+    ]);
+    if (!alive) return;
+    const errors = results.flatMap((result, index) =>
+      result.status === "rejected"
+        ? [sections[index] + ": " + result.reason.message]
+        : [],
+    );
+    const values = results.map((result) =>
+      result.status === "fulfilled" ? result.value : null,
+    );
+    if (values[0]) operations.value = values[0];
+    if (values[1]) {
+      skillData.value = values[1];
+      skillContent.value = values[1].editable_content;
+    }
+    if (values[3]) configStatus.value = values[3];
+    if (values[4]) {
+      probeTrips.value = values[4].trips;
+      probeTrip.value = probeTrips.value.some(
+        (item) => item.id === probeTrip.value,
+      )
+        ? probeTrip.value
+        : probeTrips.value[0]?.id || "";
+    }
+    if (values[2]) {
+      policyScopes.value = values[2].scopes;
+      scope.value = policyScopes.value.some((item) => item.id === scope.value)
+        ? scope.value
+        : policyScopes.value[0]?.id || "";
+      if (scope.value)
+        try {
+          knowledge.value = await request(
+            "/api/agent/knowledge/" + scope.value,
+            { agent: true },
+          );
+        } catch (e) {
+          errors.push("Policy index: " + e.message);
+        }
+    }
+    if (errors.length) error.value = errors.join(" ");
+  });
+  if (!alive) return;
+  timer = setInterval(async () => {
+    if (busy.value || monitorPolling || tab.value !== "monitor") return;
+    monitorPolling = true;
+    try {
+      const data = await request("/api/agent/operations", { agent: true });
+      if (alive) {
+        operations.value = data;
+        configStatus.value = data.configuration;
+      }
+    } catch {
+      /* Manual refresh surfaces connection errors. */
+    } finally {
+      monitorPolling = false;
+    }
+  }, 5000);
+});
 
-onUnmounted(()=>{alive=false;clearInterval(timer);clearInterval(qualityTimer)})
+onUnmounted(() => {
+  alive = false;
+  clearInterval(timer);
+  clearInterval(qualityTimer);
+});
 </script>

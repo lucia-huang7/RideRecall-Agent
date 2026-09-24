@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: kinderuber-java
+    name: llmagentsystem-java
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:anthropic}
   jackson:
@@ -19,7 +19,7 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:kinderuber123}
+      password: ${REDIS_PASSWORD:llmagentsystem123}
       timeout: 2s
 
 management:
@@ -36,7 +36,7 @@ springdoc:
   api-docs:
     path: /v3/api-docs
 
-kinderuber:
+llmagentsystem:
   llm:
     fallback-enabled: ${LLM_FALLBACK_ENABLED:true}
     timeout-seconds: ${LLM_TIMEOUT_SECONDS:30}
@@ -52,20 +52,20 @@ kinderuber:
     bm25-weight: ${RAG_BM25_WEIGHT:0.45}
     vector-weight: ${RAG_VECTOR_WEIGHT:0.55}
   storage:
-    data-dir: ${KINDER_UBER_DATA_DIR:data/java}
-    knowledge-path: ${KNOWLEDGE_STORE_PATH:${KINDER_UBER_DATA_DIR:data/java}/knowledge-store.json}
-    memory-path: ${MEMORY_STORE_PATH:${KINDER_UBER_DATA_DIR:data/java}/memory-store.json}
+    data-dir: ${LLM_AGENT_SYSTEM_DATA_DIR:data/java}
+    knowledge-path: ${KNOWLEDGE_STORE_PATH:${LLM_AGENT_SYSTEM_DATA_DIR:data/java}/knowledge-store.json}
+    memory-path: ${MEMORY_STORE_PATH:${LLM_AGENT_SYSTEM_DATA_DIR:data/java}/memory-store.json}
   monitor:
     success-rate-threshold: ${MONITOR_SUCCESS_RATE_THRESHOLD:0.90}
     latency-ms-threshold: ${MONITOR_LATENCY_MS_THRESHOLD:3000}
     webhook-url: ${ALERT_WEBHOOK_URL:}
-    fallback-penalty: ${KINDER_UBER_MONITOR_FALLBACK_PENALTY:0.5}
-    cooldown-seconds: ${KINDER_UBER_MONITOR_COOLDOWN_SECONDS:60}
+    fallback-penalty: ${LLM_AGENT_SYSTEM_MONITOR_FALLBACK_PENALTY:0.5}
+    cooldown-seconds: ${LLM_AGENT_SYSTEM_MONITOR_COOLDOWN_SECONDS:60}
   eval:
     baseline-path: ${EVAL_BASELINE_PATH:data/eval/baseline.json}
   skills:
-    root-dir: ${KINDER_UBER_SKILLS_DIR:skills}
-    max-prompt-chars: ${KINDER_UBER_SKILLS_MAX_PROMPT_CHARS:5000}
+    root-dir: ${LLM_AGENT_SYSTEM_SKILLS_DIR:skills}
+    max-prompt-chars: ${LLM_AGENT_SYSTEM_SKILLS_MAX_PROMPT_CHARS:5000}
 
 langchain4j:
   anthropic:

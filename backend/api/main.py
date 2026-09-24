@@ -1,5 +1,5 @@
 """
-KinderUber 智能客服系统 — FastAPI 入口
+LlmAgentSystem 智能客服系统 — FastAPI 入口
 
 启动时打印小熊饼干图案。
 所有核心组件在 lifespan 中初始化，通过环境变量配置。
@@ -37,7 +37,7 @@ logger = logging.getLogger(__name__)
 BANNER = r"""
     ʕ•ᴥ•ʔ  ʕ•ᴥ•ʔ  ʕ•ᴥ•ʔ
    ╔══════════════════════╗
-   ║   KinderUber  v2.0     ║
+   ║   LlmAgentSystem  v2.0     ║
    ║   智能客服 AI 系统    ║
    ╚══════════════════════╝
     ʕ•ᴥ•ʔ  ʕ•ᴥ•ʔ  ʕ•ᴥ•ʔ
@@ -99,10 +99,10 @@ async def lifespan(app: FastAPI):
     )
 
     # Skills：启动时从目录加载业务能力说明，并在 Agent 调用 LLM 时动态注入。
-    skills_dir = os.getenv("KINDER_UBER_SKILLS_DIR", str(pathlib.Path(_ROOT) / "skills"))
+    skills_dir = os.getenv("LLM_AGENT_SYSTEM_SKILLS_DIR", str(pathlib.Path(_ROOT) / "skills"))
     _skill_manager = SkillManager(
         root_dir=skills_dir,
-        max_prompt_chars=int(os.getenv("KINDER_UBER_SKILLS_MAX_PROMPT_CHARS", "5000")),
+        max_prompt_chars=int(os.getenv("LLM_AGENT_SYSTEM_SKILLS_MAX_PROMPT_CHARS", "5000")),
     )
     _skill_manager.load()
 
@@ -201,7 +201,7 @@ async def lifespan(app: FastAPI):
     from core.concurrency import ProfileUpdater
     _profile_updater = ProfileUpdater(_memory, workers=int(os.getenv("PROFILE_UPDATE_WORKERS", "4")))
     _profile_updater.start()
-    logger.info("KinderUber 已就绪")
+    logger.info("LlmAgentSystem 已就绪")
     async with standard_mcp_server.session_manager.run():
         try:
             yield
@@ -213,7 +213,7 @@ async def lifespan(app: FastAPI):
             if _memory is not None:
                 await _memory.close()
             configure(None)
-            logger.info("KinderUber 已关闭")
+            logger.info("LlmAgentSystem 已关闭")
 
 
 def _refresh_agent_tools():
@@ -242,7 +242,7 @@ from tooling.mcp_server import http_app as standard_mcp_app, server as standard_
 
 # ── FastAPI ───────────────────────────────────────────────────────────────────
 app = FastAPI(
-    title="KinderUber 智能客服",
+    title="LlmAgentSystem 智能客服",
     version="2.0.0",
     lifespan=lifespan,
     docs_url="/docs",
@@ -332,7 +332,7 @@ class RecentToolTracesResponse(BaseModel):
 async def health():
     if _orchestrator is None:
         raise HTTPException(503, "服务未就绪")
-    return {"status": "ok", "agents": {} if os.getenv("KINDER_UBER_API_TOKENS") else _orchestrator.get_stats()}
+    return {"status": "ok", "agents": {} if os.getenv("LLM_AGENT_SYSTEM_API_TOKENS") else _orchestrator.get_stats()}
 
 
 @app.get("/skills", tags=["Skills"])
@@ -762,7 +762,7 @@ app.mount("/mcp", standard_mcp_app)
 # ── 交互式 CLI ────────────────────────────────────────────────────────────────
 async def _cli():
     print(BANNER)
-    print("KinderUber CLI — 输入 quit 退出\n")
+    print("LlmAgentSystem CLI — 输入 quit 退出\n")
 
     from agents.agent_orchestrator import AgentOrchestrator, Request
     from memory.conversation_memory import MemoryManager, MsgRole
@@ -770,8 +770,8 @@ async def _cli():
 
     cfg = _anthropic_cfg()
     skill_manager = SkillManager(
-        root_dir=os.getenv("KINDER_UBER_SKILLS_DIR", str(pathlib.Path(_ROOT) / "skills")),
-        max_prompt_chars=int(os.getenv("KINDER_UBER_SKILLS_MAX_PROMPT_CHARS", "5000")),
+        root_dir=os.getenv("LLM_AGENT_SYSTEM_SKILLS_DIR", str(pathlib.Path(_ROOT) / "skills")),
+        max_prompt_chars=int(os.getenv("LLM_AGENT_SYSTEM_SKILLS_MAX_PROMPT_CHARS", "5000")),
     )
     skill_manager.load()
     orch = AgentOrchestrator(
@@ -838,7 +838,7 @@ async def _cli():
             await mem.add_message(user_id, conv_id, MsgRole.USER, msg)
             await mem.add_message(user_id, conv_id, MsgRole.ASSISTANT, result.response)
 
-            print(f"\nKinderUber [{result.agent_type.value}]: {result.response}\n")
+            print(f"\nLlmAgentSystem [{result.agent_type.value}]: {result.response}\n")
     finally:
         await bridge.close()
         await manager._client.close()

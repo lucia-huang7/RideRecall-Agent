@@ -43,7 +43,7 @@ async def test_few_shot_examples_reach_model():
 async def test_intent_timeout_uses_fallback_instead_of_waiting_for_chat_deadline(monkeypatch):
     rec = IntentRecognizer.__new__(IntentRecognizer)
     rec.model = "test"
-    monkeypatch.setenv("KINDER_UBER_INTENT_TIMEOUT_S", "0.1")
+    monkeypatch.setenv("LLM_AGENT_SYSTEM_INTENT_TIMEOUT_S", "0.1")
     async def stall(**kwargs):
         await asyncio.Event().wait()
     rec.client = SimpleNamespace(messages=SimpleNamespace(create=stall))
@@ -55,7 +55,7 @@ async def test_intent_timeout_uses_fallback_instead_of_waiting_for_chat_deadline
 def test_production_storage_connection_failure_never_switches_to_local(cls, module, monkeypatch):
     import importlib
     target = importlib.import_module(module)
-    monkeypatch.setenv("KINDER_UBER_ENV", "production")
+    monkeypatch.setenv("LLM_AGENT_SYSTEM_ENV", "production")
     monkeypatch.setattr(target.chromadb, "Settings", Mock(return_value=None), raising=False)
     monkeypatch.setattr(target.chromadb, "HttpClient", Mock(side_effect=RuntimeError("remote unavailable")), raising=False)
     local = Mock()
@@ -70,7 +70,7 @@ def test_production_storage_connection_failure_never_switches_to_local(cls, modu
 
 def test_empty_production_knowledge_base_does_not_seed_demo_policies(monkeypatch):
     import tooling.knowledge_base as module
-    monkeypatch.setenv("KINDER_UBER_ENV", "production")
+    monkeypatch.setenv("LLM_AGENT_SYSTEM_ENV", "production")
     collection = SimpleNamespace(count=lambda: 0)
     remote = SimpleNamespace(heartbeat=lambda: None, get_or_create_collection=lambda **kwargs: collection)
     monkeypatch.setattr(module.chromadb, "Settings", Mock(return_value=None), raising=False)

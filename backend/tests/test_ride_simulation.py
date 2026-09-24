@@ -33,7 +33,7 @@ def test_runtime_contract_rejects_labels_and_inconsistent_financial_records(tmp_
 
 
 def test_policy_version_and_ledger_change_outcome_without_scenario_labels(tmp_path,monkeypatch):
-    monkeypatch.setenv('KINDER_UBER_RIDE_MODEL_MODE','demo')
+    monkeypatch.setenv('LLM_AGENT_SYSTEM_RIDE_MODEL_MODE','demo')
     release=tmp_path/'release';generate(release,16)
     data=json.loads((release/'catalog.json').read_text())
     trip=deepcopy(data['trips'][4])

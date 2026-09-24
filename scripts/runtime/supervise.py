@@ -127,7 +127,7 @@ def main():
     logs.mkdir(exist_ok=True,mode=0o700)
     logs.chmod(0o700)
     env=os.environ.copy()
-    env.update(KINDER_UBER_ENV='development',KINDER_UBER_RIDE_MODEL_MODE='demo',KINDER_UBER_RIDE_DB=str(INSTANCE_ROOT/'data'/'rides.sqlite3'),KINDER_UBER_INSTANCE_ID=config['instance'],PYTHONUNBUFFERED='1')
+    env.update(LLM_AGENT_SYSTEM_ENV='development',LLM_AGENT_SYSTEM_RIDE_MODEL_MODE='demo',LLM_AGENT_SYSTEM_RIDE_DB=str(INSTANCE_ROOT/'data'/'rides.sqlite3'),LLM_AGENT_SYSTEM_INSTANCE_ID=config['instance'],PYTHONUNBUFFERED='1')
     commands={
         'backend':[sys.executable,'-m','uvicorn','mobility.app:app','--host','127.0.0.1','--port','8010','--limit-concurrency','64','--timeout-keep-alive','5','--no-proxy-headers','--no-access-log'],
         'frontend':[sys.executable,str(INSTANCE_ROOT/'runtime'/'frontend.py')],
@@ -170,7 +170,7 @@ def main():
             except Exception:pass
             try:readiness=read_json('http://127.0.0.1:8010/readyz',allow_error=True)
             except Exception:pass
-            try:frontend=read_json('http://127.0.0.1:5175/__kinderuber_health').get('instance')==config['instance']
+            try:frontend=read_json('http://127.0.0.1:5175/__llmagentsystem_health').get('instance')==config['instance']
             except Exception:pass
             healthy,alive=sample_health(liveness,readiness,frontend,failures)
             started={name:status[name+'_started'] for name in commands}

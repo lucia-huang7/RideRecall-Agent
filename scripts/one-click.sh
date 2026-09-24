@@ -10,7 +10,7 @@ for candidate in python3.11 python3.12 python python3; do
   fi
 done
 if [ -z "$PYTHON" ]; then
-  echo 'Python 3.11 or 3.12 is required. Install it, then run Start kinder-uber.command again.' >&2
+  echo 'Python 3.11 or 3.12 is required. Install it, then run Start LLM-Agent-System.command again.' >&2
   exit 1
 fi
 exec "$PYTHON" "$ROOT/scripts/rides-control.py" "$@"

@@ -134,7 +134,7 @@ test('live summary pages deduplicate updates and preserve deterministic cursor o
 test('an empty migrated demo workspace can recover only IDs already saved in this browser', async () => {
   const { clearCredential, setCredential } = await import('../src/lib/auth.js')
   clearCredential()
-  const values = new Map([['kinderuber.rides.session','new-rider-id'],['previous-app.rides.session','saved-rider-id']])
+  const values = new Map([['llmagentsystem.rides.session','new-rider-id'],['previous-app.rides.session','saved-rider-id']])
   const previousStore = globalThis.localStorage
   globalThis.localStorage = { get length() { return values.size }, key: i => [...values.keys()][i], getItem: key => values.get(key), setItem: (key,value) => values.set(key,value) }
   try {
@@ -147,8 +147,8 @@ test('an empty migrated demo workspace can recover only IDs already saved in thi
     }
     assert.equal((await api.request('/api/cases/index')).items[0].id, 'KU-SAVED')
     assert.deepEqual(seen.map(h => h['X-Demo-Session']), ['new-rider-id','saved-rider-id'])
-    assert.equal(values.get('kinderuber.rides.session'), 'saved-rider-id')
-    assert.equal(values.get('kinderuber.saved.rides.session'), 'new-rider-id')
+    assert.equal(values.get('llmagentsystem.rides.session'), 'saved-rider-id')
+    assert.equal(values.get('llmagentsystem.saved.rides.session'), 'new-rider-id')
     setCredential('production-credential-example')
     globalThis.fetch = async (url,options) => { seen.push(options.headers);return {ok:false,status:404,json:async()=>({detail:'Case not found.'})} }
     const before = seen.length

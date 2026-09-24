@@ -38,8 +38,8 @@ def text_response(text="回复完成", stop="end_turn"):
 
 @pytest_asyncio.fixture
 async def services(monkeypatch):
-    monkeypatch.setenv("KINDER_UBER_ENV", "development")
-    monkeypatch.delenv("KINDER_UBER_API_TOKENS", raising=False)
+    monkeypatch.setenv("LLM_AGENT_SYSTEM_ENV", "development")
+    monkeypatch.delenv("LLM_AGENT_SYSTEM_API_TOKENS", raising=False)
     memory = MemoryManager.__new__(MemoryManager)
     memory._redis = fakeredis.aioredis.FakeRedis(decode_responses=True)
     memory._request_locks = KeyedLocks()
@@ -182,7 +182,7 @@ async def test_unsafe_tool_timeout_preserves_non_replayable_receipt(services, mo
 async def test_concurrent_retries_execute_once_and_bind_authenticated_identity(services, monkeypatch):
     memory, orch, model, http = services
     token = "test-token-with-at-least-24-characters"
-    monkeypatch.setenv("KINDER_UBER_API_TOKENS", json.dumps({token: {"user_id": "real", "role": "user"}}))
+    monkeypatch.setenv("LLM_AGENT_SYSTEM_API_TOKENS", json.dumps({token: {"user_id": "real", "role": "user"}}))
     headers = {"Authorization": "Bearer " + token}
     first, second = await asyncio.gather(*(http.post("/chat", json=body(), headers=headers) for _ in range(2)))
     assert first.status_code == second.status_code == 200

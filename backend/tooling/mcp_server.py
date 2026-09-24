@@ -9,9 +9,9 @@ from pydantic import Field, BaseModel
 from mcp.server.transport_security import TransportSecuritySettings
 from mcp.types import ToolAnnotations
 
-hosts = os.getenv("MCP_ALLOWED_HOSTS", "localhost,localhost:*,127.0.0.1,127.0.0.1:*,kinderuber,kinderuber:*,kinderuber-python,kinderuber-python:*")
+hosts = os.getenv("MCP_ALLOWED_HOSTS", "localhost,localhost:*,127.0.0.1,127.0.0.1:*,llmagentsystem,llmagentsystem:*,llmagentsystem-python,llmagentsystem-python:*")
 origins = os.getenv("MCP_ALLOWED_ORIGINS", "http://localhost,http://localhost:*,http://127.0.0.1,http://127.0.0.1:*")
-server = FastMCP("KinderUber Knowledge", stateless_http=True, json_response=True, streamable_http_path="/",
+server = FastMCP("LlmAgentSystem Knowledge", stateless_http=True, json_response=True, streamable_http_path="/",
                 transport_security=TransportSecuritySettings(enable_dns_rebinding_protection=True,
                     allowed_hosts=[s.strip() for s in hosts.split(",") if s.strip()],
                     allowed_origins=[s.strip() for s in origins.split(",") if s.strip()]))
@@ -26,12 +26,12 @@ def configure(kb, manager=None):
 
 class KnowledgeSearchResult(BaseModel):
     results: List[Dict[str, Any]]
-    source: str = "kinderuber_knowledge"
+    source: str = "llmagentsystem_knowledge"
 
 
 @server.tool(annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, idempotentHint=True))
 async def search_local_knowledge(query: Annotated[str, Field(min_length=1, max_length=2000)], top_k: Annotated[int, Field(ge=1, le=20, strict=True)] = 5) -> KnowledgeSearchResult:
-    """检索 KinderUber 本地客服知识库，返回文档标题、片段和检索分数。"""
+    """检索 LlmAgentSystem 本地客服知识库，返回文档标题、片段和检索分数。"""
     if knowledge_base is None:
         raise ToolError("知识库尚未就绪")
     query = query.strip()
@@ -45,7 +45,7 @@ async def search_local_knowledge(query: Annotated[str, Field(min_length=1, max_l
     return KnowledgeSearchResult(results=await knowledge_base.search_async(query, top_k))
 
 
-@server.resource("kinderuber://knowledge/stats")
+@server.resource("llmagentsystem://knowledge/stats")
 async def knowledge_stats() -> str:
     """读取知识库片段数量。"""
     if knowledge_base is None:

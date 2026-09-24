@@ -65,7 +65,7 @@ def main():
         path.write_text(json.dumps(value));path.chmod(0o600)
     with socket.socket() as probe:probe.bind(('127.0.0.1',0));port=probe.getsockname()[1]
     environment={k:v for k,v in os.environ.items() if not k.endswith('_API_KEY')}
-    environment.update(PYTHONPATH=str(source/'backend'),KINDER_UBER_ENV='production',KINDER_UBER_RIDE_MODEL_MODE='demo',KINDER_UBER_RIDE_DB=str(database),KINDER_UBER_RIDE_CATALOG_PATH=str(catalog),KINDER_UBER_IDENTITY_FILE=str(registry),PYTHONUNBUFFERED='1',PYTHONDONTWRITEBYTECODE='1')
+    environment.update(PYTHONPATH=str(source/'backend'),LLM_AGENT_SYSTEM_ENV='production',LLM_AGENT_SYSTEM_RIDE_MODEL_MODE='demo',LLM_AGENT_SYSTEM_RIDE_DB=str(database),LLM_AGENT_SYSTEM_RIDE_CATALOG_PATH=str(catalog),LLM_AGENT_SYSTEM_IDENTITY_FILE=str(registry),PYTHONUNBUFFERED='1',PYTHONDONTWRITEBYTECODE='1')
     opener=urllib.request.build_opener(urllib.request.ProxyHandler({}))
     events=(output/'events.jsonl').open('w');server_log=(output/'server.log').open('w')
     process=None;stopping=False;started=utc();started_clock=time.monotonic()

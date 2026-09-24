@@ -13,7 +13,7 @@ parser.add_argument("--catalog")
 args=parser.parse_args()
 catalog=RideCatalog(args.catalog)
 
-server = FastMCP("kinder-uber Demo Service")
+server = FastMCP("LLM-Agent-System Demo Service")
 
 
 @server.tool(annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False))

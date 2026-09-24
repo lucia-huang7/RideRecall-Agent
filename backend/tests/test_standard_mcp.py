@@ -76,7 +76,7 @@ def test_local_standard_http_server_tools_and_resources():
                             assert [t.name for t in catalog.tools] == ['search_local_knowledge']
                             result = await session.call_tool('search_local_knowledge',{'query':'退款','top_k':2})
                             assert not result.isError and result.structuredContent['results'][0]['title'] == '政策'
-                            stats = await session.read_resource('kinderuber://knowledge/stats')
+                            stats = await session.read_resource('llmagentsystem://knowledge/stats')
                             assert json.loads(stats.contents[0].text)['total_chunks'] == 8
                             invalid = await session.call_tool('search_local_knowledge',{'query':'退款','top_k':0})
                             assert invalid.isError

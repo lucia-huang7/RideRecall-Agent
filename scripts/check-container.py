@@ -23,9 +23,9 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',type=Path)
     args=parser.parse_args()
-    project='kinder-uber-check-'+uuid4().hex[:10]
+    project='llm-agent-system-check-'+uuid4().hex[:10]
     with socket.socket() as listener:listener.bind(('127.0.0.1',0));port=listener.getsockname()[1]
-    environment={**os.environ,'KINDER_UBER_HTTP_PORT':str(port)}
+    environment={**os.environ,'LLM_AGENT_SYSTEM_HTTP_PORT':str(port)}
     base=['docker','compose','-p',project,'--profile','tools']
     checks=[];correlations=[]
     def compose(*arguments):
@@ -71,7 +71,7 @@ def main():
         check(call('GET','/api/agent/cases/'+case['id'],role='preview-specialist')[0]==404,'specialist detail requires handoff')
         path='/api/cases/'+case['id'];staff='/api/agent/cases/'+case['id']+'/actions'
         raw=b'%PDF-1.4\nFictional pickup evidence\n%%EOF'
-        boundary='kinder'+uuid4().hex
+        boundary='llmagent'+uuid4().hex
         upload=('--'+boundary+'\r\nContent-Disposition: form-data; name="file"; filename="receipt.pdf"\r\nContent-Type: application/pdf\r\n\r\n').encode()+raw+('\r\n--'+boundary+'--\r\n').encode()
         status,case=call('POST',path+'/attachments',raw=upload,content_type='multipart/form-data; boundary='+boundary,revision=case['revision'])
         check(status==200,'transactional attachment upload')
@@ -106,8 +106,8 @@ def main():
         identity=json.loads(compose('exec','-T','app','python','-c',"import os,json; print(json.dumps(dict(uid=os.getuid(),data_mode=oct(os.stat('/data/state.sqlite3').st_mode & 0o777))))"))
         check(identity['uid']==10001 and identity['data_mode']=='0o600','non-root owner-only persistence')
         status,metrics=call('GET','/api/agent/metrics',role='preview-operator')
-        check(status==200 and b'kinderuber_http_requests_total' in metrics,'HTTP metrics share the protected operator endpoint')
-        check(b'kinderuber_process_resident_memory_bytes' in metrics,'Linux process resource metrics are exported')
+        check(status==200 and b'llmagentsystem_http_requests_total' in metrics,'HTTP metrics share the protected operator endpoint')
+        check(b'llmagentsystem_process_resident_memory_bytes' in metrics,'Linux process resource metrics are exported')
         check(all(isinstance(value,str) and re.fullmatch('[a-f0-9]{32}',value) for value in correlations) and len(correlations)==len(set(correlations)),'application responses have independent server correlation IDs')
         compose('stop','app')
         compose('run','--rm','--no-deps','app','python','-m','mobility.backup','create','/data/state.sqlite3','/data/offline-snapshot')
@@ -115,7 +115,7 @@ def main():
         compose('run','--rm','--no-deps','app','python','-m','mobility.backup','restore','/data/offline-snapshot','/data/recovery')
         result=json.loads(compose('run','--rm','--no-deps','app','python','-c',"import json; from mobility.store import Store; s=Store('/data/recovery/state.sqlite3'); c=s.list()[0]; b=s.attachment(c['id'],c['evidence'][0]['id']); print(json.dumps(dict(cases=len(s.list()),adjustment=c['adjustment']['amount'],sha256=b['sha256'])))"))
         check(result==dict(cases=1,adjustment=650,sha256=hashlib.sha256(raw).hexdigest()),'offline verified restore retains business and binary state')
-        report=dict(status='passed',checks=checks,total=len(checks),image='kinder-uber:local',scope='Isolated authenticated fictional container; no real payment or live model.')
+        report=dict(status='passed',checks=checks,total=len(checks),image='llm-agent-system:local',scope='Isolated authenticated fictional container; no real payment or live model.')
         if args.output:args.output.parent.mkdir(parents=True,exist_ok=True);args.output.write_text(json.dumps(report,indent=2)+'\n')
         print(json.dumps(report,indent=2))
     finally:compose('down','--volumes','--remove-orphans')

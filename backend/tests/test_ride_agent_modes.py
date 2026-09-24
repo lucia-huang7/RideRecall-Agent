@@ -12,7 +12,7 @@ def headers(key=None):
 
 
 def test_default_union_tools_and_optional_mode_survive_restart(tmp_path, monkeypatch):
-    monkeypatch.delenv('KINDER_UBER_RIDE_API_KEY', raising=False)
+    monkeypatch.delenv('LLM_AGENT_SYSTEM_RIDE_API_KEY', raising=False)
     path=tmp_path/'modes.sqlite3'
     payload=dict(trip_id='trip-river',topic='cancellation',description='My boarding label is CEDAR-17. Review the driver pickup and fare payment after app error 500.')
     with TestClient(create_app(path)) as c:

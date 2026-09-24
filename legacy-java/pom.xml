@@ -10,11 +10,11 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.kinderuber</groupId>
-    <artifactId>kinderuber-java</artifactId>
+    <groupId>com.llmagentsystem</groupId>
+    <artifactId>llmagentsystem-java</artifactId>
     <version>0.1.0</version>
-    <name>KinderUber Java</name>
-    <description>Spring Boot and LangChain4j implementation of KinderUber.</description>
+    <name>LLM-Agent-System Java</name>
+    <description>Spring Boot and LangChain4j implementation of LlmAgentSystem.</description>
 
     <properties>
         <java.version>21</java.version>

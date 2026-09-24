@@ -10,8 +10,8 @@ RUN npm run lint && npm run build
 
 FROM python:3.11-slim-bookworm@sha256:f06d01d4ba3f8ad5af45a3ec87df19c1d317d8e8961edc0fabda61811af6f7cf
 ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    PYTHONPATH=/app/backend HOME=/tmp KINDER_UBER_ENV=production \
-    KINDER_UBER_RIDE_MODEL_MODE=demo KINDER_UBER_RIDE_DB=/data/state.sqlite3
+    PYTHONPATH=/app/backend HOME=/tmp LLM_AGENT_SYSTEM_ENV=production \
+    LLM_AGENT_SYSTEM_RIDE_MODEL_MODE=demo LLM_AGENT_SYSTEM_RIDE_DB=/data/state.sqlite3
 RUN groupadd --gid 10001 workspace && useradd --uid 10001 --gid 10001 --no-create-home workspace \
     && mkdir -p /app/backend /app/scripts /data /config && chown 10001:10001 /data /config
 COPY backend/requirements.txt /tmp/requirements.txt

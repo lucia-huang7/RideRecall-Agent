@@ -6,7 +6,7 @@ import traceback
 
 from prometheus_client import CollectorRegistry, Counter, Gauge, Histogram, ProcessCollector, GCCollector, generate_latest
 
-LOGGER=logging.getLogger('kinderuber.http')
+LOGGER=logging.getLogger('llmagentsystem.http')
 METHODS={'GET','POST','PUT','PATCH','DELETE','HEAD','OPTIONS'}
 
 
@@ -22,11 +22,11 @@ def configure_logging():
 class HttpObservation:
     def __init__(self):
         self.registry=CollectorRegistry()
-        ProcessCollector(namespace='kinderuber',registry=self.registry)
+        ProcessCollector(namespace='llmagentsystem',registry=self.registry)
         GCCollector(registry=self.registry)
-        self.requests=Counter('kinderuber_http_requests_total','Prepared HTTP responses',['method','route','status'],registry=self.registry)
-        self.latency=Histogram('kinderuber_http_request_seconds','HTTP response preparation duration',['method','route'],buckets=(.005,.025,.1,.5,1,5,15,35,60),registry=self.registry)
-        self.active=Gauge('kinderuber_http_active','Active HTTP requests',registry=self.registry)
+        self.requests=Counter('llmagentsystem_http_requests_total','Prepared HTTP responses',['method','route','status'],registry=self.registry)
+        self.latency=Histogram('llmagentsystem_http_request_seconds','HTTP response preparation duration',['method','route'],buckets=(.005,.025,.1,.5,1,5,15,35,60),registry=self.registry)
+        self.active=Gauge('llmagentsystem_http_active','Active HTTP requests',registry=self.registry)
 
     def finish(self,correlation_id,method,route,status,elapsed,error=None):
         method=method if method in METHODS else 'OTHER'

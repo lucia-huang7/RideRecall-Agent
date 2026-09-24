@@ -6,14 +6,14 @@ import os
 
 
 def identity(authorization):
-    raw = os.getenv('KINDER_UBER_API_TOKENS', '').strip()
+    raw = os.getenv('LLM_AGENT_SYSTEM_API_TOKENS', '').strip()
     if not raw:
-        if os.getenv('KINDER_UBER_ENV', 'development') == 'production':
-            raise ValueError('production 模式必须设置 KINDER_UBER_API_TOKENS')
+        if os.getenv('LLM_AGENT_SYSTEM_ENV', 'development') == 'production':
+            raise ValueError('production 模式必须设置 LLM_AGENT_SYSTEM_API_TOKENS')
         return None
     entries = json.loads(raw)
     if not isinstance(entries, dict) or not entries:
-        raise ValueError('KINDER_UBER_API_TOKENS 必须为非空对象')
+        raise ValueError('LLM_AGENT_SYSTEM_API_TOKENS 必须为非空对象')
     for token, account in entries.items():
         if len(token) < 24 or not isinstance(account, dict) or not isinstance(account.get('user_id'), str) or not account.get('user_id') or account.get('role') not in ('user', 'admin'):
             raise ValueError('API Token 配置无效')

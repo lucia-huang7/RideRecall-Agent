@@ -62,13 +62,13 @@ class StaffAction(BaseModel):
 
 def create_app(db_path=None, catalog_path=None, *, security=None):
     security = security or Security()
-    catalog = RideCatalog(catalog_path or os.getenv("KINDER_UBER_RIDE_CATALOG_PATH"))
+    catalog = RideCatalog(catalog_path or os.getenv("LLM_AGENT_SYSTEM_RIDE_CATALOG_PATH"))
     security.validate_catalog(catalog)
     from mobility.settings import ModelSettings
     model_settings=ModelSettings.from_environment()
-    database_path=db_path or os.getenv('KINDER_UBER_RIDE_DB')
+    database_path=db_path or os.getenv('LLM_AGENT_SYSTEM_RIDE_DB')
     if security.production and not database_path:
-        raise ValueError('Production requires an explicit KINDER_UBER_RIDE_DB')
+        raise ValueError('Production requires an explicit LLM_AGENT_SYSTEM_RIDE_DB')
     database_path=database_path or str(Path(__file__).resolve().parents[2]/'.runtime/rides.sqlite3')
     from mobility.http_observation import HttpObservation, configure_logging
     observation=HttpObservation()
@@ -105,7 +105,7 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
                 await service.tools._client.close()
                 await service.engine.close()
 
-    app = FastAPI(title="kinder-uber Ride Support", version="0.5.0", lifespan=lifespan,
+    app = FastAPI(title="LLM-Agent-System Ride Support", version="0.5.0", lifespan=lifespan,
         docs_url=None if security.production else "/docs",
         redoc_url=None if security.production else "/redoc",
         openapi_url=None if security.production else "/openapi.json")
@@ -217,7 +217,7 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
 
     @app.get('/runtime-config')
     def runtime_config():
-        return dict(auth_mode='production' if security.production else 'demo', model_mode=model_settings.mode, product='kinder-uber')
+        return dict(auth_mode='production' if security.production else 'demo', model_mode=model_settings.mode, product='LLM-Agent-System')
 
     @app.get('/api/session')
     def session():

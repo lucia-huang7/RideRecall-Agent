@@ -130,7 +130,7 @@ class MemoryManager:
             chroma.heartbeat()  # 测试连接
             logger.info(f"ChromaDB 已连接: {chroma_host}:{chroma_port}")
         except Exception as ex:
-            if os.getenv("KINDER_UBER_ENV", "development").lower() == "production":
+            if os.getenv("LLM_AGENT_SYSTEM_ENV", "development").lower() == "production":
                 raise RuntimeError("生产环境记忆 ChromaDB 不可用，禁止切换到本地库") from ex
             logger.info(f"ChromaDB 服务不可用，使用本地嵌入式模式: {chroma_path}")
             chroma = chromadb.PersistentClient(

@@ -1,9 +1,105 @@
 {
-  "scope": "Historical frozen deterministic offline adapter benchmark; not live-model or real-user accuracy. Predates the package restructuring.",
-  "source_commit": "20589e42c3662ff8acbc6e1a9798ae16110a858e",
-  "frozen_at": "2026-10-22T16:34:06.195139+00:00",
+  "scope": "Current shipped dataset, frozen deterministic offline adapter benchmark; not live-model or real-user accuracy.",
+  "source_commit": "41bc0101b730cfa3f269043887439822057f9139",
+  "frozen_at": "2026-10-25T00:41:53.414183+00:00",
+  "measured_at": "2026-10-25T01:08:40.736560+00:00",
   "worlds": 1000,
   "dialogues_per_condition": 2000,
+  "execution": {
+    "workers": 4,
+    "note": "Four independent condition processes ran concurrently. Latency includes resource contention and is not an isolated speed ranking."
+  },
+  "source_sha256": {
+    "backend/requirements.txt": "3cf2d59f633785cf18012bb9ebc9822f0569e44d001144823cca8559307d7e18",
+    "backend/ride_agent/__init__.py": "c49ce31494300fc316a7da5e337bb407dc56725da0830049712ca0a946d840ac",
+    "backend/ride_agent/agent/__init__.py": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "backend/ride_agent/agent/access.py": "fe1fd4939bd122329c3cda3c6b76135a39fc76b46318488cfbe7ca3a9bf3dd74",
+    "backend/ride_agent/agent/agents.py": "a4ff5900ea381530af9841bdab7d7ccd3d7057dff965db2517fdf6c87c79df2e",
+    "backend/ride_agent/agent/case_tools.py": "89f93315473a2d0f4a55c2bad92765ebf5261d581e429ffa7c7035f8c1f0f05f",
+    "backend/ride_agent/agent/composer.py": "c3a45e7ffcb2499ac996848a42b522199e046b06018a69be22b4b86ddcfaffa1",
+    "backend/ride_agent/agent/concurrency.py": "75d8f2e62b268911ea52c7734cd8bc5843f03d34511b44fe0bfb806340639244",
+    "backend/ride_agent/agent/conversation_memory.py": "c94da9c6673a1949306b6726abe67edefcd581038b50d6ac13ca1d10ddafb81f",
+    "backend/ride_agent/agent/conversation_state.py": "f3555036d44b37b82545db2a93c10a6a46c50a44d1659a8be73227eb10c33b96",
+    "backend/ride_agent/agent/http_boundary.py": "24cdf140b29950a62083809c9b00e395347c5213c5142a3d8929b38308b52b14",
+    "backend/ride_agent/agent/intent.py": "d1e8315ef5a61c4e3a23526e85b49d92a3ef63081f1e23ae14eca82a42cfad0a",
+    "backend/ride_agent/agent/intent_embedding.py": "93379d81528ea6f79d73d9ab4371e8bfa15c2a31d537c101ddd388354f5ef0b0",
+    "backend/ride_agent/agent/llm_utils.py": "23f66522d4a9fba2dad1aeb34a0ef22fa0936e4c6c18362f3d91ccaf0148af83",
+    "backend/ride_agent/agent/memory.py": "2b06e2417678cd257b638ab99abb1ccf5482df537ce5be200e0c11486b2a92ea",
+    "backend/ride_agent/agent/orchestrator.py": "9a923634875d81f952f97e8104ce6edc405258f1b0077d301ecd5080d514484e",
+    "backend/ride_agent/agent/pipeline.py": "4fbb29f1b3c2a1804d2c851515f67cffef39ce636390c82edb957d0df30cd7f4",
+    "backend/ride_agent/agent/redaction.py": "e515329f0b8e68dc14b5f78b56b744f61567a25bdd22eabcf152b6dd7b93d154",
+    "backend/ride_agent/agent/skills.py": "01afd55069d3d491e8dd06e67454e596646e6bf1a11e7e97e1cd4932518c5e5b",
+    "backend/ride_agent/agent/tools.py": "9516def358d0c7b71bd8d804dcc27873bebf869eb9023750332b6e6c9c7c28d0",
+    "backend/ride_agent/agent/types.py": "55a421be1a5c44df6d57e7084d6e7e769c2e8a26d42e859bbc3fc98de9e2b70c",
+    "backend/ride_agent/api/__init__.py": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "backend/ride_agent/api/app.py": "cdbebdd975be0c8c97a492f739b9331f6504f14895ed44ba863c1fdc46b23719",
+    "backend/ride_agent/api/context.py": "6387c13fe18e5b6832953b3ccce4226f86c25f9ebb44279d0e7e112c5fbbc671",
+    "backend/ride_agent/api/limits.py": "91eb680c1a535e2ef02bb1ce3798b8eb3ba76720d11dd54f16e1a6aab8c2f7f7",
+    "backend/ride_agent/api/middleware.py": "402aa69802ccadf20cabf877125e93596425fae61251fd1c75fd04da7d41696c",
+    "backend/ride_agent/api/routes/__init__.py": "fe563033081d6d3c56cf119d60f1515159127ba551b2202ec2584ea7daa45c6e",
+    "backend/ride_agent/api/routes/cases.py": "2e8d6def7aff00348600ba992f3ace5b5c0fe6dc9cb8a476af00155d1a777a25",
+    "backend/ride_agent/api/routes/health.py": "afb1ddac76a236e6d6fdf49658da57823b5e94e0c69e72863b1a66413dbb998b",
+    "backend/ride_agent/api/routes/operations.py": "10c5e06c80279bdc80fa4477acc0fe40340b975782db9e87ebf6f3b43879b94c",
+    "backend/ride_agent/api/routes/staff.py": "e30652b75683b7b89fd8622dfecf9f3fa2962966171636b647850195010b161c",
+    "backend/ride_agent/api/schemas.py": "582e4e54b3709f4366b8ef29319c7ff953b888c9ab7358ad39b8f5e9212fcdf1",
+    "backend/ride_agent/api/security.py": "a09f926aac3aab1c34129a20a6f6e8037c019eacb9616b2c0b8889940e804c62",
+    "backend/ride_agent/api/telemetry.py": "5b871a0e694122c6de2d91c80a20aabd090d4b1ae2ec2abc066f6827171b2a32",
+    "backend/ride_agent/domain/__init__.py": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "backend/ride_agent/domain/case.py": "5fec175dc5a81f79c9233e0f11df3e3b04ddd4b6b00fd9bffc47f105ef4261ce",
+    "backend/ride_agent/domain/catalog.py": "abd002021f54eee350a590db34072f0f4b7b2252a89f78fa290ee59f3b647456",
+    "backend/ride_agent/domain/claims.py": "99da19f10ccc6ec914940cb2e4e5b3a4c42cb02f4d05c405440c73d4cd922691",
+    "backend/ride_agent/domain/corrections.py": "da9832d8dd2f46d081f9715a63de1c082be52e771aeda89462ddfa8d412fd8da",
+    "backend/ride_agent/domain/seed.py": "58be38160a083b4e06ea88786c93221f35533615af9270ec7488d7c0363400d1",
+    "backend/ride_agent/evaluation/__init__.py": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "backend/ride_agent/evaluation/checks.py": "427035704eaef756592413324992404d2b23acb3f1fed08715ffe161e2272d7d",
+    "backend/ride_agent/evaluation/evaluator.py": "f8a99072162140d877c3918b0721a415a66c2735bce2527373421925419e14bc",
+    "backend/ride_agent/evaluation/few_shot.py": "98a18c78e130399348fe7bad7490f3ba325400c33d8af4424bd179741ad41d02",
+    "backend/ride_agent/evaluation/jobs.py": "b6565643a493d3faaed3890f164e9f6aa7dc8b04925d6a3ae3bd6dd01752e86b",
+    "backend/ride_agent/evaluation/quality.py": "5f6d4c282bbcbc7e4c9a7fbbcb1904b203cbcd429f9e5e51e64a286488b8d7a8",
+    "backend/ride_agent/evaluation/simulation/__init__.py": "8c0fafe323dd4eee32510fef3660d3ae4284f51a0ebc9c10a27a231f6348c1aa",
+    "backend/ride_agent/evaluation/simulation/__main__.py": "f8e96827a084ac72f648b0df32eff902cb6511cc9c14b35bd6c378b8fa3291c9",
+    "backend/ride_agent/evaluation/simulation/audit.py": "041467fb20c33cede52503a6d92ada5829964a640271fe0ced008b75550ac279",
+    "backend/ride_agent/evaluation/simulation/generate.py": "36e12fbd5d983d65a05f04c31409861aad2400da23c6890dbc6370e499163908",
+    "backend/ride_agent/evaluation/simulation/oracle.py": "903cb7a596045950d1c37bb9acb13a97ea90a9f8117bf7168fcd0547d19a1225",
+    "backend/ride_agent/evaluation/simulation/replay.py": "58ff8d964fb9482764a932c7ae883c1225de7f4591f3893afad86b8bd5d8d2f7",
+    "backend/ride_agent/integrations/__init__.py": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "backend/ride_agent/integrations/knowledge_server.py": "1e658f7c217b6beabb659ffd583485dc655d7e33cae07933a7d3f2af998c78bc",
+    "backend/ride_agent/integrations/mcp_client.py": "73ffb012f832bfab191990485f15c3daa27de8a2d8f00fa6a3d1fbb18e5c1e1a",
+    "backend/ride_agent/integrations/mcp_server.py": "33182450b46d3c83be2d8fa5201da5851570093aef6a36d002eb62ad39db97e2",
+    "backend/ride_agent/integrations/model_provider.py": "17d023bb54012fc2810b92b6dbc4da7914081fac1e619904764224c484331ad1",
+    "backend/ride_agent/integrations/settings.py": "d4c679119d90ae3357a81013d978507cadaba2e0ceea8c5fcf09486b3295fb4f",
+    "backend/ride_agent/ops/__init__.py": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "backend/ride_agent/ops/admission.py": "b787f282e7c0bb67934e6abb608f6d1207800567e94b10e7e002e6e232aad3a0",
+    "backend/ride_agent/ops/configuration.py": "7c599c5565f132c96745b2b252565879ebbb12052a58d9d074374de42d448ec1",
+    "backend/ride_agent/ops/diagnostics.py": "71934a43ca99569d78bd8d6c051375762dfa20cd41be15f74d5000816a18f88e",
+    "backend/ride_agent/ops/operations.py": "248e4d9535fff2d255f4745460dbb3e1a4d958b24751d23209abc5a5b23d7b21",
+    "backend/ride_agent/ops/performance_monitor.py": "ca98526cffecc239b973245be3c8b587d5e5710c01016beebbae339206332560",
+    "backend/ride_agent/ops/readiness.py": "f0aa7bf4948f6bd663e1541ddeec7d801aa59558dd99c69c8375303960515b9f",
+    "backend/ride_agent/ops/telemetry.py": "38fc034f1d2e6a8c61bcb008ef96761044d38d36f2ef43e664813f814ada79ce",
+    "backend/ride_agent/persistence/__init__.py": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "backend/ride_agent/persistence/backup.py": "1b5658233504abe0c9935eb2b81bff6951ac15e65c4f5535197f0a1739633911",
+    "backend/ride_agent/persistence/case_index.py": "e9619eff2bdad75d83ff29257a9eb9b5723f8fc44dd702f718a1ddf21b99a2cc",
+    "backend/ride_agent/persistence/persistence.py": "3bb8851ed758af67d206875cd298eec8099a075773ad8bbd98ab8242c2f05b81",
+    "backend/ride_agent/persistence/projections.py": "3adcebe924fe3ccad195f843e205d1a9128055dbd3a2a36011512ff02f5ffbc5",
+    "backend/ride_agent/persistence/runtime_lock.py": "77c2bb02f75a5de7a9e3ac5415744f52d9333974768dd2911f20ef653f319c0e",
+    "backend/ride_agent/persistence/store.py": "10bcd7c9d928b11dd9f8eb4278bd1808b8838201afdda7684270cee27d5f86a9",
+    "backend/ride_agent/retrieval/__init__.py": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "backend/ride_agent/retrieval/knowledge_base.py": "3a5708edae420231bc95aa0ac5d6baacd27bd3d697ea73704207f9f3a7aee2ec",
+    "backend/ride_agent/retrieval/policy_index.py": "b1525e2c2003a55740183086f5e29f4359d5bb905a49eb5e1aac925415c422d5",
+    "backend/ride_agent/skills/ride_resolution/SKILL.md": "fa1eb609e04c8b62c63e8cff178ba72b94fa1d81eca7b7ab5c99390d937df296",
+    "scripts/bench/check-ablation.py": "99dda3f37841543f8a96f9c72ae97b6836fe6bc9c8f0aa4478a7ceb13c2230fc",
+    "scripts/bench/report-ablation.py": "d121403bfe0d788a97d597b06a986081d0a55ae90bad52433a2ee1db56c075ce"
+  },
+  "dataset_sha256": {
+    "catalog-preview.json": "75e364d344e5623be7309fc9cb9d7bdf6db8b3f4cbad9d49cc744dc80c933307",
+    "catalog.schema.json": "51ade51a910b6bf375d02c6a5f6fd2ef22074e78452d7f59f5dbd3afa46f7273",
+    "manifest.json": "6feeeffae747445c0acaccaabbad3a5a5086b08aafc1ddd8a614aea64cd8329b",
+    "human-review.jsonl": "bd20302139ce8b3529f15df333c50dbdb27cef5b7fea06ad7470338d85312ca6",
+    "catalog.json": "27fb68c70496025ece4c943154ae2fc7600facc2b23cbe7951ee999dc2472e8e",
+    "scenarios.jsonl": "5f22a4edd084de693493643d2bf2e0ec30102548926e19665576f8ab0f1540aa",
+    "world-events.jsonl": "ab08dafd552e7b66da8ed6b88ca83695fb5fec492d1b92fc7f243d8fdf9e2185",
+    "oracle.jsonl": "0a5f36b7607cee76f655b653fed27aec83d9d07c2b970a6d8e1016931cf823e2"
+  },
   "conditions": {
     "single_recent4": {
       "overall": {
@@ -11,66 +107,492 @@
         "worlds": 1000,
         "strict_completed": 1340,
         "strict_completion_rate": 0.67,
+        "business_conformant": 2000,
+        "business_conformance_rate": 1.0,
+        "episode_exceptions": 0,
+        "failed_checks": {
+          "active_claims": 4100,
+          "claim_answer_coverage": 3687,
+          "clarification": 255
+        },
         "context_eligible_checkpoints": 12026,
         "context_lost_checkpoints": 4100,
         "context_loss_rate": 0.34092798935639446,
-        "median_dialogue_ms": 408.2339791348204,
-        "p95_dialogue_ms": 1512.994125019759,
-        "median_analysis_ms": 33.918166416697204,
-        "model_calls": 58594,
-        "business_conformance_rate": 1.0,
-        "episode_exceptions": 0
+        "context_eligible_dialogues": 2000,
+        "dialogues_with_context_loss": 660,
+        "final_context_losses": 660,
+        "final_context_loss_rate": 0.33,
+        "stale_claim_checkpoints": 0,
+        "expected_clarification_checkpoints": 496,
+        "passed_clarification_checkpoints": 496,
+        "median_dialogue_ms": 460.6038125930354,
+        "p95_dialogue_ms": 1878.1832081731409,
+        "analyses": 12522,
+        "model_calls": 58586,
+        "multi_role_analyses": 0,
+        "role_execution_counts": {
+          "1": 12522
+        },
+        "median_analysis_ms": 34.20127148274332,
+        "p95_analysis_ms": 64.0269999857992
       },
       "splits": {
         "calibration": {
-          "dialogues": 438,
-          "worlds": 219,
-          "strict_completed": 298,
-          "strict_completion_rate": 0.680365296803653,
-          "context_eligible_checkpoints": 2594,
-          "context_lost_checkpoints": 870,
-          "context_loss_rate": 0.3353893600616808,
-          "median_dialogue_ms": 390.75035450514406,
-          "p95_dialogue_ms": 1444.8678330518305,
-          "median_analysis_ms": 33.414645469747484,
-          "model_calls": 12696,
+          "dialogues": 434,
+          "worlds": 217,
+          "strict_completed": 274,
+          "strict_completion_rate": 0.631336405529954,
+          "business_conformant": 434,
           "business_conformance_rate": 1.0,
-          "episode_exceptions": 0
+          "episode_exceptions": 0,
+          "failed_checks": {
+            "active_claims": 988,
+            "clarification": 62,
+            "claim_answer_coverage": 894
+          },
+          "context_eligible_checkpoints": 2704,
+          "context_lost_checkpoints": 988,
+          "context_loss_rate": 0.36538461538461536,
+          "context_eligible_dialogues": 434,
+          "dialogues_with_context_loss": 160,
+          "final_context_losses": 160,
+          "final_context_loss_rate": 0.3686635944700461,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 120,
+          "passed_clarification_checkpoints": 120,
+          "median_dialogue_ms": 563.2711874786764,
+          "p95_dialogue_ms": 2085.784540977329,
+          "analyses": 2824,
+          "model_calls": 13134,
+          "multi_role_analyses": 0,
+          "role_execution_counts": {
+            "1": 2824
+          },
+          "median_analysis_ms": 33.86479150503874,
+          "p95_analysis_ms": 65.59849996119738
         },
         "development": {
-          "dialogues": 1212,
-          "worlds": 606,
-          "strict_completed": 808,
-          "strict_completion_rate": 0.6666666666666666,
-          "context_eligible_checkpoints": 7304,
-          "context_lost_checkpoints": 2506,
-          "context_loss_rate": 0.3430996714129244,
-          "median_dialogue_ms": 407.7450204640627,
-          "p95_dialogue_ms": 1544.9023749679327,
-          "median_analysis_ms": 34.160645911470056,
-          "model_calls": 35576,
+          "dialogues": 1162,
+          "worlds": 581,
+          "strict_completed": 780,
+          "strict_completion_rate": 0.6712564543889845,
+          "business_conformant": 1162,
           "business_conformance_rate": 1.0,
-          "episode_exceptions": 0
+          "episode_exceptions": 0,
+          "failed_checks": {
+            "active_claims": 2386,
+            "claim_answer_coverage": 2103,
+            "clarification": 105
+          },
+          "context_eligible_checkpoints": 7018,
+          "context_lost_checkpoints": 2386,
+          "context_loss_rate": 0.33998290111142776,
+          "context_eligible_dialogues": 1162,
+          "dialogues_with_context_loss": 382,
+          "final_context_losses": 382,
+          "final_context_loss_rate": 0.3287435456110155,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 296,
+          "passed_clarification_checkpoints": 296,
+          "median_dialogue_ms": 456.79470838513225,
+          "p95_dialogue_ms": 1877.8995831962675,
+          "analyses": 7314,
+          "model_calls": 34266,
+          "multi_role_analyses": 0,
+          "role_execution_counts": {
+            "1": 7314
+          },
+          "median_analysis_ms": 34.35983299277723,
+          "p95_analysis_ms": 62.1909168548882
         },
         "test": {
-          "dialogues": 350,
-          "worlds": 175,
-          "strict_completed": 234,
-          "strict_completion_rate": 0.6685714285714286,
-          "context_eligible_checkpoints": 2128,
-          "context_lost_checkpoints": 724,
-          "context_loss_rate": 0.34022556390977443,
-          "median_dialogue_ms": 462.58889604359865,
-          "p95_dialogue_ms": 1531.3352078665048,
-          "median_analysis_ms": 33.58843759633601,
-          "model_calls": 10322,
+          "dialogues": 404,
+          "worlds": 202,
+          "strict_completed": 286,
+          "strict_completion_rate": 0.7079207920792079,
+          "business_conformant": 404,
           "business_conformance_rate": 1.0,
-          "episode_exceptions": 0
+          "episode_exceptions": 0,
+          "failed_checks": {
+            "active_claims": 726,
+            "claim_answer_coverage": 690,
+            "clarification": 88
+          },
+          "context_eligible_checkpoints": 2304,
+          "context_lost_checkpoints": 726,
+          "context_loss_rate": 0.3151041666666667,
+          "context_eligible_dialogues": 404,
+          "dialogues_with_context_loss": 118,
+          "final_context_losses": 118,
+          "final_context_loss_rate": 0.29207920792079206,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 80,
+          "passed_clarification_checkpoints": 80,
+          "median_dialogue_ms": 427.3758119670674,
+          "p95_dialogue_ms": 1856.8277501035482,
+          "analyses": 2384,
+          "model_calls": 11186,
+          "multi_role_analyses": 0,
+          "role_execution_counts": {
+            "1": 2384
+          },
+          "median_analysis_ms": 33.85556302964687,
+          "p95_analysis_ms": 66.50595902465284
         }
       },
-      "scores_sha256": "0dd9ba1a7905edb90b7e0a5c56e6423a59818f2f97eb9c6588a2e8d2b1425925",
-      "raw_sha256": "bdb256266103a671d76a4426d0209fb8b6f10223e515ad7bf6d7b584ea91779f",
-      "observations_sha256": "4c58b7668de350be0bb66d5ce31dda4f944555f7be25bcd68907c6f7fa47f645"
+      "families": {
+        "authorization": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 170,
+          "strict_completion_rate": 0.68,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {
+            "active_claims": 500,
+            "claim_answer_coverage": 446,
+            "clarification": 26
+          },
+          "context_eligible_checkpoints": 1472,
+          "context_lost_checkpoints": 500,
+          "context_loss_rate": 0.33967391304347827,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 80,
+          "final_context_losses": 80,
+          "final_context_loss_rate": 0.32,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 374.68741659540683,
+          "p95_dialogue_ms": 2014.1763749998063,
+          "analyses": 1534,
+          "model_calls": 7186,
+          "multi_role_analyses": 0,
+          "role_execution_counts": {
+            "1": 1534
+          },
+          "median_analysis_ms": 35.61000002082437,
+          "p95_analysis_ms": 66.07895786873996
+        },
+        "duplicate_settlement": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 170,
+          "strict_completion_rate": 0.68,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {
+            "active_claims": 500,
+            "claim_answer_coverage": 450,
+            "clarification": 30
+          },
+          "context_eligible_checkpoints": 1472,
+          "context_lost_checkpoints": 500,
+          "context_loss_rate": 0.33967391304347827,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 80,
+          "final_context_losses": 80,
+          "final_context_loss_rate": 0.32,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 414.493125048466,
+          "p95_dialogue_ms": 1990.1781671214849,
+          "analyses": 1534,
+          "model_calls": 7182,
+          "multi_role_analyses": 0,
+          "role_execution_counts": {
+            "1": 1534
+          },
+          "median_analysis_ms": 33.81283348426223,
+          "p95_analysis_ms": 60.47670799307525
+        },
+        "evidence_mismatch": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 170,
+          "strict_completion_rate": 0.68,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {
+            "active_claims": 500,
+            "claim_answer_coverage": 500,
+            "clarification": 28
+          },
+          "context_eligible_checkpoints": 1472,
+          "context_lost_checkpoints": 500,
+          "context_loss_rate": 0.33967391304347827,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 80,
+          "final_context_losses": 80,
+          "final_context_loss_rate": 0.32,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 385.6082290876657,
+          "p95_dialogue_ms": 1354.3198751285672,
+          "analyses": 1534,
+          "model_calls": 7184,
+          "multi_role_analyses": 0,
+          "role_execution_counts": {
+            "1": 1534
+          },
+          "median_analysis_ms": 33.289666986092925,
+          "p95_analysis_ms": 67.3652091063559
+        },
+        "fare_over_cap": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 170,
+          "strict_completion_rate": 0.68,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {
+            "clarification": 31,
+            "active_claims": 500,
+            "claim_answer_coverage": 451
+          },
+          "context_eligible_checkpoints": 1472,
+          "context_lost_checkpoints": 500,
+          "context_loss_rate": 0.33967391304347827,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 80,
+          "final_context_losses": 80,
+          "final_context_loss_rate": 0.32,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 405.9253544546664,
+          "p95_dialogue_ms": 1309.6970419865102,
+          "analyses": 1534,
+          "model_calls": 7181,
+          "multi_role_analyses": 0,
+          "role_execution_counts": {
+            "1": 1534
+          },
+          "median_analysis_ms": 33.12218748033047,
+          "p95_analysis_ms": 59.74450008943677
+        },
+        "fare_supported": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 170,
+          "strict_completion_rate": 0.68,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {
+            "active_claims": 500,
+            "claim_answer_coverage": 446,
+            "clarification": 26
+          },
+          "context_eligible_checkpoints": 1472,
+          "context_lost_checkpoints": 500,
+          "context_loss_rate": 0.33967391304347827,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 80,
+          "final_context_losses": 80,
+          "final_context_loss_rate": 0.32,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 366.2987289717421,
+          "p95_dialogue_ms": 1245.0177920982242,
+          "analyses": 1534,
+          "model_calls": 7186,
+          "multi_role_analyses": 0,
+          "role_execution_counts": {
+            "1": 1534
+          },
+          "median_analysis_ms": 35.40014591999352,
+          "p95_analysis_ms": 63.80041595548391
+        },
+        "mcp_recovery": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 150,
+          "strict_completion_rate": 0.6,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {
+            "active_claims": 600,
+            "claim_answer_coverage": 502,
+            "clarification": 62
+          },
+          "context_eligible_checkpoints": 1722,
+          "context_lost_checkpoints": 600,
+          "context_loss_rate": 0.34843205574912894,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 100,
+          "final_context_losses": 100,
+          "final_context_loss_rate": 0.4,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 1416.8119580717757,
+          "p95_dialogue_ms": 2816.029875073582,
+          "analyses": 1784,
+          "model_calls": 8295,
+          "multi_role_analyses": 0,
+          "role_execution_counts": {
+            "1": 1784
+          },
+          "median_analysis_ms": 33.572499989531934,
+          "p95_analysis_ms": 63.511583022773266
+        },
+        "no_excess": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 170,
+          "strict_completion_rate": 0.68,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {
+            "active_claims": 500,
+            "claim_answer_coverage": 447,
+            "clarification": 27
+          },
+          "context_eligible_checkpoints": 1472,
+          "context_lost_checkpoints": 500,
+          "context_loss_rate": 0.33967391304347827,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 80,
+          "final_context_losses": 80,
+          "final_context_loss_rate": 0.32,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 359.44131307769567,
+          "p95_dialogue_ms": 1406.6619169898331,
+          "analyses": 1534,
+          "model_calls": 7185,
+          "multi_role_analyses": 0,
+          "role_execution_counts": {
+            "1": 1534
+          },
+          "median_analysis_ms": 33.74860400799662,
+          "p95_analysis_ms": 68.27225000597537
+        },
+        "pickup_conflict": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 170,
+          "strict_completion_rate": 0.68,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {
+            "active_claims": 500,
+            "claim_answer_coverage": 445,
+            "clarification": 25
+          },
+          "context_eligible_checkpoints": 1472,
+          "context_lost_checkpoints": 500,
+          "context_loss_rate": 0.33967391304347827,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 80,
+          "final_context_losses": 80,
+          "final_context_loss_rate": 0.32,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 389.82293696608394,
+          "p95_dialogue_ms": 1749.5944160036743,
+          "analyses": 1534,
+          "model_calls": 7187,
+          "multi_role_analyses": 0,
+          "role_execution_counts": {
+            "1": 1534
+          },
+          "median_analysis_ms": 35.21060408093035,
+          "p95_analysis_ms": 64.55383310094476
+        }
+      },
+      "scores_sha256": "cb2ee1f5b1af0d664f310319fdbc983e666eb3edee876528e09ff5461c927e9d",
+      "raw_sha256": "4ecea87e7eaaf80f87012b761a37a9c4abed13d54c1d0acd5df6c30eca7966d0",
+      "observations_sha256": "7303b9e0eb9e4ad558ad9a1943fd3e6b0714b15dee33908d405e374fb533904d",
+      "failure_examples": [
+        {
+          "id": "world-000054-v0",
+          "failed_checks": [
+            "active_claims"
+          ]
+        },
+        {
+          "id": "world-000054-v1",
+          "failed_checks": [
+            "active_claims"
+          ]
+        },
+        {
+          "id": "world-000064-v0",
+          "failed_checks": [
+            "active_claims",
+            "claim_answer_coverage"
+          ]
+        },
+        {
+          "id": "world-000064-v1",
+          "failed_checks": [
+            "active_claims",
+            "claim_answer_coverage",
+            "clarification"
+          ]
+        },
+        {
+          "id": "world-000065-v0",
+          "failed_checks": [
+            "active_claims",
+            "claim_answer_coverage"
+          ]
+        },
+        {
+          "id": "world-000065-v1",
+          "failed_checks": [
+            "active_claims",
+            "claim_answer_coverage",
+            "clarification"
+          ]
+        },
+        {
+          "id": "world-000066-v0",
+          "failed_checks": [
+            "active_claims",
+            "claim_answer_coverage",
+            "clarification"
+          ]
+        },
+        {
+          "id": "world-000066-v1",
+          "failed_checks": [
+            "active_claims",
+            "claim_answer_coverage",
+            "clarification"
+          ]
+        },
+        {
+          "id": "world-000067-v0",
+          "failed_checks": [
+            "active_claims",
+            "claim_answer_coverage"
+          ]
+        },
+        {
+          "id": "world-000067-v1",
+          "failed_checks": [
+            "active_claims",
+            "claim_answer_coverage",
+            "clarification"
+          ]
+        }
+      ],
+      "exception_examples": []
     },
     "multi_recent4": {
       "overall": {
@@ -78,66 +600,504 @@
         "worlds": 1000,
         "strict_completed": 1340,
         "strict_completion_rate": 0.67,
+        "business_conformant": 2000,
+        "business_conformance_rate": 1.0,
+        "episode_exceptions": 0,
+        "failed_checks": {
+          "active_claims": 4100,
+          "claim_answer_coverage": 3687,
+          "clarification": 255
+        },
         "context_eligible_checkpoints": 12026,
         "context_lost_checkpoints": 4100,
         "context_loss_rate": 0.34092798935639446,
-        "median_dialogue_ms": 498.8562085200101,
-        "p95_dialogue_ms": 1932.284374954179,
-        "median_analysis_ms": 42.48504189308733,
-        "model_calls": 81084,
-        "business_conformance_rate": 1.0,
-        "episode_exceptions": 0
+        "context_eligible_dialogues": 2000,
+        "dialogues_with_context_loss": 660,
+        "final_context_losses": 660,
+        "final_context_loss_rate": 0.33,
+        "stale_claim_checkpoints": 0,
+        "expected_clarification_checkpoints": 496,
+        "passed_clarification_checkpoints": 496,
+        "median_dialogue_ms": 504.65027114842087,
+        "p95_dialogue_ms": 2000.1452080905437,
+        "analyses": 12522,
+        "model_calls": 81076,
+        "multi_role_analyses": 4498,
+        "role_execution_counts": {
+          "2": 4498,
+          "1": 8024
+        },
+        "median_analysis_ms": 35.274187568575144,
+        "p95_analysis_ms": 76.02283405140042
       },
       "splits": {
         "calibration": {
-          "dialogues": 438,
-          "worlds": 219,
-          "strict_completed": 298,
-          "strict_completion_rate": 0.680365296803653,
-          "context_eligible_checkpoints": 2594,
-          "context_lost_checkpoints": 870,
-          "context_loss_rate": 0.3353893600616808,
-          "median_dialogue_ms": 484.9672084674239,
-          "p95_dialogue_ms": 1792.761666001752,
-          "median_analysis_ms": 42.337291524745524,
-          "model_calls": 17531,
+          "dialogues": 434,
+          "worlds": 217,
+          "strict_completed": 274,
+          "strict_completion_rate": 0.631336405529954,
+          "business_conformant": 434,
           "business_conformance_rate": 1.0,
-          "episode_exceptions": 0
+          "episode_exceptions": 0,
+          "failed_checks": {
+            "active_claims": 988,
+            "clarification": 62,
+            "claim_answer_coverage": 894
+          },
+          "context_eligible_checkpoints": 2704,
+          "context_lost_checkpoints": 988,
+          "context_loss_rate": 0.36538461538461536,
+          "context_eligible_dialogues": 434,
+          "dialogues_with_context_loss": 160,
+          "final_context_losses": 160,
+          "final_context_loss_rate": 0.3686635944700461,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 120,
+          "passed_clarification_checkpoints": 120,
+          "median_dialogue_ms": 634.2520415782928,
+          "p95_dialogue_ms": 2114.350042073056,
+          "analyses": 2824,
+          "model_calls": 18069,
+          "multi_role_analyses": 987,
+          "role_execution_counts": {
+            "2": 987,
+            "1": 1837
+          },
+          "median_analysis_ms": 35.63637554179877,
+          "p95_analysis_ms": 77.87283300422132
         },
         "development": {
-          "dialogues": 1212,
-          "worlds": 606,
-          "strict_completed": 808,
-          "strict_completion_rate": 0.6666666666666666,
-          "context_eligible_checkpoints": 7304,
-          "context_lost_checkpoints": 2506,
-          "context_loss_rate": 0.3430996714129244,
-          "median_dialogue_ms": 499.8567501315847,
-          "p95_dialogue_ms": 1953.2814580015838,
-          "median_analysis_ms": 42.635583435185254,
-          "model_calls": 49191,
+          "dialogues": 1162,
+          "worlds": 581,
+          "strict_completed": 780,
+          "strict_completion_rate": 0.6712564543889845,
+          "business_conformant": 1162,
           "business_conformance_rate": 1.0,
-          "episode_exceptions": 0
+          "episode_exceptions": 0,
+          "failed_checks": {
+            "active_claims": 2386,
+            "claim_answer_coverage": 2103,
+            "clarification": 105
+          },
+          "context_eligible_checkpoints": 7018,
+          "context_lost_checkpoints": 2386,
+          "context_loss_rate": 0.33998290111142776,
+          "context_eligible_dialogues": 1162,
+          "dialogues_with_context_loss": 382,
+          "final_context_losses": 382,
+          "final_context_loss_rate": 0.3287435456110155,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 296,
+          "passed_clarification_checkpoints": 296,
+          "median_dialogue_ms": 514.2504373798147,
+          "p95_dialogue_ms": 1916.9769999571145,
+          "analyses": 7314,
+          "model_calls": 47266,
+          "multi_role_analyses": 2600,
+          "role_execution_counts": {
+            "2": 2600,
+            "1": 4714
+          },
+          "median_analysis_ms": 35.51406296901405,
+          "p95_analysis_ms": 76.24799991026521
         },
         "test": {
-          "dialogues": 350,
-          "worlds": 175,
-          "strict_completed": 234,
-          "strict_completion_rate": 0.6685714285714286,
-          "context_eligible_checkpoints": 2128,
-          "context_lost_checkpoints": 724,
-          "context_loss_rate": 0.34022556390977443,
-          "median_dialogue_ms": 522.6858335081488,
-          "p95_dialogue_ms": 2017.4926249310374,
-          "median_analysis_ms": 41.935208486393094,
-          "model_calls": 14362,
+          "dialogues": 404,
+          "worlds": 202,
+          "strict_completed": 286,
+          "strict_completion_rate": 0.7079207920792079,
+          "business_conformant": 404,
           "business_conformance_rate": 1.0,
-          "episode_exceptions": 0
+          "episode_exceptions": 0,
+          "failed_checks": {
+            "active_claims": 726,
+            "claim_answer_coverage": 690,
+            "clarification": 88
+          },
+          "context_eligible_checkpoints": 2304,
+          "context_lost_checkpoints": 726,
+          "context_loss_rate": 0.3151041666666667,
+          "context_eligible_dialogues": 404,
+          "dialogues_with_context_loss": 118,
+          "final_context_losses": 118,
+          "final_context_loss_rate": 0.29207920792079206,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 80,
+          "passed_clarification_checkpoints": 80,
+          "median_dialogue_ms": 426.1258749756962,
+          "p95_dialogue_ms": 1995.131165953353,
+          "analyses": 2384,
+          "model_calls": 15741,
+          "multi_role_analyses": 911,
+          "role_execution_counts": {
+            "2": 911,
+            "1": 1473
+          },
+          "median_analysis_ms": 34.31287535931915,
+          "p95_analysis_ms": 71.98504218831658
         }
       },
-      "scores_sha256": "ccb1a31ca4c4d50002e33b176071b257b7de475a1fb51f7da5133f45e8526a81",
-      "raw_sha256": "61a413bd512bf436d79e1fb337899ccf1c4c3893c9cf9b3e94e08b09161947db",
-      "observations_sha256": "075ef04a29bff98deebc0fa7c2dc449c50e82259cfc9d1386d8f845fad510779"
+      "families": {
+        "authorization": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 170,
+          "strict_completion_rate": 0.68,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {
+            "active_claims": 500,
+            "claim_answer_coverage": 446,
+            "clarification": 26
+          },
+          "context_eligible_checkpoints": 1472,
+          "context_lost_checkpoints": 500,
+          "context_loss_rate": 0.33967391304347827,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 80,
+          "final_context_losses": 80,
+          "final_context_loss_rate": 0.32,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 395.2968126395717,
+          "p95_dialogue_ms": 1669.6939589455724,
+          "analyses": 1534,
+          "model_calls": 9841,
+          "multi_role_analyses": 531,
+          "role_execution_counts": {
+            "2": 531,
+            "1": 1003
+          },
+          "median_analysis_ms": 36.4027910400182,
+          "p95_analysis_ms": 78.21079180575907
+        },
+        "duplicate_settlement": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 170,
+          "strict_completion_rate": 0.68,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {
+            "active_claims": 500,
+            "claim_answer_coverage": 450,
+            "clarification": 30
+          },
+          "context_eligible_checkpoints": 1472,
+          "context_lost_checkpoints": 500,
+          "context_loss_rate": 0.33967391304347827,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 80,
+          "final_context_losses": 80,
+          "final_context_loss_rate": 0.32,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 426.150708575733,
+          "p95_dialogue_ms": 1691.391458036378,
+          "analyses": 1534,
+          "model_calls": 9837,
+          "multi_role_analyses": 531,
+          "role_execution_counts": {
+            "2": 531,
+            "1": 1003
+          },
+          "median_analysis_ms": 33.902854076586664,
+          "p95_analysis_ms": 71.9083750154823
+        },
+        "evidence_mismatch": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 170,
+          "strict_completion_rate": 0.68,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {
+            "active_claims": 500,
+            "claim_answer_coverage": 500,
+            "clarification": 28
+          },
+          "context_eligible_checkpoints": 1472,
+          "context_lost_checkpoints": 500,
+          "context_loss_rate": 0.33967391304347827,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 80,
+          "final_context_losses": 80,
+          "final_context_loss_rate": 0.32,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 412.1196875348687,
+          "p95_dialogue_ms": 1832.5614579953253,
+          "analyses": 1534,
+          "model_calls": 9839,
+          "multi_role_analyses": 531,
+          "role_execution_counts": {
+            "2": 531,
+            "1": 1003
+          },
+          "median_analysis_ms": 34.794916631653905,
+          "p95_analysis_ms": 78.48758320324123
+        },
+        "fare_over_cap": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 170,
+          "strict_completion_rate": 0.68,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {
+            "clarification": 31,
+            "active_claims": 500,
+            "claim_answer_coverage": 451
+          },
+          "context_eligible_checkpoints": 1472,
+          "context_lost_checkpoints": 500,
+          "context_loss_rate": 0.33967391304347827,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 80,
+          "final_context_losses": 80,
+          "final_context_loss_rate": 0.32,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 389.65585397090763,
+          "p95_dialogue_ms": 1466.8642079923302,
+          "analyses": 1534,
+          "model_calls": 9836,
+          "multi_role_analyses": 531,
+          "role_execution_counts": {
+            "2": 531,
+            "1": 1003
+          },
+          "median_analysis_ms": 34.43806292489171,
+          "p95_analysis_ms": 73.41354200616479
+        },
+        "fare_supported": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 170,
+          "strict_completion_rate": 0.68,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {
+            "active_claims": 500,
+            "claim_answer_coverage": 446,
+            "clarification": 26
+          },
+          "context_eligible_checkpoints": 1472,
+          "context_lost_checkpoints": 500,
+          "context_loss_rate": 0.33967391304347827,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 80,
+          "final_context_losses": 80,
+          "final_context_loss_rate": 0.32,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 404.23168742563576,
+          "p95_dialogue_ms": 1819.1868329886347,
+          "analyses": 1534,
+          "model_calls": 9841,
+          "multi_role_analyses": 531,
+          "role_execution_counts": {
+            "2": 531,
+            "1": 1003
+          },
+          "median_analysis_ms": 36.6286460775882,
+          "p95_analysis_ms": 78.88120785355568
+        },
+        "mcp_recovery": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 150,
+          "strict_completion_rate": 0.6,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {
+            "active_claims": 600,
+            "claim_answer_coverage": 502,
+            "clarification": 62
+          },
+          "context_eligible_checkpoints": 1722,
+          "context_lost_checkpoints": 600,
+          "context_loss_rate": 0.34843205574912894,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 100,
+          "final_context_losses": 100,
+          "final_context_loss_rate": 0.4,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 1409.8281670594588,
+          "p95_dialogue_ms": 2825.912667205557,
+          "analyses": 1784,
+          "model_calls": 12200,
+          "multi_role_analyses": 781,
+          "role_execution_counts": {
+            "2": 781,
+            "1": 1003
+          },
+          "median_analysis_ms": 35.8127080835402,
+          "p95_analysis_ms": 70.92625019140542
+        },
+        "no_excess": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 170,
+          "strict_completion_rate": 0.68,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {
+            "active_claims": 500,
+            "claim_answer_coverage": 447,
+            "clarification": 27
+          },
+          "context_eligible_checkpoints": 1472,
+          "context_lost_checkpoints": 500,
+          "context_loss_rate": 0.33967391304347827,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 80,
+          "final_context_losses": 80,
+          "final_context_loss_rate": 0.32,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 392.54341705236584,
+          "p95_dialogue_ms": 1665.874666068703,
+          "analyses": 1534,
+          "model_calls": 9840,
+          "multi_role_analyses": 531,
+          "role_execution_counts": {
+            "2": 531,
+            "1": 1003
+          },
+          "median_analysis_ms": 34.80679146014154,
+          "p95_analysis_ms": 79.01408313773572
+        },
+        "pickup_conflict": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 170,
+          "strict_completion_rate": 0.68,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {
+            "active_claims": 500,
+            "claim_answer_coverage": 445,
+            "clarification": 25
+          },
+          "context_eligible_checkpoints": 1472,
+          "context_lost_checkpoints": 500,
+          "context_loss_rate": 0.33967391304347827,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 80,
+          "final_context_losses": 80,
+          "final_context_loss_rate": 0.32,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 424.4287294568494,
+          "p95_dialogue_ms": 1670.4587910789996,
+          "analyses": 1534,
+          "model_calls": 9842,
+          "multi_role_analyses": 531,
+          "role_execution_counts": {
+            "2": 531,
+            "1": 1003
+          },
+          "median_analysis_ms": 36.52587498072535,
+          "p95_analysis_ms": 77.78374990448356
+        }
+      },
+      "scores_sha256": "6720eb10f33454a4ca2170617ddb168df18ec421cde229b92c46f10175812217",
+      "raw_sha256": "12ad5158cd89397322fb7dca87924d3313435df7b8b4bb6c0fad7f3e5d1a449c",
+      "observations_sha256": "5a05a2d7e56a5493a03aed91cf1c5df2d4030935344a32506313e28e5a1c031f",
+      "failure_examples": [
+        {
+          "id": "world-000054-v0",
+          "failed_checks": [
+            "active_claims"
+          ]
+        },
+        {
+          "id": "world-000054-v1",
+          "failed_checks": [
+            "active_claims"
+          ]
+        },
+        {
+          "id": "world-000064-v0",
+          "failed_checks": [
+            "active_claims",
+            "claim_answer_coverage"
+          ]
+        },
+        {
+          "id": "world-000064-v1",
+          "failed_checks": [
+            "active_claims",
+            "claim_answer_coverage",
+            "clarification"
+          ]
+        },
+        {
+          "id": "world-000065-v0",
+          "failed_checks": [
+            "active_claims",
+            "claim_answer_coverage"
+          ]
+        },
+        {
+          "id": "world-000065-v1",
+          "failed_checks": [
+            "active_claims",
+            "claim_answer_coverage",
+            "clarification"
+          ]
+        },
+        {
+          "id": "world-000066-v0",
+          "failed_checks": [
+            "active_claims",
+            "claim_answer_coverage",
+            "clarification"
+          ]
+        },
+        {
+          "id": "world-000066-v1",
+          "failed_checks": [
+            "active_claims",
+            "claim_answer_coverage",
+            "clarification"
+          ]
+        },
+        {
+          "id": "world-000067-v0",
+          "failed_checks": [
+            "active_claims",
+            "claim_answer_coverage"
+          ]
+        },
+        {
+          "id": "world-000067-v1",
+          "failed_checks": [
+            "active_claims",
+            "claim_answer_coverage",
+            "clarification"
+          ]
+        }
+      ],
+      "exception_examples": []
     },
     "single_durable": {
       "overall": {
@@ -145,66 +1105,370 @@
         "worlds": 1000,
         "strict_completed": 2000,
         "strict_completion_rate": 1.0,
+        "business_conformant": 2000,
+        "business_conformance_rate": 1.0,
+        "episode_exceptions": 0,
+        "failed_checks": {},
         "context_eligible_checkpoints": 12026,
         "context_lost_checkpoints": 0,
         "context_loss_rate": 0.0,
-        "median_dialogue_ms": 382.61489546857774,
-        "p95_dialogue_ms": 1471.5922500472516,
-        "median_analysis_ms": 29.836875502951443,
-        "model_calls": 59002,
-        "business_conformance_rate": 1.0,
-        "episode_exceptions": 0
+        "context_eligible_dialogues": 2000,
+        "dialogues_with_context_loss": 0,
+        "final_context_losses": 0,
+        "final_context_loss_rate": 0.0,
+        "stale_claim_checkpoints": 0,
+        "expected_clarification_checkpoints": 496,
+        "passed_clarification_checkpoints": 496,
+        "median_dialogue_ms": 452.77818758040667,
+        "p95_dialogue_ms": 1909.0218748897314,
+        "analyses": 12522,
+        "model_calls": 58993,
+        "multi_role_analyses": 0,
+        "role_execution_counts": {
+          "1": 12522
+        },
+        "median_analysis_ms": 30.88183351792395,
+        "p95_analysis_ms": 59.30416681803763
       },
       "splits": {
         "calibration": {
-          "dialogues": 438,
-          "worlds": 219,
-          "strict_completed": 438,
+          "dialogues": 434,
+          "worlds": 217,
+          "strict_completed": 434,
           "strict_completion_rate": 1.0,
-          "context_eligible_checkpoints": 2594,
+          "business_conformant": 434,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {},
+          "context_eligible_checkpoints": 2704,
           "context_lost_checkpoints": 0,
           "context_loss_rate": 0.0,
-          "median_dialogue_ms": 379.15679148864,
-          "p95_dialogue_ms": 1435.101332841441,
-          "median_analysis_ms": 30.087124556303024,
-          "model_calls": 12801,
-          "business_conformance_rate": 1.0,
-          "episode_exceptions": 0
+          "context_eligible_dialogues": 434,
+          "dialogues_with_context_loss": 0,
+          "final_context_losses": 0,
+          "final_context_loss_rate": 0.0,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 120,
+          "passed_clarification_checkpoints": 120,
+          "median_dialogue_ms": 465.473958523944,
+          "p95_dialogue_ms": 1761.9010000489652,
+          "analyses": 2824,
+          "model_calls": 13227,
+          "multi_role_analyses": 0,
+          "role_execution_counts": {
+            "1": 2824
+          },
+          "median_analysis_ms": 31.23852051794529,
+          "p95_analysis_ms": 56.91675003618002
         },
         "development": {
-          "dialogues": 1212,
-          "worlds": 606,
-          "strict_completed": 1212,
+          "dialogues": 1162,
+          "worlds": 581,
+          "strict_completed": 1162,
           "strict_completion_rate": 1.0,
-          "context_eligible_checkpoints": 7304,
+          "business_conformant": 1162,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {},
+          "context_eligible_checkpoints": 7018,
           "context_lost_checkpoints": 0,
           "context_loss_rate": 0.0,
-          "median_dialogue_ms": 371.18379189632833,
-          "p95_dialogue_ms": 1429.4815000612289,
-          "median_analysis_ms": 29.52487557195127,
-          "model_calls": 35793,
-          "business_conformance_rate": 1.0,
-          "episode_exceptions": 0
+          "context_eligible_dialogues": 1162,
+          "dialogues_with_context_loss": 0,
+          "final_context_losses": 0,
+          "final_context_loss_rate": 0.0,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 296,
+          "passed_clarification_checkpoints": 296,
+          "median_dialogue_ms": 464.6020414074883,
+          "p95_dialogue_ms": 1917.240790789947,
+          "analyses": 7314,
+          "model_calls": 34466,
+          "multi_role_analyses": 0,
+          "role_execution_counts": {
+            "1": 7314
+          },
+          "median_analysis_ms": 30.946624581702054,
+          "p95_analysis_ms": 60.434124898165464
         },
         "test": {
-          "dialogues": 350,
-          "worlds": 175,
-          "strict_completed": 350,
+          "dialogues": 404,
+          "worlds": 202,
+          "strict_completed": 404,
           "strict_completion_rate": 1.0,
-          "context_eligible_checkpoints": 2128,
+          "business_conformant": 404,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {},
+          "context_eligible_checkpoints": 2304,
           "context_lost_checkpoints": 0,
           "context_loss_rate": 0.0,
-          "median_dialogue_ms": 451.8367914715782,
-          "p95_dialogue_ms": 1702.5195418391377,
-          "median_analysis_ms": 30.90614650864154,
-          "model_calls": 10408,
-          "business_conformance_rate": 1.0,
-          "episode_exceptions": 0
+          "context_eligible_dialogues": 404,
+          "dialogues_with_context_loss": 0,
+          "final_context_losses": 0,
+          "final_context_loss_rate": 0.0,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 80,
+          "passed_clarification_checkpoints": 80,
+          "median_dialogue_ms": 399.2219375213608,
+          "p95_dialogue_ms": 1896.6693750116974,
+          "analyses": 2384,
+          "model_calls": 11300,
+          "multi_role_analyses": 0,
+          "role_execution_counts": {
+            "1": 2384
+          },
+          "median_analysis_ms": 30.209521064534783,
+          "p95_analysis_ms": 60.00995892100036
         }
       },
-      "scores_sha256": "7bea72588996d978e3fd56ed829042ae4d42ad82104389ad52938fa5b365b52d",
-      "raw_sha256": "e671551be16b1961073adcdb70380757bdc89cafe6595a1919b2af0f2c191b54",
-      "observations_sha256": "c03867cfffc728e28adf8126754295f812cdae5688549414eb78488587769cfd"
+      "families": {
+        "authorization": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 250,
+          "strict_completion_rate": 1.0,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {},
+          "context_eligible_checkpoints": 1472,
+          "context_lost_checkpoints": 0,
+          "context_loss_rate": 0.0,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 0,
+          "final_context_losses": 0,
+          "final_context_loss_rate": 0.0,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 352.5405420223251,
+          "p95_dialogue_ms": 1531.8232499994338,
+          "analyses": 1534,
+          "model_calls": 7233,
+          "multi_role_analyses": 0,
+          "role_execution_counts": {
+            "1": 1534
+          },
+          "median_analysis_ms": 32.69772895146161,
+          "p95_analysis_ms": 56.66416697204113
+        },
+        "duplicate_settlement": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 250,
+          "strict_completion_rate": 1.0,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {},
+          "context_eligible_checkpoints": 1472,
+          "context_lost_checkpoints": 0,
+          "context_loss_rate": 0.0,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 0,
+          "final_context_losses": 0,
+          "final_context_loss_rate": 0.0,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 365.29268755111843,
+          "p95_dialogue_ms": 1553.5362081136554,
+          "analyses": 1534,
+          "model_calls": 7237,
+          "multi_role_analyses": 0,
+          "role_execution_counts": {
+            "1": 1534
+          },
+          "median_analysis_ms": 28.507895534858108,
+          "p95_analysis_ms": 56.70554097741842
+        },
+        "evidence_mismatch": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 250,
+          "strict_completion_rate": 1.0,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {},
+          "context_eligible_checkpoints": 1472,
+          "context_lost_checkpoints": 0,
+          "context_loss_rate": 0.0,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 0,
+          "final_context_losses": 0,
+          "final_context_loss_rate": 0.0,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 419.3024168489501,
+          "p95_dialogue_ms": 1341.0520409233868,
+          "analyses": 1534,
+          "model_calls": 7237,
+          "multi_role_analyses": 0,
+          "role_execution_counts": {
+            "1": 1534
+          },
+          "median_analysis_ms": 30.062562436796725,
+          "p95_analysis_ms": 58.10312507674098
+        },
+        "fare_over_cap": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 250,
+          "strict_completion_rate": 1.0,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {},
+          "context_eligible_checkpoints": 1472,
+          "context_lost_checkpoints": 0,
+          "context_loss_rate": 0.0,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 0,
+          "final_context_losses": 0,
+          "final_context_loss_rate": 0.0,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 395.2091879909858,
+          "p95_dialogue_ms": 1603.8877910468727,
+          "analyses": 1534,
+          "model_calls": 7234,
+          "multi_role_analyses": 0,
+          "role_execution_counts": {
+            "1": 1534
+          },
+          "median_analysis_ms": 29.943896108306944,
+          "p95_analysis_ms": 63.28179105184972
+        },
+        "fare_supported": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 250,
+          "strict_completion_rate": 1.0,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {},
+          "context_eligible_checkpoints": 1472,
+          "context_lost_checkpoints": 0,
+          "context_loss_rate": 0.0,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 0,
+          "final_context_losses": 0,
+          "final_context_loss_rate": 0.0,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 347.38418797496706,
+          "p95_dialogue_ms": 1286.5219998639077,
+          "analyses": 1534,
+          "model_calls": 7237,
+          "multi_role_analyses": 0,
+          "role_execution_counts": {
+            "1": 1534
+          },
+          "median_analysis_ms": 32.84043737221509,
+          "p95_analysis_ms": 58.661541203036904
+        },
+        "mcp_recovery": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 250,
+          "strict_completion_rate": 1.0,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {},
+          "context_eligible_checkpoints": 1722,
+          "context_lost_checkpoints": 0,
+          "context_loss_rate": 0.0,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 0,
+          "final_context_losses": 0,
+          "final_context_loss_rate": 0.0,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 1354.881166946143,
+          "p95_dialogue_ms": 2946.8770418316126,
+          "analyses": 1784,
+          "model_calls": 8342,
+          "multi_role_analyses": 0,
+          "role_execution_counts": {
+            "1": 1784
+          },
+          "median_analysis_ms": 30.131645849905908,
+          "p95_analysis_ms": 63.26966593042016
+        },
+        "no_excess": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 250,
+          "strict_completion_rate": 1.0,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {},
+          "context_eligible_checkpoints": 1472,
+          "context_lost_checkpoints": 0,
+          "context_loss_rate": 0.0,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 0,
+          "final_context_losses": 0,
+          "final_context_loss_rate": 0.0,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 347.8297085966915,
+          "p95_dialogue_ms": 1407.3515420313925,
+          "analyses": 1534,
+          "model_calls": 7238,
+          "multi_role_analyses": 0,
+          "role_execution_counts": {
+            "1": 1534
+          },
+          "median_analysis_ms": 30.507541494444013,
+          "p95_analysis_ms": 59.30416681803763
+        },
+        "pickup_conflict": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 250,
+          "strict_completion_rate": 1.0,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {},
+          "context_eligible_checkpoints": 1472,
+          "context_lost_checkpoints": 0,
+          "context_loss_rate": 0.0,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 0,
+          "final_context_losses": 0,
+          "final_context_loss_rate": 0.0,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 380.9045000234619,
+          "p95_dialogue_ms": 1679.3002497870475,
+          "analyses": 1534,
+          "model_calls": 7235,
+          "multi_role_analyses": 0,
+          "role_execution_counts": {
+            "1": 1534
+          },
+          "median_analysis_ms": 33.02272886503488,
+          "p95_analysis_ms": 64.79645799845457
+        }
+      },
+      "scores_sha256": "fce855eb3f952ebc3291fab836c5b776f046843fbbeb8c36f89851ffd8b5cad4",
+      "raw_sha256": "8fa6051b2baf120fb8b319950d7a91a7201b7b13dfa657b12b877504f5d862db",
+      "observations_sha256": "0be42936741fe747176ccdac216b1ecd61f16d47bbd3730174a77cfa0e68cdd4",
+      "failure_examples": [],
+      "exception_examples": []
     },
     "multi_durable": {
       "overall": {
@@ -212,77 +1476,566 @@
         "worlds": 1000,
         "strict_completed": 2000,
         "strict_completion_rate": 1.0,
+        "business_conformant": 2000,
+        "business_conformance_rate": 1.0,
+        "episode_exceptions": 0,
+        "failed_checks": {},
         "context_eligible_checkpoints": 12026,
         "context_lost_checkpoints": 0,
         "context_loss_rate": 0.0,
-        "median_dialogue_ms": 456.3366040820256,
-        "p95_dialogue_ms": 1761.529624927789,
-        "median_analysis_ms": 36.08900005929172,
+        "context_eligible_dialogues": 2000,
+        "dialogues_with_context_loss": 0,
+        "final_context_losses": 0,
+        "final_context_loss_rate": 0.0,
+        "stale_claim_checkpoints": 0,
+        "expected_clarification_checkpoints": 496,
+        "passed_clarification_checkpoints": 496,
+        "median_dialogue_ms": 491.98635411448777,
+        "p95_dialogue_ms": 1916.6387908626348,
+        "analyses": 12522,
         "model_calls": 81611,
-        "business_conformance_rate": 1.0,
-        "episode_exceptions": 0
+        "multi_role_analyses": 4498,
+        "role_execution_counts": {
+          "2": 4498,
+          "1": 8024
+        },
+        "median_analysis_ms": 32.28304197546095,
+        "p95_analysis_ms": 73.1124160811305
       },
       "splits": {
         "calibration": {
-          "dialogues": 438,
-          "worlds": 219,
-          "strict_completed": 438,
+          "dialogues": 434,
+          "worlds": 217,
+          "strict_completed": 434,
           "strict_completion_rate": 1.0,
-          "context_eligible_checkpoints": 2594,
+          "business_conformant": 434,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {},
+          "context_eligible_checkpoints": 2704,
           "context_lost_checkpoints": 0,
           "context_loss_rate": 0.0,
-          "median_dialogue_ms": 445.01658354420215,
-          "p95_dialogue_ms": 1829.8052919562906,
-          "median_analysis_ms": 36.70400008559227,
-          "model_calls": 17663,
-          "business_conformance_rate": 1.0,
-          "episode_exceptions": 0
+          "context_eligible_dialogues": 434,
+          "dialogues_with_context_loss": 0,
+          "final_context_losses": 0,
+          "final_context_loss_rate": 0.0,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 120,
+          "passed_clarification_checkpoints": 120,
+          "median_dialogue_ms": 638.9829164836556,
+          "p95_dialogue_ms": 1804.3754999525845,
+          "analyses": 2824,
+          "model_calls": 18194,
+          "multi_role_analyses": 987,
+          "role_execution_counts": {
+            "2": 987,
+            "1": 1837
+          },
+          "median_analysis_ms": 32.846582937054336,
+          "p95_analysis_ms": 75.07249992340803
         },
         "development": {
-          "dialogues": 1212,
-          "worlds": 606,
-          "strict_completed": 1212,
+          "dialogues": 1162,
+          "worlds": 581,
+          "strict_completed": 1162,
           "strict_completion_rate": 1.0,
-          "context_eligible_checkpoints": 7304,
+          "business_conformant": 1162,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {},
+          "context_eligible_checkpoints": 7018,
           "context_lost_checkpoints": 0,
           "context_loss_rate": 0.0,
-          "median_dialogue_ms": 453.6570420023054,
-          "p95_dialogue_ms": 1638.6705830227584,
-          "median_analysis_ms": 35.789750050753355,
-          "model_calls": 49480,
-          "business_conformance_rate": 1.0,
-          "episode_exceptions": 0
+          "context_eligible_dialogues": 1162,
+          "dialogues_with_context_loss": 0,
+          "final_context_losses": 0,
+          "final_context_loss_rate": 0.0,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 296,
+          "passed_clarification_checkpoints": 296,
+          "median_dialogue_ms": 485.5658960295841,
+          "p95_dialogue_ms": 2008.7752090767026,
+          "analyses": 7314,
+          "model_calls": 47540,
+          "multi_role_analyses": 2600,
+          "role_execution_counts": {
+            "2": 2600,
+            "1": 4714
+          },
+          "median_analysis_ms": 32.2682085679844,
+          "p95_analysis_ms": 73.0197080411017
         },
         "test": {
-          "dialogues": 350,
-          "worlds": 175,
-          "strict_completed": 350,
+          "dialogues": 404,
+          "worlds": 202,
+          "strict_completed": 404,
           "strict_completion_rate": 1.0,
-          "context_eligible_checkpoints": 2128,
+          "business_conformant": 404,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {},
+          "context_eligible_checkpoints": 2304,
           "context_lost_checkpoints": 0,
           "context_loss_rate": 0.0,
-          "median_dialogue_ms": 490.71852094493806,
-          "p95_dialogue_ms": 1856.1693329829723,
-          "median_analysis_ms": 36.54902090784162,
-          "model_calls": 14468,
-          "business_conformance_rate": 1.0,
-          "episode_exceptions": 0
+          "context_eligible_dialogues": 404,
+          "dialogues_with_context_loss": 0,
+          "final_context_losses": 0,
+          "final_context_loss_rate": 0.0,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 80,
+          "passed_clarification_checkpoints": 80,
+          "median_dialogue_ms": 441.97760394308716,
+          "p95_dialogue_ms": 1870.3609581571072,
+          "analyses": 2384,
+          "model_calls": 15877,
+          "multi_role_analyses": 911,
+          "role_execution_counts": {
+            "2": 911,
+            "1": 1473
+          },
+          "median_analysis_ms": 31.66281257290393,
+          "p95_analysis_ms": 71.47375005297363
         }
       },
-      "scores_sha256": "c53806703eabfeb747e7de34fc3798194f055cef1cedec8d719d9dac372a832b",
-      "raw_sha256": "732ad07fa845dedce3aa21de3eb5bcc06b4623d012e1ab503a4e8c5997149b50",
-      "observations_sha256": "67a9444556c312aac518cd0c39f663986c92f411d57c6aa168c37b5a1fee6423"
+      "families": {
+        "authorization": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 250,
+          "strict_completion_rate": 1.0,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {},
+          "context_eligible_checkpoints": 1472,
+          "context_lost_checkpoints": 0,
+          "context_loss_rate": 0.0,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 0,
+          "final_context_losses": 0,
+          "final_context_loss_rate": 0.0,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 400.24889551568776,
+          "p95_dialogue_ms": 1537.4659590888768,
+          "analyses": 1534,
+          "model_calls": 9907,
+          "multi_role_analyses": 531,
+          "role_execution_counts": {
+            "2": 531,
+            "1": 1003
+          },
+          "median_analysis_ms": 33.57377101201564,
+          "p95_analysis_ms": 79.92595806717873
+        },
+        "duplicate_settlement": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 250,
+          "strict_completion_rate": 1.0,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {},
+          "context_eligible_checkpoints": 1472,
+          "context_lost_checkpoints": 0,
+          "context_loss_rate": 0.0,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 0,
+          "final_context_losses": 0,
+          "final_context_loss_rate": 0.0,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 377.47616635169834,
+          "p95_dialogue_ms": 1489.3297089729458,
+          "analyses": 1534,
+          "model_calls": 9907,
+          "multi_role_analyses": 531,
+          "role_execution_counts": {
+            "2": 531,
+            "1": 1003
+          },
+          "median_analysis_ms": 30.947812483645976,
+          "p95_analysis_ms": 69.16370801627636
+        },
+        "evidence_mismatch": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 250,
+          "strict_completion_rate": 1.0,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {},
+          "context_eligible_checkpoints": 1472,
+          "context_lost_checkpoints": 0,
+          "context_loss_rate": 0.0,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 0,
+          "final_context_losses": 0,
+          "final_context_loss_rate": 0.0,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 413.64729148335755,
+          "p95_dialogue_ms": 1567.9487080778927,
+          "analyses": 1534,
+          "model_calls": 9907,
+          "multi_role_analyses": 531,
+          "role_execution_counts": {
+            "2": 531,
+            "1": 1003
+          },
+          "median_analysis_ms": 30.836916528642178,
+          "p95_analysis_ms": 66.77595805376768
+        },
+        "fare_over_cap": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 250,
+          "strict_completion_rate": 1.0,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {},
+          "context_eligible_checkpoints": 1472,
+          "context_lost_checkpoints": 0,
+          "context_loss_rate": 0.0,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 0,
+          "final_context_losses": 0,
+          "final_context_loss_rate": 0.0,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 452.23187492229044,
+          "p95_dialogue_ms": 1890.5515419319272,
+          "analyses": 1534,
+          "model_calls": 9907,
+          "multi_role_analyses": 531,
+          "role_execution_counts": {
+            "2": 531,
+            "1": 1003
+          },
+          "median_analysis_ms": 31.501542078331113,
+          "p95_analysis_ms": 77.36979215405881
+        },
+        "fare_supported": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 250,
+          "strict_completion_rate": 1.0,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {},
+          "context_eligible_checkpoints": 1472,
+          "context_lost_checkpoints": 0,
+          "context_loss_rate": 0.0,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 0,
+          "final_context_losses": 0,
+          "final_context_loss_rate": 0.0,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 382.8424165258184,
+          "p95_dialogue_ms": 1515.7027079258114,
+          "analyses": 1534,
+          "model_calls": 9907,
+          "multi_role_analyses": 531,
+          "role_execution_counts": {
+            "2": 531,
+            "1": 1003
+          },
+          "median_analysis_ms": 34.56225001718849,
+          "p95_analysis_ms": 73.0197080411017
+        },
+        "mcp_recovery": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 250,
+          "strict_completion_rate": 1.0,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {},
+          "context_eligible_checkpoints": 1722,
+          "context_lost_checkpoints": 0,
+          "context_loss_rate": 0.0,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 0,
+          "final_context_losses": 0,
+          "final_context_loss_rate": 0.0,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 1320.2229789458215,
+          "p95_dialogue_ms": 2823.714999947697,
+          "analyses": 1784,
+          "model_calls": 12262,
+          "multi_role_analyses": 781,
+          "role_execution_counts": {
+            "2": 781,
+            "1": 1003
+          },
+          "median_analysis_ms": 31.768812448717654,
+          "p95_analysis_ms": 70.16141712665558
+        },
+        "no_excess": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 250,
+          "strict_completion_rate": 1.0,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {},
+          "context_eligible_checkpoints": 1472,
+          "context_lost_checkpoints": 0,
+          "context_loss_rate": 0.0,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 0,
+          "final_context_losses": 0,
+          "final_context_loss_rate": 0.0,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 384.63727105408907,
+          "p95_dialogue_ms": 1635.9256249852479,
+          "analyses": 1534,
+          "model_calls": 9907,
+          "multi_role_analyses": 531,
+          "role_execution_counts": {
+            "2": 531,
+            "1": 1003
+          },
+          "median_analysis_ms": 31.432249466888607,
+          "p95_analysis_ms": 73.56591592542827
+        },
+        "pickup_conflict": {
+          "dialogues": 250,
+          "worlds": 125,
+          "strict_completed": 250,
+          "strict_completion_rate": 1.0,
+          "business_conformant": 250,
+          "business_conformance_rate": 1.0,
+          "episode_exceptions": 0,
+          "failed_checks": {},
+          "context_eligible_checkpoints": 1472,
+          "context_lost_checkpoints": 0,
+          "context_loss_rate": 0.0,
+          "context_eligible_dialogues": 250,
+          "dialogues_with_context_loss": 0,
+          "final_context_losses": 0,
+          "final_context_loss_rate": 0.0,
+          "stale_claim_checkpoints": 0,
+          "expected_clarification_checkpoints": 62,
+          "passed_clarification_checkpoints": 62,
+          "median_dialogue_ms": 433.27706248965114,
+          "p95_dialogue_ms": 1518.8388340175152,
+          "analyses": 1534,
+          "model_calls": 9907,
+          "multi_role_analyses": 531,
+          "role_execution_counts": {
+            "2": 531,
+            "1": 1003
+          },
+          "median_analysis_ms": 33.871479448862374,
+          "p95_analysis_ms": 74.95900010690093
+        }
+      },
+      "scores_sha256": "f849c0a85efc887c462cfe4ee2033a229e342bea65309ae4bd088d51c84123f0",
+      "raw_sha256": "564a879e90f9aea7004eb39ac21f093e55ef0ba86ecb624a2d39231633cf5a77",
+      "observations_sha256": "15c15548e92529440c895c526f017886fbec19e700b0cf8465cdc9a25561c9bc",
+      "failure_examples": [],
+      "exception_examples": []
     }
   },
-  "dataset_sha256": {
-    "catalog-preview.json": "5399ee8c6064a961de7dbb07380d6aab3d15db4ada275a2c83d3f50e4624295f",
-    "catalog.schema.json": "e720c1c7c7071e9092152c284deda874a518ab27b51fd15eaddcf6e761bfb4ef",
-    "manifest.json": "05e55ca8194bbf9ef247d379218d88d75a6b9bff53f9bb21b84ea39f879452aa",
-    "human-review.jsonl": "8b700de47f01bd0becfbfc88df2b9d9b372420663e21183f0470c9fe6e1bccad",
-    "catalog.json": "b5441cb88e9487949ed617c30e9826829da7eb5242b96bc9091efcda51b13954",
-    "scenarios.jsonl": "7718398a5fce8987e1bb002193220deda4f998ca5aa8fb73397f93f14510f6c9",
-    "world-events.jsonl": "049226f9662a82c77aa43fb3976c15150f9fc1bd5624ce89888b26c7690345ba",
-    "oracle.jsonl": "1a3cc3fff61558d6226495216066bab1cea70e1336551498f67e66a71fe5ddcf"
+  "paired": {
+    "single_recent4__vs__single_durable": {
+      "all": {
+        "strict_task": {
+          "ties": 1340,
+          "b_wins": 660
+        },
+        "final_context": {
+          "ties": 1340,
+          "b_wins": 660
+        }
+      },
+      "development": {
+        "strict_task": {
+          "ties": 780,
+          "b_wins": 382
+        },
+        "final_context": {
+          "ties": 780,
+          "b_wins": 382
+        }
+      },
+      "calibration": {
+        "strict_task": {
+          "ties": 274,
+          "b_wins": 160
+        },
+        "final_context": {
+          "ties": 274,
+          "b_wins": 160
+        }
+      },
+      "test": {
+        "strict_task": {
+          "ties": 286,
+          "b_wins": 118
+        },
+        "final_context": {
+          "ties": 286,
+          "b_wins": 118
+        }
+      }
+    },
+    "multi_recent4__vs__multi_durable": {
+      "all": {
+        "strict_task": {
+          "ties": 1340,
+          "b_wins": 660
+        },
+        "final_context": {
+          "ties": 1340,
+          "b_wins": 660
+        }
+      },
+      "development": {
+        "strict_task": {
+          "ties": 780,
+          "b_wins": 382
+        },
+        "final_context": {
+          "ties": 780,
+          "b_wins": 382
+        }
+      },
+      "calibration": {
+        "strict_task": {
+          "ties": 274,
+          "b_wins": 160
+        },
+        "final_context": {
+          "ties": 274,
+          "b_wins": 160
+        }
+      },
+      "test": {
+        "strict_task": {
+          "ties": 286,
+          "b_wins": 118
+        },
+        "final_context": {
+          "ties": 286,
+          "b_wins": 118
+        }
+      }
+    },
+    "single_recent4__vs__multi_recent4": {
+      "all": {
+        "strict_task": {
+          "ties": 2000
+        },
+        "final_context": {
+          "ties": 2000
+        }
+      },
+      "development": {
+        "strict_task": {
+          "ties": 1162
+        },
+        "final_context": {
+          "ties": 1162
+        }
+      },
+      "calibration": {
+        "strict_task": {
+          "ties": 434
+        },
+        "final_context": {
+          "ties": 434
+        }
+      },
+      "test": {
+        "strict_task": {
+          "ties": 404
+        },
+        "final_context": {
+          "ties": 404
+        }
+      }
+    },
+    "single_durable__vs__multi_durable": {
+      "all": {
+        "strict_task": {
+          "ties": 2000
+        },
+        "final_context": {
+          "ties": 2000
+        }
+      },
+      "development": {
+        "strict_task": {
+          "ties": 1162
+        },
+        "final_context": {
+          "ties": 1162
+        }
+      },
+      "calibration": {
+        "strict_task": {
+          "ties": 434
+        },
+        "final_context": {
+          "ties": 434
+        }
+      },
+      "test": {
+        "strict_task": {
+          "ties": 404
+        },
+        "final_context": {
+          "ties": 404
+        }
+      }
+    }
   },
-  "measurement_report_sha256": "b5949e694a4829665d45762138a4356041b3ae3885b34f86ef3f7b76be18b4eb"
+  "integrity": {
+    "single_recent4": {
+      "coverage": true,
+      "hashes_match": true,
+      "raw_count_matches": true,
+      "role_and_window_verified": true
+    },
+    "multi_recent4": {
+      "coverage": true,
+      "hashes_match": true,
+      "raw_count_matches": true,
+      "role_and_window_verified": true
+    },
+    "single_durable": {
+      "coverage": true,
+      "hashes_match": true,
+      "raw_count_matches": true,
+      "role_and_window_verified": true
+    },
+    "multi_durable": {
+      "coverage": true,
+      "hashes_match": true,
+      "raw_count_matches": true,
+      "role_and_window_verified": true
+    }
+  },
+  "live_model": {
+    "status": "not_run",
+    "reason": "No live provider credentials configured. No live accuracy, latency or cost is claimed."
+  }
 }

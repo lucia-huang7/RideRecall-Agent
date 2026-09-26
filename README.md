@@ -1,6 +1,10 @@
 # LLM-Agent-System: Stateful Ride-Support Agent
 
+[![Verify](https://github.com/lucia-huang7/LLM-Agent-System/actions/workflows/verify.yml/badge.svg)](https://github.com/lucia-huang7/LLM-Agent-System/actions/workflows/verify.yml)
+
 A support agent where rider claims stay separate from recorded trip facts, policy answers carry retrieved evidence, and model text cannot execute an adjustment.
+
+**Deterministic offline evaluation:** 1,000 synthetic worlds · 2,000 dialogues per condition · 67.0% → 100.0% strict completion with durable memory. **Live-model results: not measured.**
 
 ![Mobile ride-support workspace](docs/assets/mobile-trips.png)
 
@@ -35,29 +39,47 @@ The [claim ledger](backend/ride_agent/domain/claims.py) records statement versio
 | Require indexed policy anchors | Missing payment or topic evidence downgrades the analysis to partial | [Policy validation](backend/ride_agent/agent/pipeline.py), [case tools](backend/ride_agent/agent/case_tools.py) |
 | Isolate adjustments from model output | Only a valid server proposal and explicit rider confirmation can change simulated payment state | [Case workflow](backend/ride_agent/domain/case.py) |
 | Request IDs plus revisions and ETags | Retries must not duplicate an adjustment; stale writes must be rejected | [Case routes](backend/ride_agent/api/routes/cases.py), [store](backend/ride_agent/persistence/store.py) |
-| Default to one agent with durable memory | Multiple agents added latency without task-completion gains in the offline comparison | [Orchestrator](backend/ride_agent/agent/orchestrator.py) |
+| Default to one agent with durable memory | Multiple agents produced no task-completion gain in the offline comparison | [Orchestrator](backend/ride_agent/agent/orchestrator.py) |
 | Keep oracle labels outside agent inputs | Evaluation answers must not enter the production request pipeline | [Replay and oracle](backend/ride_agent/evaluation/simulation/) |
 
 ## Evaluation
 
 The supplied dataset contains **1,000 synthetic worlds and 2,000 dialogue variants across eight failure families**. Both variants of a world remain in one development, calibration or test split. Replay sends requests through the real API; a separate oracle scores the resulting records.
 
-The following are **historical frozen offline measurements**, taken before this repository restructuring. Each condition ran all 2,000 dialogues. The deterministic model adapter requires no API key; the measured latency includes local processing, not hosted-model inference. [Recorded metrics, split counts and evidence hashes](datasets/ride_support_v1/baseline.json).
+These measurements were rerun on the **shipped dataset and frozen application/scorer source**. Each condition covers all 2,000 dialogues; the four conditions total 8,000 dialogue replays. [Results, exact dataset/source hashes, failures and per-split statistics](datasets/ride_support_v1/baseline.json).
+
+The recent-window baseline reconstructs context from the last four rider-started rounds; durable conditions restore the case memory snapshot. The single-agent comparator has the union of read-only tools; multi-agent conditions use role-scoped routing.
+
+The adapter is **deterministic and offline**: this experiment measures memory retention and workflow conformance, not an LLM's reasoning or answer quality. Four condition processes ran concurrently; dialogue times include resource contention and should not be used as an isolated performance ranking.
 
 | Agent mode | Memory | Strict task completion | Context loss per eligible checkpoint | Median dialogue time |
 |---|---|---:|---:|---:|
-| Single | Recent 4 rider rounds | 1,340/2,000 · 67% | 34.09% | 408.2 ms |
-| Multi | Recent 4 rider rounds | 1,340/2,000 · 67% | 34.09% | 498.9 ms |
-| **Single (default)** | **Durable** | **2,000/2,000 · 100%** | **0%** | **382.6 ms** |
-| Multi (optional) | Durable | 2,000/2,000 · 100% | 0% | 456.3 ms |
+| Single | Recent 4 rider rounds | 1,340/2,000 · 67.00% | 34.09% | 460.6 ms |
+| Multi | Recent 4 rider rounds | 1,340/2,000 · 67.00% | 34.09% | 504.7 ms |
+| Single (default) | Durable | 2,000/2,000 · 100.00% | 0.00% | 452.8 ms |
+| Multi (optional) | Durable | 2,000/2,000 · 100.00% | 0.00% | 492.0 ms |
 
-The held-out test split contains 175 worlds / 350 dialogues: recent-window conditions completed 234/350; durable conditions completed 350/350. Multiple agents produced no completion improvement under either memory condition.
+| Split | Worlds / dialogues per condition | Single + recent 4 | Multi + recent 4 | Single + durable | Multi + durable |
+|---|---:|---:|---:|---:|---:|
+| Development | 581 / 1162 | 780/1162 | 780/1162 | 1162/1162 | 1162/1162 |
+| Calibration | 217 / 434 | 274/434 | 274/434 | 434/434 | 434/434 |
+| Test | 202 / 404 | 286/404 | 286/404 | 404/404 | 404/404 |
+
+Multiple agents produced no completion improvement under either memory condition in this dataset. Single agent with durable memory remains the default; multi-agent is optional. Failed checks and example episode IDs are retained in the linked evidence.
+
+**Live model: not evaluated.** No provider credentials were configured. Live completion, context loss, latency and cost therefore remain unavailable. An explicit [live evaluation harness](scripts/bench/check-live.py) uses the same HTTP workflow and mechanical scorer, records provider usage/failures and never silently substitutes demo answers. It has local failure-path regression coverage, which is not a live-model quality result.
 
 Limitations:
 
-- Synthetic fixtures and a deterministic adapter do not establish real-user accuracy, live-model reliability or universal policy grounding.
+- Synthetic fixtures and a deterministic adapter do not establish real-user accuracy, live-model reliability or universal policy grounding. Independent human review of the generated dataset is still pending.
 - Business invariants passed in these runs, but this is not a general safety guarantee. No real payment was executed.
 - SQLite and embedded Chroma target one state namespace and one worker; deployment needs managed identity, TLS, upload scanning and offsite recovery.
+
+## Staff workspace
+
+The Agent Desk receives the rider conversation, evidence and decision history for human review. The Control Room exposes live MCP connectivity, policy releases, tool metrics and pipeline checks.
+
+![Control Room with the independent MCP service connected](docs/assets/control-room.png)
 
 ## Quickstart
 

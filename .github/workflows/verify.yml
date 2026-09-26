@@ -1,6 +1,8 @@
 name: Verify
-# Manual by default so private repositories do not incur unexpected hosted runs.
 on:
+  push:
+    branches: [main]
+  pull_request:
   workflow_dispatch:
     inputs:
       container:
@@ -33,6 +35,8 @@ jobs:
         run: |
           python -m ruff check backend scripts
           python -m ruff format --check backend scripts
+      - name: Published evaluation evidence
+        run: python scripts/ops/check-evaluation-evidence.py
       - name: Backend checks
         working-directory: backend
         run: python -m pytest tests -q

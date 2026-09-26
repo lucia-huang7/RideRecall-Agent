@@ -67,3 +67,31 @@ The default public demo identities are role-play controls. Keep demo mode on loo
 `/livez` checks the process; `/readyz` also checks storage, policy indexes, projections and actual MCP access. Local data lives under `.runtime/`; the persistent macOS installation uses `~/Library/Application Support/LLM-Agent-System/<instance>/`. Use `python -m ride_agent.persistence.backup --help` from `backend/` for offline backup/restore commands and stop the relevant instance before copying embedded state.
 
 Live model access is separate from agent count: set `LLM_AGENT_SYSTEM_RIDE_MODEL_MODE=live`, `LLM_AGENT_SYSTEM_RIDE_MODEL` and `LLM_AGENT_SYSTEM_RIDE_API_KEY` explicitly. The default remains no-key `demo`; live model access never grants financial permissions.
+
+
+## Reproduce the offline comparison
+
+Use the same installed Python environment as the backend, including its test dependencies:
+
+```bash
+python scripts/bench/run-ablation.py --output artifacts/my-ablation
+python scripts/ops/check-evaluation-evidence.py
+```
+
+The runner records source and dataset hashes before execution, refuses existing output directories, preserves per-condition logs, scores and compressed HTTP responses, and verifies all 2,000 episode IDs in every condition. The default is sequential execution for less resource contention. `--workers 4` runs the conditions concurrently; report that contention when presenting latency. Runtime and scoring rules must remain unchanged during a run. The published evidence gate checks the curated baseline against the shipped manifest and split counts; it does not rerun the experiment.
+
+The offline replay deliberately forces the deterministic adapter even if live environment variables are present. For a live run, configure the existing provider variables locally and invoke the explicit live harness:
+
+```bash
+python scripts/bench/check-live.py --output artifacts/my-live-test \
+  --max-calls "$CALL_LIMIT" \
+  --input-usd-per-million "$INPUT_PRICE" \
+  --output-usd-per-million "$OUTPUT_PRICE" \
+  --pricing-date "$PRICING_DATE"
+```
+
+Choose the model and verify its current input/output prices before running. The harness requires explicit `LLM_AGENT_SYSTEM_RIDE_MODEL_MODE=live`, model and API key; it injects validated live settings into the same HTTP replay and leaves transitions and scoring unchanged. It records every provider attempt, token usage, context loss, dialogue timing, strict completion and test coverage. `--limit` is a smoke run, not a full test result. The call ceiling is not a guaranteed dollar budget. Unknown failed-request usage or unpriced cache tokens make the total cost unavailable; estimates are not provider invoices. Raw responses may contain provider content and remain ignored locally. No live-model quality, latency or cost result is currently published.
+
+## GitHub presentation
+
+The Verify workflow runs on main pushes and pull requests; its badge reports actual GitHub status. The container workflow remains an explicit manual option. Repository topics and About text describe the implemented architecture. `docs/assets/social-preview.png` is the prepared sharing image; an authenticated repository administrator must select it under Settings → General → Social preview. Committing the image alone does not activate GitHub social preview. Repository visibility is unchanged.

@@ -255,6 +255,10 @@
             {{ money(currentCase.proposal.amount) }}
           </div>
           <p>{{ currentCase.proposal.reason }}</p>
+          <button class="primary" :disabled="busy" @click="act('confirm')">
+            {{ busy ? "Recording…" : "Confirm adjustment"
+            }}<Icon name="check" /></button
+          ><button class="secondary" @click="sheet = ''">Not now</button>
           <div v-if="isDemo" class="agent-note">
             <Icon name="alert" />
             <p>
@@ -262,13 +266,7 @@
               is not contacted.
             </p>
           </div>
-          <button class="primary" :disabled="busy" @click="act('confirm')">
-            {{ busy ? "Recording…" : "Confirm demo adjustment"
-            }}<Icon name="check" /></button
-          ><button class="secondary" @click="sheet = ''">
-            Not now
-          </button></template
-        >
+        </template>
         <template v-else-if="sheet === 'trace'"
           ><p class="eyebrow">ACTUAL EXECUTION RECORD</p>
           <h2 id="sheet-title">How this review worked</h2>

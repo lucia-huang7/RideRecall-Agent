@@ -1,0 +1,165 @@
+{
+  "source_commit": "c4fdd528735075079e6991221af3ecd1c8adc216",
+  "dataset_id": "ride-support-20261022-1000",
+  "dataset_seed": 20261022,
+  "dataset_manifest_sha256": "05e55ca8194bbf9ef247d379218d88d75a6b9bff53f9bb21b84ea39f879452aa",
+  "completed_at": "2026-10-22T15:37:57.303785+00:00",
+  "python": "3.11.9",
+  "overall": {
+    "worlds": 1000,
+    "dialogues": 2000,
+    "passed": 2000,
+    "failed": 0,
+    "exceptions": 0,
+    "failed_checks": {},
+    "median_dialogue_ms": 293.20785438176244,
+    "p95_dialogue_ms": 1136.7758749984205
+  },
+  "splits": {
+    "calibration": {
+      "worlds": 219,
+      "dialogues": 438,
+      "passed": 438,
+      "failed": 0,
+      "exceptions": 0,
+      "failed_checks": {},
+      "median_dialogue_ms": 294.19974994380027,
+      "p95_dialogue_ms": 1051.3589999172837
+    },
+    "development": {
+      "worlds": 606,
+      "dialogues": 1212,
+      "passed": 1212,
+      "failed": 0,
+      "exceptions": 0,
+      "failed_checks": {},
+      "median_dialogue_ms": 290.55843758396804,
+      "p95_dialogue_ms": 1126.7318329773843
+    },
+    "test": {
+      "worlds": 175,
+      "dialogues": 350,
+      "passed": 350,
+      "failed": 0,
+      "exceptions": 0,
+      "failed_checks": {},
+      "median_dialogue_ms": 308.38979152031243,
+      "p95_dialogue_ms": 1170.9182090125978
+    }
+  },
+  "families": {
+    "authorization": {
+      "worlds": 125,
+      "dialogues": 250,
+      "passed": 250,
+      "failed": 0,
+      "exceptions": 0,
+      "failed_checks": {},
+      "median_dialogue_ms": 259.3407710082829,
+      "p95_dialogue_ms": 702.9904169030488
+    },
+    "duplicate_settlement": {
+      "worlds": 125,
+      "dialogues": 250,
+      "passed": 250,
+      "failed": 0,
+      "exceptions": 0,
+      "failed_checks": {},
+      "median_dialogue_ms": 267.00547942891717,
+      "p95_dialogue_ms": 709.3997919000685
+    },
+    "evidence_mismatch": {
+      "worlds": 125,
+      "dialogues": 250,
+      "passed": 250,
+      "failed": 0,
+      "exceptions": 0,
+      "failed_checks": {},
+      "median_dialogue_ms": 273.99720856919885,
+      "p95_dialogue_ms": 736.5772500634193
+    },
+    "fare_over_cap": {
+      "worlds": 125,
+      "dialogues": 250,
+      "passed": 250,
+      "failed": 0,
+      "exceptions": 0,
+      "failed_checks": {},
+      "median_dialogue_ms": 274.51799996197224,
+      "p95_dialogue_ms": 740.7908749300987
+    },
+    "fare_supported": {
+      "worlds": 125,
+      "dialogues": 250,
+      "passed": 250,
+      "failed": 0,
+      "exceptions": 0,
+      "failed_checks": {},
+      "median_dialogue_ms": 261.13768736831844,
+      "p95_dialogue_ms": 693.7392500694841
+    },
+    "mcp_recovery": {
+      "worlds": 125,
+      "dialogues": 250,
+      "passed": 250,
+      "failed": 0,
+      "exceptions": 0,
+      "failed_checks": {},
+      "median_dialogue_ms": 923.8432080019265,
+      "p95_dialogue_ms": 1461.6590419318527
+    },
+    "no_excess": {
+      "worlds": 125,
+      "dialogues": 250,
+      "passed": 250,
+      "failed": 0,
+      "exceptions": 0,
+      "failed_checks": {},
+      "median_dialogue_ms": 258.18668759893626,
+      "p95_dialogue_ms": 682.6784589793533
+    },
+    "pickup_conflict": {
+      "worlds": 125,
+      "dialogues": 250,
+      "passed": 250,
+      "failed": 0,
+      "exceptions": 0,
+      "failed_checks": {},
+      "median_dialogue_ms": 279.0422079851851,
+      "p95_dialogue_ms": 728.275875095278
+    }
+  },
+  "http_status_counts": {
+    "200": 25272,
+    "404": 2000,
+    "409": 500
+  },
+  "http_requests": 27772,
+  "total_seconds": 948.8921527909115,
+  "median_http_ms": 12.548646,
+  "p95_http_ms": 72.399417,
+  "raw_sha256": "8ba76b1b77016fa3b6f878f09538c7dea6087a4247b51ac52ac79ffffff01f1e",
+  "scores_sha256": "2c8165c3efe5b91575b243c2ce80f46d9034be4b373d4e77af007c83c5f3bac1",
+  "integrity": {
+    "exact_episode_coverage": true,
+    "unique_episode_ids": true,
+    "source_mismatches": [],
+    "dataset_mismatches": [],
+    "cross_split_worlds": 0,
+    "raw_sha256_matches": true,
+    "scores_sha256_matches": true,
+    "raw_request_count_matches": true
+  },
+  "failures": [],
+  "limitations": [
+    "Serial replay, not a concurrency or production throughput benchmark.",
+    "Mechanical reference-state and claim checks, not human semantic judgment.",
+    "HTTP timing excludes external model inference.",
+    "Completed episodes are purged from the isolated replay DB unless retain_db is selected.",
+    "No real customer data or payment execution.",
+    "This release was partly inspected previously; not a new blind holdout.",
+    "No single-agent/multi-agent or memory ablation was performed in this replay.",
+    "The existing no_second_model_run check uses bounded call-log length, so saturation weakens that particular assertion; exact response replay is checked separately.",
+    "100 sampled human-review records remain pending independent review."
+  ]
+}

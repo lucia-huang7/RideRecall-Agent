@@ -1,48 +1,292 @@
 <!doctype html>
 <html lang="en">
-<meta charset="utf-8">
-<title>Mobile product presentation</title>
-<style>
-*{box-sizing:border-box}html,body{margin:0;width:660px;height:1160px;overflow:hidden}body{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;background:radial-gradient(ellipse at 50% 24%,#fff 0,#f4f3f1 46%,#e8e7e4 100%)}.stage{width:660px;height:1160px;display:flex;align-items:center;justify-content:center}.device{position:relative;padding:16px;width:466px;border:2px solid #777b80;border-radius:76px;background:linear-gradient(105deg,#999b9e 0,#292b2f 1.2%,#08090b 3%,#282a2d 52%,#090a0c 97%,#777a80 99%,#161719 100%);box-shadow:0 46px 64px -23px #16191f55,0 10px 16px #16191f28,inset 0 0 0 3px #17191c,inset 0 0 0 5px #5b5d60}.screen{position:relative;overflow:hidden;border-radius:58px;background:#fff;box-shadow:0 0 0 5px #050608}.status{height:54px;position:relative;display:flex;align-items:center;justify-content:space-between;padding:4px 28px 0;color:#111;background:#fff}.clock{font-size:17px;font-weight:650;letter-spacing:-.5px}.island{position:absolute;width:126px;height:34px;border-radius:22px;background:#08090b;left:50%;top:10px;transform:translateX(-50%);box-shadow:inset 0 -1px 1px #24262b}.camera{position:absolute;right:11px;top:11px;width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 40% 40%,#253c63,#080e1b 48%,#151d2b 65%,#08090d 72%)}.symbols{display:flex;align-items:center;gap:7px}.symbols svg{display:block}.app{display:block;width:430px;height:900px;object-fit:contain;background:#fff}.home{height:24px;display:flex;align-items:center;justify-content:center;background:#fff}.indicator{height:5px;width:148px;border-radius:4px;background:#111}.button{position:absolute;left:-5px;width:4px;border-radius:3px;background:linear-gradient(90deg,#777,#232427,#777)}.action{top:133px;height:27px}.up{top:192px;height:62px}.down{top:269px;height:62px}.power{left:auto;right:-5px;top:223px;height:99px}.antenna{position:absolute;height:5px;width:10px;background:#15171b;left:0;top:95px;opacity:.8}.antenna.bottom{top:auto;bottom:95px;left:auto;right:0}.modal .status{background:#909090}.modal .home{background:#fff}
-</style>
-<main class="stage" aria-label="Device presentation of an actual application screenshot">
-<div class="device"><i class="button action"></i><i class="button up"></i><i class="button down"></i><i class="button power"></i><i class="antenna"></i><i class="antenna bottom"></i><div class="screen"><div class="status"><span class="clock"></span><div class="island"><span class="camera"></span></div><div class="symbols"><svg width="19" height="15" viewBox="0 0 19 15" aria-hidden="true"><g fill="#111"><rect x="0" y="10" width="3" height="4" rx=".8"/><rect x="5" y="7" width="3" height="7" rx=".8"/><rect x="10" y="4" width="3" height="10" rx=".8"/><rect x="15" y="1" width="3" height="13" rx=".8"/></g></svg><svg width="18" height="15" viewBox="0 0 18 15" aria-hidden="true"><g fill="none" stroke="#111" stroke-width="2" stroke-linecap="round"><path d="M1 4a12 12 0 0 1 16 0M4 7a8 8 0 0 1 10 0M7 10a3 3 0 0 1 4 0"/></g><circle cx="9" cy="13" r="1.2" fill="#111"/></svg><svg width="28" height="15" viewBox="0 0 28 15" aria-hidden="true"><rect x="1" y="1" width="23" height="13" rx="4" fill="none" stroke="#111" stroke-opacity=".4"/><rect x="3" y="3" width="19" height="9" rx="2" fill="#111"/><rect x="25" y="5" width="2" height="5" rx="1" fill="#111" fill-opacity=".5"/></svg></div></div><img class="app" id="capture" alt="Actual application screenshot"><div class="home"><span class="indicator"></span></div></div></div>
-</main>
-<script>
-const name=new URLSearchParams(location.search).get('screen')||'01-trips';
-if(!/^\d{2}-[a-z-]+$/.test(name))throw new Error('Invalid capture name');
-document.querySelector('#capture').src='story/'+name+'.jpg?v=timeline-1';
-document.querySelector('#capture').alt='Actual application screenshot: '+name;
-document.title=name+' · Device mockup';
-const storyTimes={
-  "01-trips": "2:13",
-  "02-trip-record": "2:14",
-  "03-open-dispute": "2:16",
-  "04-conflict-review": "2:17",
-  "05-correction-chat": "2:17",
-  "06-evidence": "2:18",
-  "07-policy": "2:18",
-  "08-handoff": "2:18",
-  "09-agent-desk": "2:19",
-  "10-specialist-decision": "2:19",
-  "11-confirm-adjustment": "2:20",
-  "12-resolution": "2:20",
-  "13-monitor": "2:23",
-  "14-mcp": "2:24",
-  "15-regression-console": "2:25",
-  "16-help": "2:21",
-  "17-account": "2:22",
-  "18-execution-trace": "2:18",
-  "19-tools-memory": "2:18",
-  "20-trip-selector": "2:21",
-  "21-policy-management": "2:26",
-  "22-skills": "2:27",
-  "23-integration-checks": "2:28",
-  "24-about": "2:29",
-  "25-rainbow-mode": "2:30"
-};
-document.querySelector(".clock").textContent=storyTimes[name]||"2:13";
-if(new URLSearchParams(location.search).get('embed')==='1')document.body.style.background='transparent';
-if(['06-evidence','07-policy','11-confirm-adjustment','18-execution-trace','19-tools-memory','20-trip-selector','23-integration-checks','24-about'].includes(name))document.querySelector('.device').classList.add('modal');
-</script>
+  <meta charset="utf-8" />
+  <title>Mobile product presentation</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    html,
+    body {
+      margin: 0;
+      width: 660px;
+      height: 1160px;
+      overflow: hidden;
+    }
+    body {
+      font-family:
+        -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+      background: radial-gradient(
+        ellipse at 50% 24%,
+        #fff 0,
+        #f4f3f1 46%,
+        #e8e7e4 100%
+      );
+    }
+    .stage {
+      width: 660px;
+      height: 1160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .device {
+      position: relative;
+      padding: 16px;
+      width: 466px;
+      border: 2px solid #777b80;
+      border-radius: 76px;
+      background: linear-gradient(
+        105deg,
+        #999b9e 0,
+        #292b2f 1.2%,
+        #08090b 3%,
+        #282a2d 52%,
+        #090a0c 97%,
+        #777a80 99%,
+        #161719 100%
+      );
+      box-shadow:
+        0 46px 64px -23px #16191f55,
+        0 10px 16px #16191f28,
+        inset 0 0 0 3px #17191c,
+        inset 0 0 0 5px #5b5d60;
+    }
+    .screen {
+      position: relative;
+      overflow: hidden;
+      border-radius: 58px;
+      background: #fff;
+      box-shadow: 0 0 0 5px #050608;
+    }
+    .status {
+      height: 54px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 28px 0;
+      color: #111;
+      background: #fff;
+    }
+    .clock {
+      font-size: 17px;
+      font-weight: 650;
+      letter-spacing: -0.5px;
+    }
+    .island {
+      position: absolute;
+      width: 126px;
+      height: 34px;
+      border-radius: 22px;
+      background: #08090b;
+      left: 50%;
+      top: 10px;
+      transform: translateX(-50%);
+      box-shadow: inset 0 -1px 1px #24262b;
+    }
+    .camera {
+      position: absolute;
+      right: 11px;
+      top: 11px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: radial-gradient(
+        circle at 40% 40%,
+        #253c63,
+        #080e1b 48%,
+        #151d2b 65%,
+        #08090d 72%
+      );
+    }
+    .symbols {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .symbols svg {
+      display: block;
+    }
+    .app {
+      display: block;
+      width: 430px;
+      height: 900px;
+      object-fit: contain;
+      background: #fff;
+    }
+    .home {
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+    }
+    .indicator {
+      height: 5px;
+      width: 148px;
+      border-radius: 4px;
+      background: #111;
+    }
+    .button {
+      position: absolute;
+      left: -5px;
+      width: 4px;
+      border-radius: 3px;
+      background: linear-gradient(90deg, #777, #232427, #777);
+    }
+    .action {
+      top: 133px;
+      height: 27px;
+    }
+    .up {
+      top: 192px;
+      height: 62px;
+    }
+    .down {
+      top: 269px;
+      height: 62px;
+    }
+    .power {
+      left: auto;
+      right: -5px;
+      top: 223px;
+      height: 99px;
+    }
+    .antenna {
+      position: absolute;
+      height: 5px;
+      width: 10px;
+      background: #15171b;
+      left: 0;
+      top: 95px;
+      opacity: 0.8;
+    }
+    .antenna.bottom {
+      top: auto;
+      bottom: 95px;
+      left: auto;
+      right: 0;
+    }
+    .modal .status {
+      background: #909090;
+    }
+    .modal .home {
+      background: #fff;
+    }
+  </style>
+  <main
+    class="stage"
+    aria-label="Device presentation of an actual application screenshot"
+  >
+    <div class="device">
+      <i class="button action"></i><i class="button up"></i
+      ><i class="button down"></i><i class="button power"></i
+      ><i class="antenna"></i><i class="antenna bottom"></i>
+      <div class="screen">
+        <div class="status">
+          <span class="clock"></span>
+          <div class="island"><span class="camera"></span></div>
+          <div class="symbols">
+            <svg width="19" height="15" viewBox="0 0 19 15" aria-hidden="true">
+              <g fill="#111">
+                <rect x="0" y="10" width="3" height="4" rx=".8" />
+                <rect x="5" y="7" width="3" height="7" rx=".8" />
+                <rect x="10" y="4" width="3" height="10" rx=".8" />
+                <rect x="15" y="1" width="3" height="13" rx=".8" />
+              </g></svg
+            ><svg width="18" height="15" viewBox="0 0 18 15" aria-hidden="true">
+              <g
+                fill="none"
+                stroke="#111"
+                stroke-width="2"
+                stroke-linecap="round"
+              >
+                <path
+                  d="M1 4a12 12 0 0 1 16 0M4 7a8 8 0 0 1 10 0M7 10a3 3 0 0 1 4 0"
+                />
+              </g>
+              <circle cx="9" cy="13" r="1.2" fill="#111" /></svg
+            ><svg width="28" height="15" viewBox="0 0 28 15" aria-hidden="true">
+              <rect
+                x="1"
+                y="1"
+                width="23"
+                height="13"
+                rx="4"
+                fill="none"
+                stroke="#111"
+                stroke-opacity=".4"
+              />
+              <rect x="3" y="3" width="19" height="9" rx="2" fill="#111" />
+              <rect
+                x="25"
+                y="5"
+                width="2"
+                height="5"
+                rx="1"
+                fill="#111"
+                fill-opacity=".5"
+              />
+            </svg>
+          </div>
+        </div>
+        <img class="app" id="capture" alt="Actual application screenshot" />
+        <div class="home"><span class="indicator"></span></div>
+      </div>
+    </div>
+  </main>
+  <script>
+    const name =
+      new URLSearchParams(location.search).get("screen") || "01-trips";
+    if (!/^\d{2}-[a-z-]+$/.test(name)) throw new Error("Invalid capture name");
+    document.querySelector("#capture").src =
+      "story/" + name + ".jpg?v=timeline-1";
+    document.querySelector("#capture").alt =
+      "Actual application screenshot: " + name;
+    document.title = name + " · Device mockup";
+    const storyTimes = {
+      "01-trips": "2:13",
+      "02-trip-record": "2:14",
+      "03-open-dispute": "2:16",
+      "04-conflict-review": "2:17",
+      "05-correction-chat": "2:17",
+      "06-evidence": "2:18",
+      "07-policy": "2:18",
+      "08-handoff": "2:18",
+      "09-agent-desk": "2:19",
+      "10-specialist-decision": "2:19",
+      "11-confirm-adjustment": "2:20",
+      "12-resolution": "2:20",
+      "13-monitor": "2:23",
+      "14-mcp": "2:24",
+      "15-regression-console": "2:25",
+      "16-help": "2:21",
+      "17-account": "2:22",
+      "18-execution-trace": "2:18",
+      "19-tools-memory": "2:18",
+      "20-trip-selector": "2:21",
+      "21-policy-management": "2:26",
+      "22-skills": "2:27",
+      "23-integration-checks": "2:28",
+      "24-about": "2:29",
+      "25-rainbow-mode": "2:30",
+    };
+    document.querySelector(".clock").textContent = storyTimes[name] || "2:13";
+    if (new URLSearchParams(location.search).get("embed") === "1")
+      document.body.style.background = "transparent";
+    if (
+      [
+        "06-evidence",
+        "07-policy",
+        "11-confirm-adjustment",
+        "18-execution-trace",
+        "19-tools-memory",
+        "20-trip-selector",
+        "23-integration-checks",
+        "24-about",
+      ].includes(name)
+    )
+      document.querySelector(".device").classList.add("modal");
+  </script>
 </html>

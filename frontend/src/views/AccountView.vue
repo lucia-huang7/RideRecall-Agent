@@ -75,7 +75,6 @@ import { inject } from "vue";
 import Icon from "../components/AppIcon.vue";
 import AgentModePicker from "../components/AgentModePicker.vue";
 
-import { money, statusLabel } from "../lib/rideApi.js";
 const {
   isDemo,
   canRider,
@@ -83,7 +82,6 @@ const {
   canOperator,
   theme,
   setTheme,
-  cases,
   busy,
   sheet,
   agentMode,

@@ -66,14 +66,13 @@ import { inject } from "vue";
 import Icon from "../components/AppIcon.vue";
 import AgentModePicker from "../components/AgentModePicker.vue";
 
-import { money, statusLabel } from "../lib/rideApi.js";
+import { money } from "../lib/rideApi.js";
 const {
   busy,
   description,
   topic,
   agentMode,
   engineStatus,
-  route,
   topics,
   trip,
   selectTopic,

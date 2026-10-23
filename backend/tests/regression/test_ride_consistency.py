@@ -9,6 +9,7 @@ import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
+from pathlib import Path
 from uuid import uuid4
 
 import pytest
@@ -155,6 +156,7 @@ def test_case_receipt_and_memory_outbox_survive_process_death_after_commit(tmp_p
             "LLM_AGENT_SYSTEM_RIDE_MODEL_MODE": "demo",
         },
         capture_output=True,
+        cwd=Path(__file__).resolve().parents[2],
         timeout=40,
     )
     assert result.returncode == 93, result.stderr.decode()[-1500:]
@@ -243,9 +245,19 @@ def test_embedded_writer_is_exclusive_across_processes_and_released(tmp_path):
         "print('acquired')"
     )
     with embedded_writer_lock(path):
-        conflict = subprocess.run([sys.executable, "-c", code, str(path)], capture_output=True, timeout=10)
+        conflict = subprocess.run(
+            [sys.executable, "-c", code, str(path)],
+            capture_output=True,
+            cwd=Path(__file__).resolve().parents[2],
+            timeout=10,
+        )
         assert conflict.returncode != 0 and b"one worker" in conflict.stderr
-    recovered = subprocess.run([sys.executable, "-c", code, str(path)], capture_output=True, timeout=10)
+    recovered = subprocess.run(
+        [sys.executable, "-c", code, str(path)],
+        capture_output=True,
+        cwd=Path(__file__).resolve().parents[2],
+        timeout=10,
+    )
     assert recovered.returncode == 0
 
 

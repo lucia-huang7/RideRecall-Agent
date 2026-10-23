@@ -74,18 +74,7 @@
 import { inject } from "vue";
 import Icon from "../components/AppIcon.vue";
 
-import { money, statusLabel } from "../lib/rideApi.js";
-const {
-  trips,
-  cases,
-  busy,
-  sheet,
-  casesTotal,
-  casesNext,
-  trip,
-  time,
-  loadMoreCases,
-  start,
-  openCase,
-} = inject("rideWorkspace");
+import { statusLabel } from "../lib/rideApi.js";
+const { cases, busy, sheet, casesTotal, casesNext, loadMoreCases, openCase } =
+  inject("rideWorkspace");
 </script>

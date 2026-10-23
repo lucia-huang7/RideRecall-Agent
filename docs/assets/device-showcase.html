@@ -1,3 +1,193 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><title>A clearer outcome · Product showcase</title><style>
-*{box-sizing:border-box}html,body{margin:0;width:1280px;height:1180px;overflow:hidden}body{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;color:#151515;background:radial-gradient(ellipse at 50% 54%,#fff 0,#f1f0ed 63%,#e7e6e2 100%)}header{position:absolute;left:72px;right:72px;top:54px;display:flex;align-items:flex-start;justify-content:space-between}.eyebrow{font-size:12px;letter-spacing:3px;font-weight:600;color:#777;margin:0 0 18px}h1{font-size:70px;font-weight:600;line-height:1.02;letter-spacing:-4px;margin:0}.intro{font-size:17px;line-height:1.6;color:#686868;margin:20px 0 0;max-width:480px}.brand{text-align:right;font-size:15px;font-weight:650;letter-spacing:-.5px}.brand small{display:block;margin-top:12px;font-size:10px;font-weight:500;letter-spacing:1.8px;color:#8a8a85}.stage{position:absolute;inset:245px 0 118px}.stage:before{content:"";position:absolute;width:880px;height:360px;border:1px solid #d7d6d1;border-radius:50%;left:205px;top:250px;transform:rotate(-12deg)}iframe{position:absolute;width:660px;height:1160px;border:0;transform-origin:top left;pointer-events:none;background:transparent}.left{left:25px;top:60px;transform:scale(.57) rotate(-7deg)}.right{left:880px;top:10px;transform:scale(.57) rotate(7deg)}.center{left:415px;top:-4px;transform:scale(.68);z-index:2}footer{position:absolute;bottom:42px;left:72px;right:72px;display:grid;grid-template-columns:repeat(3,1fr);gap:55px;border-top:1px solid #d3d2ce;padding-top:21px}footer b{font-size:12px;letter-spacing:1px}footer p{font-size:14px;line-height:1.45;color:#777;margin:7px 0 0}.note{position:absolute;right:72px;top:184px;font-size:11px;text-align:right;line-height:1.8;color:#8a8a85;letter-spacing:.25px}
-</style><header><div><p class="eyebrow">STATEFUL RIDE SUPPORT</p><h1>One case.<br>A clearer outcome.</h1><p class="intro">Your explanation, evidence and decisions.<br>Connected from the first message to the final review.</p></div><div class="brand">LLM-Agent-System<small>PRODUCT WALKTHROUGH / 01</small></div></header><p class="note">ACTUAL APPLICATION SCREENS<br>CONCEPT DEVICE FRAMES · OFFLINE DEMO<br>FICTIONAL DATA · NO REAL PAYMENTS</p><main class="stage" aria-label="Three actual application screens in concept phone frames"><iframe class="left" title="Choose a trip" src="device-frame.html?screen=01-trips&embed=1&v=timeline-1"></iframe><iframe class="right" title="Confirm the proposed adjustment" src="device-frame.html?screen=11-confirm-adjustment&embed=1&v=timeline-1"></iframe><iframe class="center" title="Specialist receives the case" src="device-frame.html?screen=09-agent-desk&embed=1&v=timeline-1"></iframe></main><footer><div><b>01 / EXPLAIN IT ONCE</b><p>Start from the trip.<br>Keep the rider's account attached.</p></div><div><b>02 / REVIEW WITH CONTEXT</b><p>Carry corrections and evidence<br>into the specialist workspace.</p></div><div><b>03 / CONFIRM THE OUTCOME</b><p>Review the proposed adjustment.<br>The rider stays in control.</p></div></footer></html>
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8" /><title>A clearer outcome · Product showcase</title
+  ><style>
+    * {
+      box-sizing: border-box;
+    }
+    html,
+    body {
+      margin: 0;
+      width: 1280px;
+      height: 1180px;
+      overflow: hidden;
+    }
+    body {
+      font-family:
+        -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+      color: #151515;
+      background: radial-gradient(
+        ellipse at 50% 54%,
+        #fff 0,
+        #f1f0ed 63%,
+        #e7e6e2 100%
+      );
+    }
+    header {
+      position: absolute;
+      left: 72px;
+      right: 72px;
+      top: 54px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+    .eyebrow {
+      font-size: 12px;
+      letter-spacing: 3px;
+      font-weight: 600;
+      color: #777;
+      margin: 0 0 18px;
+    }
+    h1 {
+      font-size: 70px;
+      font-weight: 600;
+      line-height: 1.02;
+      letter-spacing: -4px;
+      margin: 0;
+    }
+    .intro {
+      font-size: 17px;
+      line-height: 1.6;
+      color: #686868;
+      margin: 20px 0 0;
+      max-width: 480px;
+    }
+    .brand {
+      text-align: right;
+      font-size: 15px;
+      font-weight: 650;
+      letter-spacing: -0.5px;
+    }
+    .brand small {
+      display: block;
+      margin-top: 12px;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 1.8px;
+      color: #8a8a85;
+    }
+    .stage {
+      position: absolute;
+      inset: 245px 0 118px;
+    }
+    .stage:before {
+      content: "";
+      position: absolute;
+      width: 880px;
+      height: 360px;
+      border: 1px solid #d7d6d1;
+      border-radius: 50%;
+      left: 205px;
+      top: 250px;
+      transform: rotate(-12deg);
+    }
+    iframe {
+      position: absolute;
+      width: 660px;
+      height: 1160px;
+      border: 0;
+      transform-origin: top left;
+      pointer-events: none;
+      background: transparent;
+    }
+    .left {
+      left: 25px;
+      top: 60px;
+      transform: scale(0.57) rotate(-7deg);
+    }
+    .right {
+      left: 880px;
+      top: 10px;
+      transform: scale(0.57) rotate(7deg);
+    }
+    .center {
+      left: 415px;
+      top: -4px;
+      transform: scale(0.68);
+      z-index: 2;
+    }
+    footer {
+      position: absolute;
+      bottom: 42px;
+      left: 72px;
+      right: 72px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 55px;
+      border-top: 1px solid #d3d2ce;
+      padding-top: 21px;
+    }
+    footer b {
+      font-size: 12px;
+      letter-spacing: 1px;
+    }
+    footer p {
+      font-size: 14px;
+      line-height: 1.45;
+      color: #777;
+      margin: 7px 0 0;
+    }
+    .note {
+      position: absolute;
+      right: 72px;
+      top: 184px;
+      font-size: 11px;
+      text-align: right;
+      line-height: 1.8;
+      color: #8a8a85;
+      letter-spacing: 0.25px;
+    }
+  </style>
+  <header>
+    <div>
+      <p class="eyebrow">STATEFUL RIDE SUPPORT</p>
+      <h1>One case.<br />A clearer outcome.</h1>
+      <p class="intro">
+        Your explanation, evidence and decisions.<br />Connected from the first
+        message to the final review.
+      </p>
+    </div>
+    <div class="brand">
+      LLM-Agent-System<small>PRODUCT WALKTHROUGH / 01</small>
+    </div>
+  </header>
+  <p class="note">
+    ACTUAL APPLICATION SCREENS<br />CONCEPT DEVICE FRAMES · OFFLINE DEMO<br />FICTIONAL
+    DATA · NO REAL PAYMENTS
+  </p>
+  <main
+    class="stage"
+    aria-label="Three actual application screens in concept phone frames"
+  >
+    <iframe
+      class="left"
+      title="Choose a trip"
+      src="device-frame.html?screen=01-trips&embed=1&v=timeline-1"
+    ></iframe
+    ><iframe
+      class="right"
+      title="Confirm the proposed adjustment"
+      src="device-frame.html?screen=11-confirm-adjustment&embed=1&v=timeline-1"
+    ></iframe
+    ><iframe
+      class="center"
+      title="Specialist receives the case"
+      src="device-frame.html?screen=09-agent-desk&embed=1&v=timeline-1"
+    ></iframe>
+  </main>
+  <footer>
+    <div>
+      <b>01 / EXPLAIN IT ONCE</b>
+      <p>Start from the trip.<br />Keep the rider's account attached.</p>
+    </div>
+    <div>
+      <b>02 / REVIEW WITH CONTEXT</b>
+      <p>Carry corrections and evidence<br />into the specialist workspace.</p>
+    </div>
+    <div>
+      <b>03 / CONFIRM THE OUTCOME</b>
+      <p>Review the proposed adjustment.<br />The rider stays in control.</p>
+    </div>
+  </footer>
+</html>

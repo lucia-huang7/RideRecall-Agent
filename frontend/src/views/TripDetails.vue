@@ -42,7 +42,6 @@ import Icon from "../components/AppIcon.vue";
 
 import RideMap from "../RideMap.vue";
 
-import { money, statusLabel } from "../lib/rideApi.js";
-const { route, trip, tripCase, time, start, openCase } =
-  inject("rideWorkspace");
+import { money } from "../lib/rideApi.js";
+const { trip, tripCase, start, openCase } = inject("rideWorkspace");
 </script>

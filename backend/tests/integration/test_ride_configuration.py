@@ -7,6 +7,7 @@ import os
 import sqlite3
 import subprocess
 import sys
+from pathlib import Path
 from uuid import uuid4
 
 import pytest
@@ -160,6 +161,7 @@ def test_process_exit_immediately_after_management_commit_recovers_without_repea
         [sys.executable, "-c", code],
         env={**os.environ, "CRASH_DB": str(path)},
         capture_output=True,
+        cwd=Path(__file__).resolve().parents[2],
         timeout=40,
     )
     assert result.returncode == 94, result.stderr.decode()[-2000:]

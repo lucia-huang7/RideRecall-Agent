@@ -10,7 +10,7 @@ export default [
       sourceType: "module",
       globals: globals.browser,
     },
-    rules: { "no-undef": "error" },
+    rules: { "no-undef": "error", "no-unused-vars": "error" },
   },
   {
     files: ["src/**/*.vue"],
@@ -31,6 +31,6 @@ export default [
       sourceType: "module",
       globals: globals.node,
     },
-    rules: { "no-undef": "error" },
+    rules: { "no-undef": "error", "no-unused-vars": "error" },
   },
 ];

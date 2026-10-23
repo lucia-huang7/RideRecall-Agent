@@ -82,7 +82,7 @@ import { inject } from "vue";
 import Icon from "../components/AppIcon.vue";
 import AgentModePicker from "../components/AgentModePicker.vue";
 
-import { money, statusLabel } from "../lib/rideApi.js";
+import { statusLabel } from "../lib/rideApi.js";
 const {
   currentCase,
   busy,

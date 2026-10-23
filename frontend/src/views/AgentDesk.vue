@@ -166,27 +166,23 @@
 import { inject } from "vue";
 import Icon from "../components/AppIcon.vue";
 
-import { money, statusLabel } from "../lib/rideApi.js";
+import { statusLabel } from "../lib/rideApi.js";
 const {
   identity,
   isDemo,
   canRider,
-  trips,
-  cases,
   queue,
   selectedAgentId,
   busy,
   queueTotal,
   queueNext,
   agentOptions,
-  description,
   staffReply,
   go,
   agentCase,
   run,
   selectAgent,
   loadQueue,
-  refresh,
   openCase,
   download,
   staffAct,

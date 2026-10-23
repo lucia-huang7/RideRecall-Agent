@@ -89,6 +89,5 @@ import { inject } from "vue";
 import Icon from "../components/AppIcon.vue";
 
 import { money, statusLabel } from "../lib/rideApi.js";
-const { trips, cases, route, go, trip, activeCases, time, start, openCase } =
-  inject("rideWorkspace");
+const { trips, go, activeCases, start, openCase } = inject("rideWorkspace");
 </script>

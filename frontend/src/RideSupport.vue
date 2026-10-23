@@ -489,7 +489,7 @@
 import { provide } from "vue";
 import { RouterView } from "vue-router";
 import Icon from "./components/AppIcon.vue";
-import { money, statusLabel } from "./lib/rideApi.js";
+import { money } from "./lib/rideApi.js";
 import { useRideWorkspace } from "./composables/useRideWorkspace.js";
 const props = defineProps({ identity: { type: Object, required: true } });
 const emit = defineEmits(["sign-out"]);
@@ -505,7 +505,6 @@ const {
   theme,
   setTheme,
   trips,
-  cases,
   currentCase,
   loading,
   busy,
@@ -521,9 +520,6 @@ const {
   route,
   go,
   back,
-  trip,
-  toast,
-  run,
   runEvaluation,
   refresh,
   start,

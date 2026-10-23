@@ -9,7 +9,6 @@ import { roleHome, allowsRoute } from "../lib/auth.js";
 import {
   request,
   money,
-  statusLabel,
   downloadEvidence,
   latestCase,
   mergeCaseSummaries,

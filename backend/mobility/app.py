@@ -26,12 +26,14 @@ class NewCase(BaseModel):
     trip_id: str = Field(pattern=r"^trip-[a-z0-9-]+$",max_length=100)
     description: str = Field(min_length=5, max_length=4000)
     topic: Literal["cancellation", "fare", "payment", "other"] = "other"
+    agent_mode: Literal["single", "multi"] | None = None
 
 
 class Action(BaseModel):
     model_config = ConfigDict(extra="forbid")
     action: Literal["message", "handoff", "confirm", "close", "evidence"]
     text: str = Field(default="", max_length=4000)
+    agent_mode: Literal["single", "multi"] | None = None
 
 
 class PolicyDocument(BaseModel):
@@ -444,7 +446,7 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
         if not body.description.strip() or len(body.description.strip()) < 5:
             raise HTTPException(422, "Please describe what happened.")
         async with service.admission.hold(actor), service.engine_locks.hold(actor + ":" + body.trip_id):
-            payload = ["create", body.model_dump()]
+            payload = ["create", body.model_dump(exclude={"agent_mode"} if body.agent_mode is None else set())]
             fingerprint = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
             replay = store.replay(actor, x_request_id, fingerprint)
             if replay is not None:
@@ -454,6 +456,9 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
             candidate_id=existing['id'] if existing else 'KU-'+uuid4().hex.upper()
             expected_revision=existing.get('revision',0) if existing else 0
             context=existing or dict(id=candidate_id,owner=actor,trip_id=body.trip_id)
+            context = dict(context)
+            if body.agent_mode is not None:
+                context["agent_mode"] = body.agent_mode
             analysis = await service.analyze(body.trip_id, body.description.strip(), context)
             def apply(db):
                 record = service.create(db, actor, data[0], body.description.strip(), body.topic, trace, case_id=candidate_id)
@@ -473,10 +478,12 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
         actor = owner(x_demo_session)
         if not x_request_id or len(x_request_id) > 100:
             raise HTTPException(400, "A request ID is required for every change.")
+        if body.agent_mode is not None and body.action != "message":
+            raise HTTPException(422, "Agent mode can only be selected for a message.")
         if body.action in ("message", "evidence") and not body.text.strip():
             raise HTTPException(422, "Please enter a message.")
         async with service.admission.hold(actor,enabled=body.action=="message"), (service.engine_locks.hold(actor + ":" + case_id) if body.action=="message" else nullcontext()):
-            payload = [case_id, body.model_dump()]
+            payload = [case_id, body.model_dump(exclude={"agent_mode"} if body.agent_mode is None else set())]
             fingerprint = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
             replay = store.replay(actor, x_request_id, fingerprint)
             if replay is not None:
@@ -484,7 +491,10 @@ def create_app(db_path=None, catalog_path=None, *, security=None):
             snapshot = store.get(case_id, actor)
             check_revision(snapshot, if_match)
             if body.action=="message":service.check_rider_budget(snapshot)
-            analysis = await service.analyze(snapshot["trip_id"], body.text.strip(), snapshot) if body.action == "message" else None
+            analysis_context = dict(snapshot)
+            if body.agent_mode is not None:
+                analysis_context["agent_mode"] = body.agent_mode
+            analysis = await service.analyze(snapshot["trip_id"], body.text.strip(), analysis_context) if body.action == "message" else None
             def apply(db):
                 record = store.load(db, case_id, actor)
                 check_revision(record,if_match)

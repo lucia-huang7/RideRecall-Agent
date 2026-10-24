@@ -97,6 +97,10 @@ class LocalMessages:
 
     @staticmethod
     def answer(role, data):
+        if role == "generalist":
+            texts = [LocalMessages.answer(kind, data) for kind in ("technical", "billing")]
+            combined = " ".join(dict.fromkeys(s for text in texts for s in re.split(r"(?<=[.!?])\s+", text)))
+            return combined + " Human review remains available with your full case history."
         evidence = data.get("search_knowledge_base", {}).get("results", [])
         citations = ""
         policy = " ".join(f"{d['content']} [{d['document_id'][:8]}:{d['chunk']}]" for d in evidence) if evidence else "No matching policy was retrieved; human review is needed."

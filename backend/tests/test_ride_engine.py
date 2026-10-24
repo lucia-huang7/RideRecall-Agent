@@ -25,8 +25,8 @@ def headers(key=None, agent=False):
     return {"X-Demo-Session": "engine-rider", "X-Request-ID": key or uuid4().hex, **({"X-Demo-Agent": "local-demo-agent"} if agent else {})}
 
 
-def create(client, text="The driver never arrived but I was charged a cancellation fee. Please refund it.", trip="trip-river", topic="cancellation", key=None):
-    result = client.post("/api/cases", headers=headers(key), json=dict(trip_id=trip, description=text, topic=topic))
+def create(client, text="The driver never arrived but I was charged a cancellation fee. Please refund it.", trip="trip-river", topic="cancellation", key=None, agent_mode=None):
+    result = client.post("/api/cases", headers=headers(key), json=dict(trip_id=trip, description=text, topic=topic, **({"agent_mode":agent_mode} if agent_mode else {})))
     assert result.status_code == 200, result.text
     return result.json()
 
@@ -52,7 +52,7 @@ def test_original_methods_really_execute_and_demo_never_sends_http(client, monke
     async def forbidden(*args, **kwargs):
         raise AssertionError("Offline demo attempted an outbound HTTP request")
     monkeypatch.setattr(httpx.AsyncClient, "send", forbidden)
-    case = create(client)
+    case = create(client, agent_mode="multi")
     run = case["engine_runs"][-1]
     assert run["status"] == "success"
     assert set(run["agents"]) == {"billing", "technical"}
@@ -77,7 +77,7 @@ def test_followup_uses_original_intent_and_keeps_prior_context(client):
     case = result.json()
     assert case["status"] == "waiting_for_agent"
     assert case["engine_runs"][-1]["intent"] == "human_handoff"
-    assert case["engine_runs"][-1]["agents"] == ["escalation"]
+    assert case["engine_runs"][-1]["agents"] == ["general"]
     assert len(case["engine_runs"]) == 2
     assert case["description"].startswith("The driver")
     assert case["adjustment"] is None
@@ -117,7 +117,7 @@ def test_original_agent_failure_path_falls_back_to_general(client, monkeypatch):
             raise RuntimeError("Billing model unavailable")
         return await original(**kwargs)
     monkeypatch.setattr(model, "create", fail_billing)
-    case = create(client)
+    case = create(client, agent_mode="multi")
     run = case["engine_runs"][-1]
     assert "general" in run["agents"]
     assert any(t.get("event") == "agent_fallback" for t in run["tools"])

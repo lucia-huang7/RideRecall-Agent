@@ -2,7 +2,7 @@
 
 **Explain it once. Your support case remembers.**
 
-A mobile ride-support workspace that keeps the trip, payment records, evidence, corrections and specialist review in one continuous case. Run the complete local workflow without a model API key.
+A mobile ride-support workspace that keeps the trip, payment records, evidence, corrections and specialist review in one continuous case. Run the complete local workflow without a model API key. **Single agent with durable case context is the default.**
 
 Independent software prototype. Not affiliated with Uber. All supplied trips, policies and financial actions are fictional.
 
@@ -12,7 +12,7 @@ Independent software prototype. Not affiliated with Uber. All supplied trips, po
 
 - Rider flow: select a trip, describe a dispute, attach evidence, correct details, review a proposed adjustment or request a specialist.
 - Case context: source-backed rider assertions, explicit withdrawn claims, clarification of ambiguous corrections and durable case history.
-- Inspectable execution: intent routing, specialist roles, policy retrieval, guarded read-only tools and a real independent stdio MCP service.
+- Inspectable execution: a single support assistant with intent recognition, policy retrieval, guarded read-only tools and a real independent stdio MCP service. Adaptive multi-agent routing is optional.
 - Specialist desk: accept a handoff, read the existing context, reply, propose a simulated adjustment and record an outcome.
 - Consistent commands: version-aware case updates, exact replay receipts and crash-recoverable memory projections. A slow analysis cannot silently overwrite a newer specialist update.
 - Operations: execution traces, metrics, durable knowledge/Skill releases, bounded inference admission, dependency checks and regression evaluation.
@@ -20,6 +20,16 @@ Independent software prototype. Not affiliated with Uber. All supplied trips, po
 - Black-and-white mobile interface with optional Rainbow Mode; English interface and new code.
 
 The default model adapter is deterministic. The pipeline actually runs, but offline results do not establish live-model reasoning quality or a multi-agent advantage.
+
+## Support modes
+
+The default is **single agent + durable case context**. The support assistant can use the same read-only trip, billing, policy and MCP tools. Both modes keep source-backed corrections and the full case history; there is no recent-window-only product mode.
+
+Use **Support approach** on Account, the new-case screen or in the conversation to opt into **Multi-agent · Optional**. Your browser remembers an explicit preference for subsequent analyses. Each case and analysis records the actual mode; switching affects the next analysis and preserves history. Human specialist handoff remains available in both modes.
+
+The paired offline study found **no task-completion or context-retention gain from multiple agents**, with about 38% more local engine-client calls. It measured 67% versus 100% strict completion for recent-four versus durable context. These synthetic results belong to the frozen benchmark version, not a newly repeated production measurement. See [the full comparison](docs/ABLATION_RESULTS.md).
+
+API clients may set `agent_mode` to `single` or `multi` when creating a case or sending a `message` action. Omission creates a single-agent case or keeps the existing case mode; older cases without this field use single agent. Other actions cannot change the execution mode. API-key-free demo mode remains the default.
 
 ## Start
 
@@ -83,6 +93,8 @@ frontend/
   src/RideSupport.vue   Mobile rider and specialist experience
   src/OperationsPanel.vue
   src/lib/rideApi.js    HTTP client and retry identifiers
+  src/components/AgentModePicker.vue  Default and optional support modes
+  src/lib/agentMode.js  Validated browser preference and analysis payloads
   src/ride.css          Shared monochrome and rainbow styles
   tests/                Browser-client unit tests
 legacy-java/

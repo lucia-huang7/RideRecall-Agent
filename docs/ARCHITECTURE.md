@@ -10,7 +10,7 @@ flowchart TD
   CASE --> INDEX[Transactional activity summaries]
   CASE --> ENGINE[RideEngine]
   ENGINE --> INTENT[Intent routing]
-  ENGINE --> ROLES[Specialist role orchestration]
+  ENGINE --> ROLES[Single generalist by default / optional adaptive roles]
   ENGINE --> MEMORY[Source-backed claims and durable context]
   ENGINE --> RAG[Scoped policy retrieval / Chroma]
   ENGINE --> TOOLS[Guarded read-only tools]
@@ -27,6 +27,12 @@ flowchart TD
 ```
 
 `backend/mobility/app.py` is the active product entry point. The separate Java service does not serve the mobile ride workflow.
+
+## Execution choice
+
+Single agent with durable context is the default. The generalist receives the union of the same read-only tools and covers trip, billing and handoff concerns. In demo mode it shares the deterministic trip/billing renderers and sentence deduplication used by the single-agent baseline. It describes human review as available rather than assuming the rider requested it. Live mode uses one generalist prompt with those tools; offline evidence does not establish live-model quality.
+
+Explicit `agent_mode=multi` restores adaptive specialist dispatch and composition. API selection is scoped to an owned case, included in command fingerprints and stored on each analysis. Switching changes the next analysis without deleting history, evidence or memory. New cases and pre-mode records default to single; omitted mode on follow-ups preserves an explicit case choice. Both modes use the unchanged durable memory implementation. Benchmark fixtures explicitly select their configuration so a default change cannot silently relabel an ablation.
 
 ## Ownership
 

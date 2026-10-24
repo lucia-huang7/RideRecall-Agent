@@ -68,7 +68,8 @@ def main():
         async def observed_run(self, trip_id, text, case=None):
             before = self.client.total_calls
             start = time.perf_counter()
-            result = await original_run(self, trip_id, text, case)
+            context = dict(case or {}, agent_mode="single" if active_configuration.startswith("single") else "multi")
+            result = await original_run(self, trip_id, text, context)
             record(dict(kind='analysis', episode=(case or {}).get('owner', '').removeprefix('replay-'),
                         analysis_id=result['id'], agents=result.get('agents', []),
                         model_calls=self.client.total_calls - before,

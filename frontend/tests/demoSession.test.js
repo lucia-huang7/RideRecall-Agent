@@ -28,3 +28,12 @@ test('blocked or malformed local storage falls back safely', () => {
   const malformed = storage([[sessionKey,'invalid session!'],['previous-app.rides.session','invalid too!']])
   assert.match(readDemoWorkspace(malformed).session, /^[0-9a-f-]{36}$/)
 })
+
+
+test('a renamed application prefers its previous active workspace over a saved alternative', () => {
+  const store = storage([['previous-app.rides.session','active-rider'],['previous-app.saved.rides.session','saved-rider']])
+  const value = readDemoWorkspace(store)
+  assert.equal(value.session, 'active-rider')
+  assert.deepEqual(value.alternatives, ['saved-rider'])
+  assert.equal(store.getItem(sessionKey), 'active-rider')
+})

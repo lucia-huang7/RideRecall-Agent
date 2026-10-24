@@ -98,11 +98,11 @@ def main():
     }
     environment.update(
         PYTHONPATH=str(source / "backend"),
-        KINDER_UBER_ENV="production",
-        KINDER_UBER_RIDE_MODEL_MODE="demo",
-        KINDER_UBER_RIDE_DB=str(database),
-        KINDER_UBER_RIDE_CATALOG_PATH=str(catalog),
-        KINDER_UBER_IDENTITY_FILE=str(registry),
+        LLM_AGENT_SYSTEM_ENV="production",
+        LLM_AGENT_SYSTEM_RIDE_MODEL_MODE="demo",
+        LLM_AGENT_SYSTEM_RIDE_DB=str(database),
+        LLM_AGENT_SYSTEM_RIDE_CATALOG_PATH=str(catalog),
+        LLM_AGENT_SYSTEM_IDENTITY_FILE=str(registry),
         PYTHONUNBUFFERED="1",
         PYTHONDONTWRITEBYTECODE="1",
     )

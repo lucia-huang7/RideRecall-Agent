@@ -129,11 +129,11 @@ class Frontend(SimpleHTTPRequestHandler):
         )
 
     def do_GET(self):
-        if self.path == "/__kinderuber_health":
+        if self.path == "/__llmagentsystem_health":
             body = json.dumps(
                 {
-                    "service": "kinderuber-frontend",
-                    "instance": os.environ["KINDER_UBER_INSTANCE_ID"],
+                    "service": "llmagentsystem-frontend",
+                    "instance": os.environ["LLM_AGENT_SYSTEM_INSTANCE_ID"],
                 }
             ).encode()
             self.send_response(200)

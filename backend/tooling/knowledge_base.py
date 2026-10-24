@@ -62,7 +62,7 @@ class KnowledgeBase:
             self._use_server = True
             logger.info(f"知识库 ChromaDB 已连接: {chroma_host}:{chroma_port}")
         except Exception as ex:
-            if os.getenv("KINDER_UBER_ENV", "development").lower() == "production":
+            if os.getenv("LLM_AGENT_SYSTEM_ENV", "development").lower() == "production":
                 raise RuntimeError("生产环境知识库 ChromaDB 不可用，禁止切换到本地库") from ex
             logger.info(f"知识库 ChromaDB 服务不可用，使用本地模式: {chroma_path}")
             self._client = chromadb.PersistentClient(
@@ -74,12 +74,12 @@ class KnowledgeBase:
         # Docker 已预下载模型，本地运行首次使用可能触发下载。
         self._collection = self._client.get_or_create_collection(
             name=self.COLLECTION_NAME,
-            metadata={"description": "KinderUber RAG 知识库"},
+            metadata={"description": "LlmAgentSystem RAG 知识库"},
         )
 
         # 如果知识库为空，导入默认文档
-        seed_demo = os.getenv("KINDER_UBER_SEED_DEMO_DOCS", "true").lower() in {"1", "true", "yes"}
-        if os.getenv("KINDER_UBER_ENV", "development").lower() != "production" and seed_demo and self._collection.count() == 0:
+        seed_demo = os.getenv("LLM_AGENT_SYSTEM_SEED_DEMO_DOCS", "true").lower() in {"1", "true", "yes"}
+        if os.getenv("LLM_AGENT_SYSTEM_ENV", "development").lower() != "production" and seed_demo and self._collection.count() == 0:
             self._load_default_docs()
 
     # ── 文档管理 ──────────────────────────────────────────────────────────────

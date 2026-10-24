@@ -103,7 +103,7 @@ with TestClient(app) as client:
     app.state.store.write=crash
     client.post('/api/cases',headers={'X-Demo-Session':'consistency-rider','X-Request-ID':'crash-create'},json={'trip_id':'trip-river','description':'My pickup entrance is CEDAR. Please review the fare.','topic':'cancellation'})
 '''
-    result=subprocess.run([sys.executable,'-c',code],env={**os.environ,'CRASH_DB':str(path),'KINDER_UBER_RIDE_MODEL_MODE':'demo'},capture_output=True,timeout=40)
+    result=subprocess.run([sys.executable,'-c',code],env={**os.environ,'CRASH_DB':str(path),'LLM_AGENT_SYSTEM_RIDE_MODEL_MODE':'demo'},capture_output=True,timeout=40)
     assert result.returncode==93,result.stderr.decode()[-1500:]
     store=Store(path)
     assert len(store.list('consistency-rider'))==1

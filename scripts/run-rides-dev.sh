@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-PYTHON="${KINDER_UBER_PYTHON:-$ROOT/.venv-rides/bin/python}"
+PYTHON="${LLM_AGENT_SYSTEM_PYTHON:-$ROOT/.venv-rides/bin/python}"
 if [ ! -x "$PYTHON" ]; then
   python3 -m venv "$ROOT/.venv-rides"
 fi
@@ -12,7 +12,7 @@ if [ ! -d "$ROOT/frontend/node_modules" ]; then
   (cd "$ROOT/frontend" && npm ci)
 fi
 mkdir -p "$ROOT/.runtime"
-export KINDER_UBER_RIDE_DB="${KINDER_UBER_RIDE_DB:-$ROOT/.runtime/rides.sqlite3}"
+export LLM_AGENT_SYSTEM_RIDE_DB="${LLM_AGENT_SYSTEM_RIDE_DB:-$ROOT/.runtime/rides.sqlite3}"
 cd "$ROOT/backend"
 "$PYTHON" -m uvicorn mobility.app:app --host 127.0.0.1 --port 8010 --limit-concurrency 64 --no-proxy-headers --no-access-log --reload &
 API_PID=$!

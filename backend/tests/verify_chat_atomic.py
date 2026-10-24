@@ -22,7 +22,7 @@ async def main():
     orch = SimpleNamespace(recognize_intent=AsyncMock(return_value=intent), run=AsyncMock(return_value=OrchestratorResult(request_id=request_id,response='ok',agent_type=AgentType.TECHNICAL,intent=intent.intent)), get_tool_trace=lambda rid: {'request_id':rid,'tool_calls':[{'input':{'api_key':'must-remove'}}]})
     api._memory, api._orchestrator, api._profile_updater, api._monitor = memory, orch, None, None
     token='regression-token-with-at-least-24-characters'
-    os.environ['KINDER_UBER_API_TOKENS']=json.dumps({token:{'user_id':user,'role':'user'}})
+    os.environ['LLM_AGENT_SYSTEM_API_TOKENS']=json.dumps({token:{'user_id':user,'role':'user'}})
     try:
         async with httpx.AsyncClient(transport=httpx.ASGITransport(app=api.app),base_url='http://localhost') as client:
             assert (await client.get('/monitor')).status_code == 401

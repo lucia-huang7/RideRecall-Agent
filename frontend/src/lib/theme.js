@@ -1,7 +1,22 @@
-export const THEME_KEY = 'kinderuber.rides.theme'
+export const THEME_KEY = 'llmagentsystem.rides.theme'
 
 export function loadTheme(storage = globalThis.localStorage) {
-  try { return storage.getItem(THEME_KEY) === 'rainbow' ? 'rainbow' : 'mono' }
+  try {
+    let value = storage.getItem(THEME_KEY)
+    if (value === null) {
+      const previous = []
+      for (let i = 0; i < Math.min(storage.length || 0, 64); i++) {
+        const key = storage.key(i)
+        if (key !== THEME_KEY && key?.endsWith('.rides.theme')) {
+          const saved = storage.getItem(key)
+          if (['mono','rainbow'].includes(saved) && !previous.includes(saved)) previous.push(saved)
+        }
+      }
+      if (previous.length === 1) value = previous[0]
+      if (value) storage.setItem(THEME_KEY, value)
+    }
+    return value === 'rainbow' ? 'rainbow' : 'mono'
+  }
   catch { return 'mono' }
 }
 

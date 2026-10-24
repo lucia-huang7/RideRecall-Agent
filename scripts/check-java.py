@@ -38,7 +38,7 @@ def main():
     redis=shutil.which('redis-server')
     if not redis:parser.error('Install redis-server to run the full retained Java integration checks')
     processes=[]
-    with TemporaryDirectory(prefix='kinder-java-check-') as directory:
+    with TemporaryDirectory(prefix='llm-agent-system-java-check-') as directory:
         try:
             port=available_port()
             process=subprocess.Popen([redis,'--bind','127.0.0.1','--port',str(port),'--save','','--appendonly','no','--dir',directory],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)

@@ -147,8 +147,8 @@ def test_integration_suite_uses_real_pipeline(client):
 
 
 def test_live_mode_is_explicit_and_never_uses_a_placeholder_key(tmp_path, monkeypatch):
-    monkeypatch.setenv("KINDER_UBER_RIDE_MODEL_MODE", "live")
-    monkeypatch.delenv("KINDER_UBER_RIDE_API_KEY", raising=False)
-    monkeypatch.delenv("KINDER_UBER_RIDE_MODEL", raising=False)
+    monkeypatch.setenv("LLM_AGENT_SYSTEM_RIDE_MODEL_MODE", "live")
+    monkeypatch.delenv("LLM_AGENT_SYSTEM_RIDE_API_KEY", raising=False)
+    monkeypatch.delenv("LLM_AGENT_SYSTEM_RIDE_MODEL", raising=False)
     with pytest.raises(ValueError, match="Live mode requires"):
         create_app(tmp_path / "live.sqlite3")

@@ -113,11 +113,11 @@ def test_read_only_rejects_write_and_unspecified_tools():
 
 
 def test_access_tokens_bind_identity_and_production_fails_closed(monkeypatch):
-    monkeypatch.delenv('KINDER_UBER_API_TOKENS',raising=False)
-    monkeypatch.setenv('KINDER_UBER_ENV','production')
+    monkeypatch.delenv('LLM_AGENT_SYSTEM_API_TOKENS',raising=False)
+    monkeypatch.setenv('LLM_AGENT_SYSTEM_ENV','production')
     with pytest.raises(ValueError): identity('')
     token = 'test-token-with-at-least-24-characters'
-    monkeypatch.setenv('KINDER_UBER_API_TOKENS',json.dumps({token:{'user_id':'u1','role':'user'}}))
+    monkeypatch.setenv('LLM_AGENT_SYSTEM_API_TOKENS',json.dumps({token:{'user_id':'u1','role':'user'}}))
     assert identity('Bearer '+token)['user_id'] == 'u1'
     assert identity('Bearer wrong') == {}
 

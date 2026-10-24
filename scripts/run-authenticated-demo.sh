@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PROFILE="${1:-$ROOT/.runtime/auth-preview}"
 PROFILE="$(cd "$PROFILE" && pwd)"
-export KINDER_UBER_ENV=production
-export KINDER_UBER_IDENTITY_FILE="$PROFILE/identities.json"
+export LLM_AGENT_SYSTEM_ENV=production
+export LLM_AGENT_SYSTEM_IDENTITY_FILE="$PROFILE/identities.json"
 export PORT="${PORT:-8012}"
 exec bash "$ROOT/scripts/run-synthetic-demo.sh" "$PROFILE/catalog.json"

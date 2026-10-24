@@ -66,8 +66,8 @@ def create(client, account='alice', trip='trip-river'):
 
 
 def test_production_fails_closed_without_configuration_or_owned_catalog(tmp_path,monkeypatch):
-    monkeypatch.delenv('KINDER_UBER_IDENTITY_FILE',raising=False)
-    with pytest.raises(ValueError,match='requires KINDER_UBER_IDENTITY_FILE'):Security('production')
+    monkeypatch.delenv('LLM_AGENT_SYSTEM_IDENTITY_FILE',raising=False)
+    with pytest.raises(ValueError,match='requires LLM_AGENT_SYSTEM_IDENTITY_FILE'):Security('production')
     identity,_=config(tmp_path)
     with pytest.raises(ValueError,match='ownership'):create_app(tmp_path/'app.sqlite3',security=Security('production',identity))
     identity.chmod(0o644)
@@ -238,9 +238,9 @@ def test_protected_mutations_require_an_explicit_current_revision(client):
 
 def test_authenticated_runtime_discloses_live_provider_mode_without_exposing_credentials(tmp_path,monkeypatch):
     identity,catalog=config(tmp_path)
-    monkeypatch.setenv('KINDER_UBER_RIDE_MODEL_MODE','live')
-    monkeypatch.setenv('KINDER_UBER_RIDE_MODEL','provider-contract-test')
-    monkeypatch.setenv('KINDER_UBER_RIDE_API_KEY','non-sensitive-fixture-key')
+    monkeypatch.setenv('LLM_AGENT_SYSTEM_RIDE_MODEL_MODE','live')
+    monkeypatch.setenv('LLM_AGENT_SYSTEM_RIDE_MODEL','provider-contract-test')
+    monkeypatch.setenv('LLM_AGENT_SYSTEM_RIDE_API_KEY','non-sensitive-fixture-key')
     import httpx
     async def no_network(*args,**kwargs):raise AssertionError('Metadata requests must not call a provider')
     monkeypatch.setattr(httpx.AsyncClient,'send',no_network)

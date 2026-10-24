@@ -18,7 +18,7 @@ def test_capacity_driver_preserves_failure_report_when_startup_leaves_an_empty_d
     for name in ("__init__.py", "catalog.py", "seed.py"):
         shutil.copy2(root / "backend" / "mobility" / name, package / name)
     (package / "app.py").write_text(
-        "import os, sqlite3\nsqlite3.connect(os.environ['KINDER_UBER_RIDE_DB']).close()\nraise RuntimeError('Intentional private preflight failure')\n"
+        "import os, sqlite3\nsqlite3.connect(os.environ['LLM_AGENT_SYSTEM_RIDE_DB']).close()\nraise RuntimeError('Intentional private preflight failure')\n"
     )
     output = tmp_path / "result"
     environment = {**os.environ, "PYTHONPATH": str(source / "backend")}

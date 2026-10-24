@@ -1,4 +1,4 @@
-# kinder-uber
+# LLM-Agent-System
 
 A stateful ride-support application built with **Python, FastAPI, Vue 3, SQLite, ChromaDB and MCP**. Trip records, rider corrections, evidence, simulated adjustments and specialist handoff stay in one case.
 
@@ -10,7 +10,7 @@ Independent prototype, not affiliated with Uber. Supplied trips and policies are
 
 ## Run
 
-On macOS, double-click `Start kinder-uber.command`, or run:
+On macOS, double-click `Start LLM-Agent-System.command`, or run:
 
 ```bash
 bash scripts/one-click.sh start --no-open
@@ -89,6 +89,6 @@ Other preview accounts are `preview-specialist` and `preview-operator`. Keep cre
 
 The default public demo identities are role-play controls. Keep demo mode on loopback. The authenticated preview enforces ownership and staff roles, but is not managed identity or OIDC. Storage is single-node SQLite with embedded Chroma; use one worker per state namespace. Real deployments still need TLS, identity lifecycle management, upload scanning, dependency review and offsite recovery. No production availability or live-model quality claim is made.
 
-`/livez` checks the process; `/readyz` also checks storage, policy indexes, projections and actual MCP access. Local data lives under `.runtime/`; the persistent macOS installation uses `~/Library/Application Support/kinder-uber/<instance>/`. Use `python -m mobility.backup --help` from `backend/` for offline backup/restore commands and stop the relevant instance before copying embedded state.
+`/livez` checks the process; `/readyz` also checks storage, policy indexes, projections and actual MCP access. Local data lives under `.runtime/`; the persistent macOS installation uses `~/Library/Application Support/LLM-Agent-System/<instance>/`. Use `python -m mobility.backup --help` from `backend/` for offline backup/restore commands and stop the relevant instance before copying embedded state.
 
-Live model access is separate from agent count: set `KINDER_UBER_RIDE_MODEL_MODE=live`, `KINDER_UBER_RIDE_MODEL` and `KINDER_UBER_RIDE_API_KEY` explicitly. The default remains no-key `demo`; live model access never grants financial permissions.
+Live model access is separate from agent count: set `LLM_AGENT_SYSTEM_RIDE_MODEL_MODE=live`, `LLM_AGENT_SYSTEM_RIDE_MODEL` and `LLM_AGENT_SYSTEM_RIDE_API_KEY` explicitly. The default remains no-key `demo`; live model access never grants financial permissions.

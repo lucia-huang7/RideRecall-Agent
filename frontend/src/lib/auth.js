@@ -3,7 +3,7 @@ let credential = ''
 export function setCredential(value) { credential = value.trim() }
 export function clearCredential() { credential = '' }
 export function credentialHeaders() { return credential ? { Authorization: `Bearer ${credential}` } : null }
-export const sessionExpiredEvent = 'kinderuber:session-expired'
+export const sessionExpiredEvent = 'llmagentsystem:session-expired'
 export function expireCredentialIfCurrent(sentHeaders) {
   if (!credential || sentHeaders?.Authorization !== `Bearer ${credential}`) return false
   credential = ''

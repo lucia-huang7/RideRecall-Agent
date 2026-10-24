@@ -27,7 +27,7 @@ API clients can pass `agent_mode: "single"` or `"multi"` on case creation or a `
 ```bash
 python -m pip install --require-hashes -r backend/requirements.txt
 python -m pip install -r backend/requirements-dev.txt
-(cd backend && python -m pytest tests -q)
+(cd backend && python -m pytest tests -q -W error)
 (cd frontend && npm ci && npm test && npm run lint && npm run build)
 ```
 
@@ -91,6 +91,23 @@ python scripts/bench/check-live.py --output artifacts/my-live-test \
 ```
 
 Choose the model and verify its current input/output prices before running. The harness requires explicit `LLM_AGENT_SYSTEM_RIDE_MODEL_MODE=live`, model and API key; it injects validated live settings into the same HTTP replay and leaves transitions and scoring unchanged. It records every provider attempt, token usage, context loss, dialogue timing, strict completion and test coverage. `--limit` is a smoke run, not a full test result. The call ceiling is not a guaranteed dollar budget. Unknown failed-request usage or unpriced cache tokens make the total cost unavailable; estimates are not provider invoices. Raw responses may contain provider content and remain ignored locally. No live-model quality, latency or cost result is currently published.
+
+## Dependency compatibility
+
+The runtime pins Chroma 1.5.9 and HTTPX2 2.16.0. Chroma 0.5.23 accessed Pydantic model fields through instances; the newer release uses class-level access. Starlette's TestClient uses HTTPX2 instead of its deprecated HTTPX fallback. HTTPX remains installed for application integrations that use its API.
+
+The local embedding implements Chroma's named, serializable configuration protocol. Its 256-dimensional hash vectors, cosine policy indexes and L2 memory indexes are unchanged; no embedding service or model download is required by the ride pipeline. Tests run with `-W error`, so unexpected warnings fail rather than being hidden.
+
+Before upgrading an existing 0.5.x installation, stop it and create an offline snapshot with the existing environment:
+
+```bash
+bash scripts/dev/one-click.sh stop
+# From backend/, using the existing Python environment:
+python -m ride_agent.persistence.backup create /absolute/path/to/rides.sqlite3 /absolute/path/to/new-snapshot
+python -m ride_agent.persistence.backup verify /absolute/path/to/new-snapshot
+```
+
+The snapshot includes the case database, receipts, binary evidence and derived sidecars. Chroma may migrate its index format on first open; keep the snapshot and the original dependency lock if rollback is needed. Do not open an upgraded index with the old Chroma package. Restart with the one-click command after upgrading. The dependency validation includes an old-version case/index migration and a no-key follow-up retaining corrected memory; synthetic replay results still do not establish live-model quality.
 
 ## GitHub presentation
 

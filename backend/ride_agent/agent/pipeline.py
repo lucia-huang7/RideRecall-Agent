@@ -28,13 +28,32 @@ from ride_agent.retrieval.knowledge_base import KnowledgeBase
 from ride_agent.retrieval.policy_index import MCPToolManager, Tool
 
 
-class LocalHashEmbedding:
+class LocalHashEmbedding(chromadb.EmbeddingFunction):
     "Deterministic local vectors; actual cosine retrieval, not a neural embedding model."
+
+    def __init__(self):
+        self.dimensions = 256
+
+    @staticmethod
+    def name():
+        return "ride-local-hash-v1"
+
+    def get_config(self):
+        return {"dimensions": self.dimensions}
+
+    @staticmethod
+    def build_from_config(config):
+        if config != {"dimensions": 256}:
+            raise ValueError("Unsupported local hash embedding configuration")
+        return LocalHashEmbedding()
+
+    def default_space(self):
+        return "l2"
 
     def __call__(self, input):
         vectors = []
         for text in input:
-            vector = IntentRecognizer._local_embedding(text)
+            vector = IntentRecognizer._local_embedding(text, dims=self.dimensions)
             norm = math.sqrt(sum((v * v for v in vector))) or 1
             vectors.append([v / norm for v in vector])
         return vectors

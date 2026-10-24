@@ -39,7 +39,7 @@ jobs:
         run: python scripts/ops/check-evaluation-evidence.py
       - name: Backend checks
         working-directory: backend
-        run: python -m pytest tests -q
+        run: python -m pytest tests -q -W error
       - name: Frontend checks
         working-directory: frontend
         run: |

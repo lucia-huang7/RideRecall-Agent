@@ -61,7 +61,7 @@ The [claim ledger](backend/ride_agent/domain/claims.py) records statement versio
 After installing the Python runtime and development dependencies as described in [operations](docs/operations.md):
 
 ```bash
-(cd backend && python -m pytest tests -q)
+(cd backend && python -m pytest tests -q -W error)
 (cd frontend && npm ci && npm run lint && npm run format:check && npm test && npm run build)
 python scripts/ops/check-evaluation-evidence.py
 ```

@@ -1,39 +1,16 @@
 # kinder-uber
 
-**Explain it once. Your support case remembers.**
+A stateful ride-support application built with **Python, FastAPI, Vue 3, SQLite, ChromaDB and MCP**. Trip records, rider corrections, evidence, simulated adjustments and specialist handoff stay in one case.
 
-A mobile ride-support workspace that keeps the trip, payment records, evidence, corrections and specialist review in one continuous case. Run the complete local workflow without a model API key. **Single agent with durable case context is the default.**
+Single agent with durable case context is the default. Adaptive multi-agent routing is an explicit option with the same read-only tools. Multiple agents are not presented as a quality improvement. The local demo uses a deterministic model adapter and requires no model API key.
 
-Independent software prototype. Not affiliated with Uber. All supplied trips, policies and financial actions are fictional.
+Independent prototype, not affiliated with Uber. Supplied trips and policies are fictional; no real payment is executed.
 
-![Monochrome mobile rider workspace](docs/assets/mobile-trips.png)
+![Mobile ride-support workspace](docs/assets/mobile-trips.png)
 
-## What works
+## Run
 
-- Rider flow: select a trip, describe a dispute, attach evidence, correct details, review a proposed adjustment or request a specialist.
-- Case context: source-backed rider assertions, explicit withdrawn claims, clarification of ambiguous corrections and durable case history.
-- Inspectable execution: a single support assistant with intent recognition, policy retrieval, guarded read-only tools and a real independent stdio MCP service. Adaptive multi-agent routing is optional.
-- Specialist desk: accept a handoff, read the existing context, reply, propose a simulated adjustment and record an outcome.
-- Consistent commands: version-aware case updates, exact replay receipts and crash-recoverable memory projections. A slow analysis cannot silently overwrite a newer specialist update.
-- Operations: execution traces, metrics, durable knowledge/Skill releases, bounded inference admission, dependency checks and regression evaluation.
-- Recovery: immutable deduplicated evidence, compressed replay receipts and verified offline snapshot/restore.
-- Black-and-white mobile interface with optional Rainbow Mode; English interface and new code.
-
-The default model adapter is deterministic. The pipeline actually runs, but offline results do not establish live-model reasoning quality or a multi-agent advantage.
-
-## Support modes
-
-The default is **single agent + durable case context**. The support assistant can use the same read-only trip, billing, policy and MCP tools. Both modes keep source-backed corrections and the full case history; there is no recent-window-only product mode.
-
-Use **Support approach** on Account, the new-case screen or in the conversation to opt into **Multi-agent · Optional**. Your browser remembers an explicit preference for subsequent analyses. Each case and analysis records the actual mode; switching affects the next analysis and preserves history. Human specialist handoff remains available in both modes.
-
-The paired offline study found **no task-completion or context-retention gain from multiple agents**, with about 38% more local engine-client calls. It measured 67% versus 100% strict completion for recent-four versus durable context. These synthetic results belong to the frozen benchmark version, not a newly repeated production measurement. See [the full comparison](docs/ABLATION_RESULTS.md).
-
-API clients may set `agent_mode` to `single` or `multi` when creating a case or sending a `message` action. Omission creates a single-agent case or keeps the existing case mode; older cases without this field use single agent. Other actions cannot change the execution mode. API-key-free demo mode remains the default.
-
-## Start
-
-On macOS, double-click **Start kinder-uber.command**, or run:
+On macOS, double-click `Start kinder-uber.command`, or run:
 
 ```bash
 bash scripts/one-click.sh start --no-open
@@ -41,137 +18,77 @@ bash scripts/one-click.sh status
 bash scripts/one-click.sh stop
 ```
 
-Open [Trips](http://127.0.0.1:5175/#/trips), [Agent desk](http://127.0.0.1:5175/#/agent) or [Control room](http://127.0.0.1:5175/#/manage). The background supervisor checks the frontend, Python backend and independent MCP process. macOS must remain awake with the user logged in.
+Open [Trips](http://127.0.0.1:5175/#/trips), [Help](http://127.0.0.1:5175/#/help) or [Account](http://127.0.0.1:5175/#/account). First setup needs Python 3.11/3.12, Node.js compatible with Vite 7, and dependency-registry access. The background installation supervises the frontend, backend and separate stdio MCP process. The Mac must remain awake and logged in. Run Start again after source updates; saved cases are retained.
 
-First setup requires Python 3.11/3.12, Node.js compatible with Vite 7 and access to dependency registries. No Docker, Redis server or model provider is required for the local demo.
+For foreground development, stop the background installation, then run `bash scripts/run-rides.sh --dev`.
 
-For an authenticated, non-root container preview, run `bash scripts/container-demo.sh`. See [deployment and verification](docs/DEPLOYMENT.md) for isolated workflow checks and configuration.
+## Use
 
-For foreground development, stop the background service first:
+Select a trip, describe a dispute, add evidence, review a proposed simulated adjustment or request a specialist. A specialist can read the existing history, accept the case and record a decision.
+
+**Support approach** on Account, new-case and conversation screens selects the next analysis. Single agent is the default; multi-agent is optional. Both keep durable context. An explicit browser preference survives reload. Each case and execution records its actual mode.
+
+API clients can pass `agent_mode: "single"` or `"multi"` on case creation or a `message` action. Omitting it defaults new/older cases to single and preserves an existing explicit case choice on follow-ups. State changes use request IDs and case revisions; model text cannot execute payments.
+
+## Structure
+
+| Path | Responsibility |
+|---|---|
+| `backend/mobility/` | Active ride API, workflow guards, persistence, execution, context and operational controls |
+| `backend/agents/`, `backend/core/` | Agent execution, intent recognition, access and concurrency primitives |
+| `backend/memory/`, `backend/tooling/` | Conversation memory, policy retrieval, tool guards and MCP transport |
+| `backend/evaluation/`, `backend/monitor/` | Runnable evaluation and monitoring components |
+| `backend/skills/` | Runtime instructions loaded by the engine; `SKILL.md` files are required inputs |
+| `frontend/` | Vue mobile rider interface, specialist desk and control room |
+| `datasets/ride_support_v1/` | Synthetic catalog, 1,000 worlds, 2,000 dialogue variants and separate scorer labels |
+| `legacy-java/` | Separate Java 21 service; does not serve the active mobile ride API |
+| `scripts/` | Launchers, provisioning, recovery, replay and deployment tools |
+
+The application receives catalog records. Scenario steps and oracle labels are consumed by replay/scoring tools, not by the agent. Related dialogue variants stay in the same split. Synthetic results do not establish real-user accuracy.
+
+## Develop
 
 ```bash
-bash scripts/run-rides.sh --dev
+python -m pip install --require-hashes -r backend/requirements.txt
+python -m pip install -r backend/requirements-dev.txt
+(cd backend && python -m pytest tests -q)
+(cd frontend && npm ci && npm test && npm run lint && npm run build)
 ```
 
-## Repository map
+For the separate Java service, use JDK 21 and run `(cd legacy-java && ./mvnw clean test)`. `python scripts/check-java.py --with-chroma` starts isolated Redis/Chroma/MCP dependencies for additional integration coverage; it requires `redis-server` and the Python dependencies.
 
-```text
-backend/
-  mobility/             Active ride API, case rules, storage and execution adapters
-    app.py              FastAPI routes and application lifecycle
-    service.py          Case workflow and guarded financial proposals
-    engine.py           Intent, roles, retrieval, context and tool execution
-    catalog.py          Shared typed trip/payment/policy contract
-    security.py         Scoped identities, ownership and demo isolation
-    readiness.py        Dependency-aware readiness
-    http_limits.py      Body size/timeout limits before deserialization
-    persistence.py      Schema migrations, compressed receipts and binary blobs
-    backup.py           Offline verified snapshots and restore
-    case_index.py       Transactional summaries and account-bound pagination
-    configuration.py    Durable configuration releases and analysis/read-write gate
-    admission.py        Bounded analysis capacity and deadlines
-    projections.py      Durable memory projection worker
-    runtime_lock.py     Embedded storage writer exclusion
-    settings.py         Validated model-provider configuration
-    diagnostics.py      Isolated transactional evaluation fixtures
-    memory.py           Durable context adapter
-    claims.py           Source-backed claim handling
-    corrections.py      Correction resolution and ambiguity handling
-    operations.py       Monitoring, skill/knowledge controls and MCP lifecycle
-    mcp_demo_server.py  Independent read-only trip-record service
-    simulation/         Dataset generation, reference oracle, audit and API replay
-  agents/               Role orchestration
-  core/                 Intent routing and policy retrieval
-  memory/               Context storage primitives
-  tooling/              Tool registry, execution guards and MCP transport
-  monitor/              Metrics and tracing
-  evaluation/           Evaluation utilities
-  skills/               Task instructions used by the execution engine
-  tests/                Unit, regression and integration checks
-frontend/
-  src/App.vue           Profile bootstrap and memory-only credential sign-in
-  src/RideSupport.vue   Mobile rider and specialist experience
-  src/OperationsPanel.vue
-  src/lib/rideApi.js    HTTP client and retry identifiers
-  src/components/AgentModePicker.vue  Default and optional support modes
-  src/lib/agentMode.js  Validated browser preference and analysis payloads
-  src/ride.css          Shared monochrome and rainbow styles
-  tests/                Browser-client unit tests
-legacy-java/
-  src/                  Separate Java 21 service and tests; outside the ride API path
-  pom.xml
-scripts/
-  rides-control.py      Persistent macOS installation and control
-  runtime/              Process supervisor and same-origin static/API server
-  run-synthetic-demo.sh Opt-in generated-trip preview with isolated storage
-datasets/
-  ride_support_v1/      Runtime catalog, replay inputs and separate scorer labels
-docs/
-  ARCHITECTURE.md       Request path, module ownership and boundaries
-  DATASETS.md           Dataset contract and reproduction commands
-CHANGELOG.md            Release changes
-```
-
-## Data and evaluation
-
-The synthetic generator creates 1,000 fictional event worlds and two dialogue variants per world. Variants stay in the same development/calibration/test split. Runtime catalog data and scorer-only reference answers are separate files. API tools, policy retrieval and the independent MCP process consume the same validated catalog.
+Replay the supplied synthetic data through the real API pipeline:
 
 ```bash
 cd backend
 python -m mobility.simulation audit --dataset ../datasets/ride_support_v1
-python -m mobility.simulation replay --dataset ../datasets/ride_support_v1 --output ../artifacts/my-replay --limit 16
+python -m mobility.simulation replay --dataset ../datasets/ride_support_v1 --output ../artifacts/my-replay
 ```
 
-From the root, `bash scripts/run-synthetic-demo.sh` opens the existing UI against generated trips on port 8011 using a separate database. Keep that terminal open. See [dataset details](docs/DATASETS.md).
+Existing dataset/result directories are never overwritten. Generated results, databases, credentials, caches and build output stay outside the tracked tree.
 
-Generated outcomes are reference-state checks, not human-reviewed ground truth or production accuracy. Historical measurements remain preserved outside this repository. New runs belong to their actual source version and are saved in ignored `artifacts/` directories.
-
-### Full replay result — 2026-10-22
-
-Frozen source `e1b30c2` executed **1,000 synthetic worlds / 2,000 dialogues / 27,772 API requests** without an API key. Specified mechanical checks passed for development **1,212/1,212**, calibration **438/438** and test **350/350**; zero episode exceptions. Wall time was **948.892 seconds**. All episode IDs, split isolation, raw-log counts and frozen source/data hashes were verified.
-
-This completes seed `20261022`, whose test split had already been inspected. It is not a fresh blind test, human-reviewed accuracy or evidence of a multi-agent quality advantage. See automated checks.
-
-### Paired agent and memory comparison
-
-On the same 2,000 dialogues, four frozen configurations completed **8,000 replays**. Recent-four context achieved **67% strict task completion and 33% final-context loss**; durable case context achieved **100% and 0%**, with either agent configuration. Multi-agent versus a capability-matched single generalist tied on every dialogue in both memory conditions, while using about **38% more local engine-client calls**. All four passed the business-state checks; that alone did not establish answer quality.
-
-See [split/family results, failure analysis, timings and limitations](docs/ABLATION_RESULTS.md). This is a deterministic synthetic comparison, not live-model reasoning accuracy or a production speed claim.
-
-## Verify
-
-Install the hashed runtime and test-only requirements in separate commands:
+## Optional authenticated and container previews
 
 ```bash
-python -m pip install -r backend/requirements.txt
-python -m pip install -r backend/requirements-dev.txt
+python scripts/provision-auth-preview.py
+bash scripts/run-authenticated-demo.sh
 ```
 
-Then run:
+Open `http://127.0.0.1:8012`. Generated fictional credentials are stored in the owner-only, ignored `.runtime/auth-preview/access-credentials.json`. They expire after 24 hours; browser sign-in holds them in memory only. For rotation, provision a new `--output` directory and pass it to the run script; existing registries are not overwritten.
+
+With Docker Engine and Compose, `bash scripts/container-demo.sh` starts a separate authenticated preview on `http://127.0.0.1:8013`. Read the required account credential locally:
 
 ```bash
-cd backend
-python -m pytest tests -q
+docker compose --profile tools run --rm --no-deps init python -c \
+  'import json; print(json.load(open("/config/profile/access-credentials.json"))["credentials"]["preview-rider"])'
 ```
 
-```bash
-cd frontend
-npm ci
-npm run lint
-npm test
-npm run build
-```
+Other preview accounts are `preview-specialist` and `preview-operator`. Keep credentials out of screenshots, URLs and source control. Container rotation requires a newly provisioned configuration directory selected through a Compose override. `docker compose stop app` preserves state; removing volumes deletes it.
 
-```bash
-cd legacy-java
-# JAVA_HOME must point to JDK 21 or later.
-./mvnw clean test
-```
+## Runtime boundaries
 
-For the complete Java transport/storage checks, install `redis-server`, use the backend Python environment and JDK 21, then run `python scripts/check-java.py --with-chroma` from the root. It starts disposable loopback dependencies and stops them afterward; no model key is used.
+The default public demo identities are role-play controls. Keep demo mode on loopback. The authenticated preview enforces ownership and staff roles, but is not managed identity or OIDC. Storage is single-node SQLite with embedded Chroma; use one worker per state namespace. Real deployments still need TLS, identity lifecycle management, upload scanning, dependency review and offsite recovery. No production availability or live-model quality claim is made.
 
-## Deployment boundaries
+`/livez` checks the process; `/readyz` also checks storage, policy indexes, projections and actual MCP access. Local data lives under `.runtime/`; the persistent macOS installation uses `~/Library/Application Support/kinder-uber/<instance>/`. Use `python -m mobility.backup --help` from `backend/` for offline backup/restore commands and stop the relevant instance before copying embedded state.
 
-The current default is a **single-node local demonstration**: SQLite, embedded retrieval and simulated payment actions. Demo session headers and the public specialist credential are not production authentication. Keep demo mode on loopback. An optional authenticated profile enforces rider ownership and distinct specialist/operator roles.
-
-Local runtime data is under `.runtime/`. The macOS background installation uses `~/Library/Application Support/kinder-uber/<instance>/` for its copied application, database, logs and environment. Run Start again after source updates. Do not commit credentials, local databases, dependency caches or generated build output.
+Live model access is separate from agent count: set `KINDER_UBER_RIDE_MODEL_MODE=live`, `KINDER_UBER_RIDE_MODEL` and `KINDER_UBER_RIDE_API_KEY` explicitly. The default remains no-key `demo`; live model access never grants financial permissions.

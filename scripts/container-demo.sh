@@ -9,4 +9,4 @@ if ! docker compose --profile tools run --rm --no-deps init python -c 'from path
 fi
 docker compose up -d --wait app
 echo 'Authenticated fictional preview: http://127.0.0.1:8013'
-echo 'Credentials stay in the private configuration volume. See docs/DEPLOYMENT.md for access and rotation.'
+echo 'Credentials stay in the private configuration volume. See README.md for access and rotation.'

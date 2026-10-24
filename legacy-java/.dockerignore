@@ -1,9 +1,0 @@
-target/
-.mvn/apache-maven-*/
-.mvn/*.zip
-.idea/
-.vscode/
-.DS_Store
-.env
-*.log
-data/

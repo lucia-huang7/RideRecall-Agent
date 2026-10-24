@@ -1,0 +1,149 @@
+@media (min-width: 850px) {
+  .phone-app {
+    max-height: none;
+  }
+  .phone-app:not(.chat-screen) {
+    min-height: 850px;
+  }
+  .desktop-intro .eyebrow {
+    font-size: 10px;
+  }
+  .bottom-nav {
+    position: sticky;
+    margin-top: 24px;
+    margin-bottom: -83px;
+    bottom: 0;
+  }
+  .chat-screen .bottom-nav {
+    display: none;
+  }
+}
+@media (max-width: 1000px) and (min-width: 850px) {
+  .ride-layout {
+    gap: 45px;
+    padding: 25px;
+    grid-template-columns: 1fr 420px;
+  }
+  .desktop-intro h1 {
+    font-size: 55px;
+  }
+  .desktop-intro > div > p:not(.eyebrow) {
+    font-size: 16px;
+  }
+}
+@media (max-width: 849px) {
+  :root {
+    background: #ffffff;
+  }
+  .desktop-intro {
+    display: none;
+  }
+  .ride-layout {
+    display: block;
+    padding: 0;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+  .phone-app {
+    border-radius: 0;
+    box-shadow: none;
+    min-height: 100dvh;
+    padding-bottom: calc(90px + env(safe-area-inset-bottom));
+  }
+  .app-header {
+    height: 66px;
+    padding: 0 22px;
+  }
+  .demo-bar {
+    padding-left: 22px;
+    padding-right: 22px;
+  }
+  .bottom-nav {
+    position: fixed;
+    max-width: 520px;
+    margin: auto;
+    height: calc(72px + env(safe-area-inset-bottom));
+    padding-bottom: calc(5px + env(safe-area-inset-bottom));
+    left: 0;
+    right: 0;
+  }
+  .chat-screen {
+    height: 100dvh;
+    min-height: 0;
+    padding-bottom: 0;
+  }
+  .composer-wrap {
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+  .sheet-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .bottom-sheet {
+    max-width: 520px;
+    border-radius: 24px 24px 0 0;
+    padding-bottom: calc(27px + env(safe-area-inset-bottom));
+    max-height: 90dvh;
+  }
+  .page-heading {
+    padding-top: 28px;
+  }
+  .toast {
+    bottom: 95px;
+  }
+}
+@media (max-width: 370px) {
+  .demo-bar > span:last-child {
+    font-size: 8px;
+  }
+  .trip-open {
+    gap: 9px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .vehicle-tile {
+    width: 54px;
+  }
+  .vehicle-tile svg {
+    width: 52px;
+  }
+  .trip-text strong {
+    font-size: 13px;
+  }
+  .trip-text small {
+    font-size: 9px;
+  }
+  .trip-price {
+    font-size: 12px;
+  }
+  .content-block,
+  .page-heading {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  .trip-list {
+    padding: 0 20px;
+  }
+  .section-title {
+    padding: 0 20px;
+  }
+  .case-heading h1 {
+    font-size: 28px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+@media (max-width: 849px) {
+  :root[data-theme="rainbow"] {
+    background: #fff;
+  }
+  .header-actions {
+    gap: 8px;
+  }
+}

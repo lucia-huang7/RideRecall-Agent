@@ -1,4 +1,4 @@
-"Original memory algorithms with transactional case snapshots and embedded Redis semantics."
+"Case-scoped working context and summaries projected through transactional snapshots."
 
 import hashlib
 import json
@@ -18,7 +18,7 @@ def memory_prompt(task, **data):
 
 
 class MemoryModel:
-    "English offline summarization contract; original compression and storage still execute."
+    "Local summarization responses consumed by the memory compression workflow."
 
     def __init__(self):
         self.messages = self
@@ -34,9 +34,6 @@ class MemoryModel:
             text = str(data.get("text", "")) if data["task"] == "memory_merge" else ""
         previous = str(data.get("previous", ""))
         return response((previous + "\n" + text).strip()[:800])
-
-    async def close(self):
-        pass
 
 
 class SourceMemoryManager(MemoryManager):

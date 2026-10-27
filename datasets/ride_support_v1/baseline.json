@@ -1,16 +1,21 @@
 {
   "scope": "Current shipped dataset, frozen deterministic offline adapter benchmark; not live-model or real-user accuracy.",
-  "source_commit": "41bc0101b730cfa3f269043887439822057f9139",
-  "frozen_at": "2026-10-25T00:41:53.414183+00:00",
-  "measured_at": "2026-10-25T01:08:40.736560+00:00",
+  "source_commit": "312337f1bc0d2f98b7a507369bd4b2f7df1e88cb",
+  "frozen_at": "2026-10-28T05:32:50.144310+00:00",
+  "measured_at": "2026-10-28T05:58:16.142502+00:00",
   "worlds": 1000,
   "dialogues_per_condition": 2000,
   "execution": {
     "workers": 4,
-    "note": "Four independent condition processes ran concurrently. Latency includes resource contention and is not an isolated speed ranking."
+    "note": "Four independent condition processes ran concurrently on a shared host, with local container validation overlapping part of the run. Latency includes resource contention and is not an isolated speed ranking."
   },
+  "dependency_versions": {
+    "chromadb": "1.5.9",
+    "httpx2": "2.16.0"
+  },
+  "previous_baseline_commit": "be8a422d99b21787f0bcc957321aab4c423f245b",
   "source_sha256": {
-    "backend/requirements.txt": "3cf2d59f633785cf18012bb9ebc9822f0569e44d001144823cca8559307d7e18",
+    "backend/requirements.txt": "be2fff27d9104dc4b47cdbaef853431cbc7e500cf6241dd9c199322c27ca95b9",
     "backend/ride_agent/__init__.py": "c49ce31494300fc316a7da5e337bb407dc56725da0830049712ca0a946d840ac",
     "backend/ride_agent/agent/__init__.py": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
     "backend/ride_agent/agent/access.py": "fe1fd4939bd122329c3cda3c6b76135a39fc76b46318488cfbe7ca3a9bf3dd74",
@@ -26,7 +31,7 @@
     "backend/ride_agent/agent/llm_utils.py": "23f66522d4a9fba2dad1aeb34a0ef22fa0936e4c6c18362f3d91ccaf0148af83",
     "backend/ride_agent/agent/memory.py": "2b06e2417678cd257b638ab99abb1ccf5482df537ce5be200e0c11486b2a92ea",
     "backend/ride_agent/agent/orchestrator.py": "9a923634875d81f952f97e8104ce6edc405258f1b0077d301ecd5080d514484e",
-    "backend/ride_agent/agent/pipeline.py": "4fbb29f1b3c2a1804d2c851515f67cffef39ce636390c82edb957d0df30cd7f4",
+    "backend/ride_agent/agent/pipeline.py": "983bcc57e8f8ef69a56379ed0d5f345fc7db853f41fa813cc303be336a7525e9",
     "backend/ride_agent/agent/redaction.py": "e515329f0b8e68dc14b5f78b56b744f61567a25bdd22eabcf152b6dd7b93d154",
     "backend/ride_agent/agent/skills.py": "01afd55069d3d491e8dd06e67454e596646e6bf1a11e7e97e1cd4932518c5e5b",
     "backend/ride_agent/agent/tools.py": "9516def358d0c7b71bd8d804dcc27873bebf869eb9023750332b6e6c9c7c28d0",
@@ -125,16 +130,16 @@
         "stale_claim_checkpoints": 0,
         "expected_clarification_checkpoints": 496,
         "passed_clarification_checkpoints": 496,
-        "median_dialogue_ms": 460.6038125930354,
-        "p95_dialogue_ms": 1878.1832081731409,
+        "median_dialogue_ms": 406.5712710143998,
+        "p95_dialogue_ms": 2199.0251659881324,
         "analyses": 12522,
         "model_calls": 58586,
         "multi_role_analyses": 0,
         "role_execution_counts": {
           "1": 12522
         },
-        "median_analysis_ms": 34.20127148274332,
-        "p95_analysis_ms": 64.0269999857992
+        "median_analysis_ms": 22.36512501258403,
+        "p95_analysis_ms": 36.49291698820889
       },
       "splits": {
         "calibration": {
@@ -160,16 +165,16 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 120,
           "passed_clarification_checkpoints": 120,
-          "median_dialogue_ms": 563.2711874786764,
-          "p95_dialogue_ms": 2085.784540977329,
+          "median_dialogue_ms": 481.1392710544169,
+          "p95_dialogue_ms": 2082.279291935265,
           "analyses": 2824,
           "model_calls": 13134,
           "multi_role_analyses": 0,
           "role_execution_counts": {
             "1": 2824
           },
-          "median_analysis_ms": 33.86479150503874,
-          "p95_analysis_ms": 65.59849996119738
+          "median_analysis_ms": 22.51604141201824,
+          "p95_analysis_ms": 37.21379186026752
         },
         "development": {
           "dialogues": 1162,
@@ -194,16 +199,16 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 296,
           "passed_clarification_checkpoints": 296,
-          "median_dialogue_ms": 456.79470838513225,
-          "p95_dialogue_ms": 1877.8995831962675,
+          "median_dialogue_ms": 427.40602046251297,
+          "p95_dialogue_ms": 2184.472667053342,
           "analyses": 7314,
           "model_calls": 34266,
           "multi_role_analyses": 0,
           "role_execution_counts": {
             "1": 7314
           },
-          "median_analysis_ms": 34.35983299277723,
-          "p95_analysis_ms": 62.1909168548882
+          "median_analysis_ms": 22.384166601113975,
+          "p95_analysis_ms": 35.98091681487858
         },
         "test": {
           "dialogues": 404,
@@ -228,16 +233,16 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 80,
           "passed_clarification_checkpoints": 80,
-          "median_dialogue_ms": 427.3758119670674,
-          "p95_dialogue_ms": 1856.8277501035482,
+          "median_dialogue_ms": 324.2952704895288,
+          "p95_dialogue_ms": 2326.1776668950915,
           "analyses": 2384,
           "model_calls": 11186,
           "multi_role_analyses": 0,
           "role_execution_counts": {
             "1": 2384
           },
-          "median_analysis_ms": 33.85556302964687,
-          "p95_analysis_ms": 66.50595902465284
+          "median_analysis_ms": 22.160958498716354,
+          "p95_analysis_ms": 36.953749833628535
         }
       },
       "families": {
@@ -264,16 +269,16 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 374.68741659540683,
-          "p95_dialogue_ms": 2014.1763749998063,
+          "median_dialogue_ms": 336.16854157298803,
+          "p95_dialogue_ms": 1568.5430001467466,
           "analyses": 1534,
           "model_calls": 7186,
           "multi_role_analyses": 0,
           "role_execution_counts": {
             "1": 1534
           },
-          "median_analysis_ms": 35.61000002082437,
-          "p95_analysis_ms": 66.07895786873996
+          "median_analysis_ms": 22.389707970432937,
+          "p95_analysis_ms": 34.31775001809001
         },
         "duplicate_settlement": {
           "dialogues": 250,
@@ -298,16 +303,16 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 414.493125048466,
-          "p95_dialogue_ms": 1990.1781671214849,
+          "median_dialogue_ms": 344.75095849484205,
+          "p95_dialogue_ms": 2326.1776668950915,
           "analyses": 1534,
           "model_calls": 7182,
           "multi_role_analyses": 0,
           "role_execution_counts": {
             "1": 1534
           },
-          "median_analysis_ms": 33.81283348426223,
-          "p95_analysis_ms": 60.47670799307525
+          "median_analysis_ms": 22.010853979736567,
+          "p95_analysis_ms": 34.4074999447912
         },
         "evidence_mismatch": {
           "dialogues": 250,
@@ -332,16 +337,16 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 385.6082290876657,
-          "p95_dialogue_ms": 1354.3198751285672,
+          "median_dialogue_ms": 343.9862079685554,
+          "p95_dialogue_ms": 1591.7968328576535,
           "analyses": 1534,
           "model_calls": 7184,
           "multi_role_analyses": 0,
           "role_execution_counts": {
             "1": 1534
           },
-          "median_analysis_ms": 33.289666986092925,
-          "p95_analysis_ms": 67.3652091063559
+          "median_analysis_ms": 21.988270920701325,
+          "p95_analysis_ms": 36.197791108861566
         },
         "fare_over_cap": {
           "dialogues": 250,
@@ -366,16 +371,16 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 405.9253544546664,
-          "p95_dialogue_ms": 1309.6970419865102,
+          "median_dialogue_ms": 367.6641040947288,
+          "p95_dialogue_ms": 1876.798499841243,
           "analyses": 1534,
           "model_calls": 7181,
           "multi_role_analyses": 0,
           "role_execution_counts": {
             "1": 1534
           },
-          "median_analysis_ms": 33.12218748033047,
-          "p95_analysis_ms": 59.74450008943677
+          "median_analysis_ms": 22.167937480844557,
+          "p95_analysis_ms": 34.22404220327735
         },
         "fare_supported": {
           "dialogues": 250,
@@ -400,16 +405,16 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 366.2987289717421,
-          "p95_dialogue_ms": 1245.0177920982242,
+          "median_dialogue_ms": 330.25585452560335,
+          "p95_dialogue_ms": 1809.703208040446,
           "analyses": 1534,
           "model_calls": 7186,
           "multi_role_analyses": 0,
           "role_execution_counts": {
             "1": 1534
           },
-          "median_analysis_ms": 35.40014591999352,
-          "p95_analysis_ms": 63.80041595548391
+          "median_analysis_ms": 22.73816696833819,
+          "p95_analysis_ms": 39.35491596348584
         },
         "mcp_recovery": {
           "dialogues": 250,
@@ -434,16 +439,16 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 1416.8119580717757,
-          "p95_dialogue_ms": 2816.029875073582,
+          "median_dialogue_ms": 1249.8117078794166,
+          "p95_dialogue_ms": 3427.1823330782354,
           "analyses": 1784,
           "model_calls": 8295,
           "multi_role_analyses": 0,
           "role_execution_counts": {
             "1": 1784
           },
-          "median_analysis_ms": 33.572499989531934,
-          "p95_analysis_ms": 63.511583022773266
+          "median_analysis_ms": 22.789479000493884,
+          "p95_analysis_ms": 39.32900005020201
         },
         "no_excess": {
           "dialogues": 250,
@@ -468,16 +473,16 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 359.44131307769567,
-          "p95_dialogue_ms": 1406.6619169898331,
+          "median_dialogue_ms": 332.12002099025995,
+          "p95_dialogue_ms": 1504.2588750366122,
           "analyses": 1534,
           "model_calls": 7185,
           "multi_role_analyses": 0,
           "role_execution_counts": {
             "1": 1534
           },
-          "median_analysis_ms": 33.74860400799662,
-          "p95_analysis_ms": 68.27225000597537
+          "median_analysis_ms": 22.184854024089873,
+          "p95_analysis_ms": 37.946500116959214
         },
         "pickup_conflict": {
           "dialogues": 250,
@@ -502,21 +507,21 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 389.82293696608394,
-          "p95_dialogue_ms": 1749.5944160036743,
+          "median_dialogue_ms": 353.23393752332777,
+          "p95_dialogue_ms": 1522.3089170176536,
           "analyses": 1534,
           "model_calls": 7187,
           "multi_role_analyses": 0,
           "role_execution_counts": {
             "1": 1534
           },
-          "median_analysis_ms": 35.21060408093035,
-          "p95_analysis_ms": 64.55383310094476
+          "median_analysis_ms": 22.96577056404203,
+          "p95_analysis_ms": 37.1015421114862
         }
       },
-      "scores_sha256": "cb2ee1f5b1af0d664f310319fdbc983e666eb3edee876528e09ff5461c927e9d",
-      "raw_sha256": "4ecea87e7eaaf80f87012b761a37a9c4abed13d54c1d0acd5df6c30eca7966d0",
-      "observations_sha256": "7303b9e0eb9e4ad558ad9a1943fd3e6b0714b15dee33908d405e374fb533904d",
+      "scores_sha256": "c96d702d2f61ff075dc3fe0a54654c5671c97c7aef5924325e6b1cb2726d051c",
+      "raw_sha256": "8bd410e6bf60d72e0d0482422def38e561d42be656240bc47c942f4d002a17b5",
+      "observations_sha256": "8790aae24b8a96ebded72909095896e1f0aa1ec7b2ec9b8cc2770f2d7b7a581b",
       "failure_examples": [
         {
           "id": "world-000054-v0",
@@ -618,8 +623,8 @@
         "stale_claim_checkpoints": 0,
         "expected_clarification_checkpoints": 496,
         "passed_clarification_checkpoints": 496,
-        "median_dialogue_ms": 504.65027114842087,
-        "p95_dialogue_ms": 2000.1452080905437,
+        "median_dialogue_ms": 422.2961670020595,
+        "p95_dialogue_ms": 2113.611999899149,
         "analyses": 12522,
         "model_calls": 81076,
         "multi_role_analyses": 4498,
@@ -627,8 +632,8 @@
           "2": 4498,
           "1": 8024
         },
-        "median_analysis_ms": 35.274187568575144,
-        "p95_analysis_ms": 76.02283405140042
+        "median_analysis_ms": 23.445333470590413,
+        "p95_analysis_ms": 38.52720791473985
       },
       "splits": {
         "calibration": {
@@ -654,8 +659,8 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 120,
           "passed_clarification_checkpoints": 120,
-          "median_dialogue_ms": 634.2520415782928,
-          "p95_dialogue_ms": 2114.350042073056,
+          "median_dialogue_ms": 533.4356875391677,
+          "p95_dialogue_ms": 2284.820292145014,
           "analyses": 2824,
           "model_calls": 18069,
           "multi_role_analyses": 987,
@@ -663,8 +668,8 @@
             "2": 987,
             "1": 1837
           },
-          "median_analysis_ms": 35.63637554179877,
-          "p95_analysis_ms": 77.87283300422132
+          "median_analysis_ms": 23.634687531739473,
+          "p95_analysis_ms": 40.60599999502301
         },
         "development": {
           "dialogues": 1162,
@@ -689,8 +694,8 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 296,
           "passed_clarification_checkpoints": 296,
-          "median_dialogue_ms": 514.2504373798147,
-          "p95_dialogue_ms": 1916.9769999571145,
+          "median_dialogue_ms": 415.8422915497795,
+          "p95_dialogue_ms": 2111.9907090906054,
           "analyses": 7314,
           "model_calls": 47266,
           "multi_role_analyses": 2600,
@@ -698,8 +703,8 @@
             "2": 2600,
             "1": 4714
           },
-          "median_analysis_ms": 35.51406296901405,
-          "p95_analysis_ms": 76.24799991026521
+          "median_analysis_ms": 23.460063035599887,
+          "p95_analysis_ms": 37.54954086616635
         },
         "test": {
           "dialogues": 404,
@@ -724,8 +729,8 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 80,
           "passed_clarification_checkpoints": 80,
-          "median_dialogue_ms": 426.1258749756962,
-          "p95_dialogue_ms": 1995.131165953353,
+          "median_dialogue_ms": 382.46531249023974,
+          "p95_dialogue_ms": 1947.0663331449032,
           "analyses": 2384,
           "model_calls": 15741,
           "multi_role_analyses": 911,
@@ -733,8 +738,8 @@
             "2": 911,
             "1": 1473
           },
-          "median_analysis_ms": 34.31287535931915,
-          "p95_analysis_ms": 71.98504218831658
+          "median_analysis_ms": 23.25931249652058,
+          "p95_analysis_ms": 39.59887498058379
         }
       },
       "families": {
@@ -761,8 +766,8 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 395.2968126395717,
-          "p95_dialogue_ms": 1669.6939589455724,
+          "median_dialogue_ms": 349.07166659832,
+          "p95_dialogue_ms": 1365.572083974257,
           "analyses": 1534,
           "model_calls": 9841,
           "multi_role_analyses": 531,
@@ -770,8 +775,8 @@
             "2": 531,
             "1": 1003
           },
-          "median_analysis_ms": 36.4027910400182,
-          "p95_analysis_ms": 78.21079180575907
+          "median_analysis_ms": 23.68047891650349,
+          "p95_analysis_ms": 38.47841708920896
         },
         "duplicate_settlement": {
           "dialogues": 250,
@@ -796,8 +801,8 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 426.150708575733,
-          "p95_dialogue_ms": 1691.391458036378,
+          "median_dialogue_ms": 366.74175038933754,
+          "p95_dialogue_ms": 1858.7580409366637,
           "analyses": 1534,
           "model_calls": 9837,
           "multi_role_analyses": 531,
@@ -805,8 +810,8 @@
             "2": 531,
             "1": 1003
           },
-          "median_analysis_ms": 33.902854076586664,
-          "p95_analysis_ms": 71.9083750154823
+          "median_analysis_ms": 23.124687024392188,
+          "p95_analysis_ms": 39.17195810936391
         },
         "evidence_mismatch": {
           "dialogues": 250,
@@ -831,8 +836,8 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 412.1196875348687,
-          "p95_dialogue_ms": 1832.5614579953253,
+          "median_dialogue_ms": 358.35347906686366,
+          "p95_dialogue_ms": 1866.3235420826823,
           "analyses": 1534,
           "model_calls": 9839,
           "multi_role_analyses": 531,
@@ -840,8 +845,8 @@
             "2": 531,
             "1": 1003
           },
-          "median_analysis_ms": 34.794916631653905,
-          "p95_analysis_ms": 78.48758320324123
+          "median_analysis_ms": 23.253625025972724,
+          "p95_analysis_ms": 38.82962488569319
         },
         "fare_over_cap": {
           "dialogues": 250,
@@ -866,8 +871,8 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 389.65585397090763,
-          "p95_dialogue_ms": 1466.8642079923302,
+          "median_dialogue_ms": 338.67360348813236,
+          "p95_dialogue_ms": 1644.5885829161853,
           "analyses": 1534,
           "model_calls": 9836,
           "multi_role_analyses": 531,
@@ -875,8 +880,8 @@
             "2": 531,
             "1": 1003
           },
-          "median_analysis_ms": 34.43806292489171,
-          "p95_analysis_ms": 73.41354200616479
+          "median_analysis_ms": 23.008292075246572,
+          "p95_analysis_ms": 36.98383388109505
         },
         "fare_supported": {
           "dialogues": 250,
@@ -901,8 +906,8 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 404.23168742563576,
-          "p95_dialogue_ms": 1819.1868329886347,
+          "median_dialogue_ms": 344.38270842656493,
+          "p95_dialogue_ms": 1660.3459999896586,
           "analyses": 1534,
           "model_calls": 9841,
           "multi_role_analyses": 531,
@@ -910,8 +915,8 @@
             "2": 531,
             "1": 1003
           },
-          "median_analysis_ms": 36.6286460775882,
-          "p95_analysis_ms": 78.88120785355568
+          "median_analysis_ms": 23.697020951658487,
+          "p95_analysis_ms": 37.37816703505814
         },
         "mcp_recovery": {
           "dialogues": 250,
@@ -936,8 +941,8 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 1409.8281670594588,
-          "p95_dialogue_ms": 2825.912667205557,
+          "median_dialogue_ms": 1278.255521086976,
+          "p95_dialogue_ms": 3321.8399160541594,
           "analyses": 1784,
           "model_calls": 12200,
           "multi_role_analyses": 781,
@@ -945,8 +950,8 @@
             "2": 781,
             "1": 1003
           },
-          "median_analysis_ms": 35.8127080835402,
-          "p95_analysis_ms": 70.92625019140542
+          "median_analysis_ms": 24.283395963720977,
+          "p95_analysis_ms": 40.224957978352904
         },
         "no_excess": {
           "dialogues": 250,
@@ -971,8 +976,8 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 392.54341705236584,
-          "p95_dialogue_ms": 1665.874666068703,
+          "median_dialogue_ms": 354.17154198512435,
+          "p95_dialogue_ms": 1679.5984159689397,
           "analyses": 1534,
           "model_calls": 9840,
           "multi_role_analyses": 531,
@@ -980,8 +985,8 @@
             "2": 531,
             "1": 1003
           },
-          "median_analysis_ms": 34.80679146014154,
-          "p95_analysis_ms": 79.01408313773572
+          "median_analysis_ms": 22.891020984388888,
+          "p95_analysis_ms": 38.14650001004338
         },
         "pickup_conflict": {
           "dialogues": 250,
@@ -1006,8 +1011,8 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 424.4287294568494,
-          "p95_dialogue_ms": 1670.4587910789996,
+          "median_dialogue_ms": 387.07747939042747,
+          "p95_dialogue_ms": 1794.179290998727,
           "analyses": 1534,
           "model_calls": 9842,
           "multi_role_analyses": 531,
@@ -1015,13 +1020,13 @@
             "2": 531,
             "1": 1003
           },
-          "median_analysis_ms": 36.52587498072535,
-          "p95_analysis_ms": 77.78374990448356
+          "median_analysis_ms": 23.685729480348527,
+          "p95_analysis_ms": 37.761959014460444
         }
       },
-      "scores_sha256": "6720eb10f33454a4ca2170617ddb168df18ec421cde229b92c46f10175812217",
-      "raw_sha256": "12ad5158cd89397322fb7dca87924d3313435df7b8b4bb6c0fad7f3e5d1a449c",
-      "observations_sha256": "5a05a2d7e56a5493a03aed91cf1c5df2d4030935344a32506313e28e5a1c031f",
+      "scores_sha256": "6afdc23e5289eca304c04f2515504e8ced651df512a2379131b301abe7886709",
+      "raw_sha256": "615a0b960af314e036b8a013d19a4e6ac80c0f09f9e2a4eab4daddd449940e84",
+      "observations_sha256": "024278e25e9d393dc978e057b712eb29a432de81e1ea8367498e2fa3e48fc851",
       "failure_examples": [
         {
           "id": "world-000054-v0",
@@ -1119,16 +1124,16 @@
         "stale_claim_checkpoints": 0,
         "expected_clarification_checkpoints": 496,
         "passed_clarification_checkpoints": 496,
-        "median_dialogue_ms": 452.77818758040667,
-        "p95_dialogue_ms": 1909.0218748897314,
+        "median_dialogue_ms": 380.05414593499154,
+        "p95_dialogue_ms": 2083.391291089356,
         "analyses": 12522,
         "model_calls": 58993,
         "multi_role_analyses": 0,
         "role_execution_counts": {
           "1": 12522
         },
-        "median_analysis_ms": 30.88183351792395,
-        "p95_analysis_ms": 59.30416681803763
+        "median_analysis_ms": 19.827562500722706,
+        "p95_analysis_ms": 32.589000184088945
       },
       "splits": {
         "calibration": {
@@ -1150,16 +1155,16 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 120,
           "passed_clarification_checkpoints": 120,
-          "median_dialogue_ms": 465.473958523944,
-          "p95_dialogue_ms": 1761.9010000489652,
+          "median_dialogue_ms": 405.84085404407233,
+          "p95_dialogue_ms": 1862.8708750475198,
           "analyses": 2824,
           "model_calls": 13227,
           "multi_role_analyses": 0,
           "role_execution_counts": {
             "1": 2824
           },
-          "median_analysis_ms": 31.23852051794529,
-          "p95_analysis_ms": 56.91675003618002
+          "median_analysis_ms": 20.20745794288814,
+          "p95_analysis_ms": 33.64604199305177
         },
         "development": {
           "dialogues": 1162,
@@ -1180,16 +1185,16 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 296,
           "passed_clarification_checkpoints": 296,
-          "median_dialogue_ms": 464.6020414074883,
-          "p95_dialogue_ms": 1917.240790789947,
+          "median_dialogue_ms": 406.60268696956336,
+          "p95_dialogue_ms": 2099.855874897912,
           "analyses": 7314,
           "model_calls": 34466,
           "multi_role_analyses": 0,
           "role_execution_counts": {
             "1": 7314
           },
-          "median_analysis_ms": 30.946624581702054,
-          "p95_analysis_ms": 60.434124898165464
+          "median_analysis_ms": 19.695395603775978,
+          "p95_analysis_ms": 32.34641603194177
         },
         "test": {
           "dialogues": 404,
@@ -1210,16 +1215,16 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 80,
           "passed_clarification_checkpoints": 80,
-          "median_dialogue_ms": 399.2219375213608,
-          "p95_dialogue_ms": 1896.6693750116974,
+          "median_dialogue_ms": 322.14989594649523,
+          "p95_dialogue_ms": 2100.39904108271,
           "analyses": 2384,
           "model_calls": 11300,
           "multi_role_analyses": 0,
           "role_execution_counts": {
             "1": 2384
           },
-          "median_analysis_ms": 30.209521064534783,
-          "p95_analysis_ms": 60.00995892100036
+          "median_analysis_ms": 19.745499943383038,
+          "p95_analysis_ms": 32.029708847403526
         }
       },
       "families": {
@@ -1242,16 +1247,16 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 352.5405420223251,
-          "p95_dialogue_ms": 1531.8232499994338,
+          "median_dialogue_ms": 302.98095860052854,
+          "p95_dialogue_ms": 1918.1141250301152,
           "analyses": 1534,
           "model_calls": 7233,
           "multi_role_analyses": 0,
           "role_execution_counts": {
             "1": 1534
           },
-          "median_analysis_ms": 32.69772895146161,
-          "p95_analysis_ms": 56.66416697204113
+          "median_analysis_ms": 20.233312039636075,
+          "p95_analysis_ms": 34.47766718454659
         },
         "duplicate_settlement": {
           "dialogues": 250,
@@ -1272,16 +1277,16 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 365.29268755111843,
-          "p95_dialogue_ms": 1553.5362081136554,
+          "median_dialogue_ms": 335.8319994295016,
+          "p95_dialogue_ms": 1682.375167030841,
           "analyses": 1534,
           "model_calls": 7237,
           "multi_role_analyses": 0,
           "role_execution_counts": {
             "1": 1534
           },
-          "median_analysis_ms": 28.507895534858108,
-          "p95_analysis_ms": 56.70554097741842
+          "median_analysis_ms": 19.39616643358022,
+          "p95_analysis_ms": 32.098666997626424
         },
         "evidence_mismatch": {
           "dialogues": 250,
@@ -1302,16 +1307,16 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 419.3024168489501,
-          "p95_dialogue_ms": 1341.0520409233868,
+          "median_dialogue_ms": 323.17635393701494,
+          "p95_dialogue_ms": 1834.6006670035422,
           "analyses": 1534,
           "model_calls": 7237,
           "multi_role_analyses": 0,
           "role_execution_counts": {
             "1": 1534
           },
-          "median_analysis_ms": 30.062562436796725,
-          "p95_analysis_ms": 58.10312507674098
+          "median_analysis_ms": 19.623042084276676,
+          "p95_analysis_ms": 30.00645898282528
         },
         "fare_over_cap": {
           "dialogues": 250,
@@ -1332,16 +1337,16 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 395.2091879909858,
-          "p95_dialogue_ms": 1603.8877910468727,
+          "median_dialogue_ms": 351.7161870840937,
+          "p95_dialogue_ms": 1487.6812910661101,
           "analyses": 1534,
           "model_calls": 7234,
           "multi_role_analyses": 0,
           "role_execution_counts": {
             "1": 1534
           },
-          "median_analysis_ms": 29.943896108306944,
-          "p95_analysis_ms": 63.28179105184972
+          "median_analysis_ms": 19.553604070097208,
+          "p95_analysis_ms": 31.729707960039377
         },
         "fare_supported": {
           "dialogues": 250,
@@ -1362,16 +1367,16 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 347.38418797496706,
-          "p95_dialogue_ms": 1286.5219998639077,
+          "median_dialogue_ms": 335.4377505602315,
+          "p95_dialogue_ms": 2359.6954168751836,
           "analyses": 1534,
           "model_calls": 7237,
           "multi_role_analyses": 0,
           "role_execution_counts": {
             "1": 1534
           },
-          "median_analysis_ms": 32.84043737221509,
-          "p95_analysis_ms": 58.661541203036904
+          "median_analysis_ms": 20.246812026016414,
+          "p95_analysis_ms": 34.23241595737636
         },
         "mcp_recovery": {
           "dialogues": 250,
@@ -1392,16 +1397,16 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 1354.881166946143,
-          "p95_dialogue_ms": 2946.8770418316126,
+          "median_dialogue_ms": 1113.5328540112823,
+          "p95_dialogue_ms": 2836.2257920671254,
           "analyses": 1784,
           "model_calls": 8342,
           "multi_role_analyses": 0,
           "role_execution_counts": {
             "1": 1784
           },
-          "median_analysis_ms": 30.131645849905908,
-          "p95_analysis_ms": 63.26966593042016
+          "median_analysis_ms": 19.635708536952734,
+          "p95_analysis_ms": 31.495415838435292
         },
         "no_excess": {
           "dialogues": 250,
@@ -1422,16 +1427,16 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 347.8297085966915,
-          "p95_dialogue_ms": 1407.3515420313925,
+          "median_dialogue_ms": 303.1141875544563,
+          "p95_dialogue_ms": 1449.637999990955,
           "analyses": 1534,
           "model_calls": 7238,
           "multi_role_analyses": 0,
           "role_execution_counts": {
             "1": 1534
           },
-          "median_analysis_ms": 30.507541494444013,
-          "p95_analysis_ms": 59.30416681803763
+          "median_analysis_ms": 19.660582998767495,
+          "p95_analysis_ms": 32.443540869280696
         },
         "pickup_conflict": {
           "dialogues": 250,
@@ -1452,21 +1457,21 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 380.9045000234619,
-          "p95_dialogue_ms": 1679.3002497870475,
+          "median_dialogue_ms": 337.37875055521727,
+          "p95_dialogue_ms": 1418.2157081086189,
           "analyses": 1534,
           "model_calls": 7235,
           "multi_role_analyses": 0,
           "role_execution_counts": {
             "1": 1534
           },
-          "median_analysis_ms": 33.02272886503488,
-          "p95_analysis_ms": 64.79645799845457
+          "median_analysis_ms": 20.32666653394699,
+          "p95_analysis_ms": 36.23795812018216
         }
       },
-      "scores_sha256": "fce855eb3f952ebc3291fab836c5b776f046843fbbeb8c36f89851ffd8b5cad4",
-      "raw_sha256": "8fa6051b2baf120fb8b319950d7a91a7201b7b13dfa657b12b877504f5d862db",
-      "observations_sha256": "0be42936741fe747176ccdac216b1ecd61f16d47bbd3730174a77cfa0e68cdd4",
+      "scores_sha256": "49a39b03b72efa876416dd9880b5c79b228360d7e7ae5b8766f271e5fc1bc05b",
+      "raw_sha256": "ba685605ff6531728f50142f605af4650d46f18a5391b313d38d23e2cd59a40f",
+      "observations_sha256": "fd30d48d7837bdcee53abff5f8acae997247ee160942ab0b8a407cb070976524",
       "failure_examples": [],
       "exception_examples": []
     },
@@ -1490,8 +1495,8 @@
         "stale_claim_checkpoints": 0,
         "expected_clarification_checkpoints": 496,
         "passed_clarification_checkpoints": 496,
-        "median_dialogue_ms": 491.98635411448777,
-        "p95_dialogue_ms": 1916.6387908626348,
+        "median_dialogue_ms": 392.22231262829155,
+        "p95_dialogue_ms": 2098.932957975194,
         "analyses": 12522,
         "model_calls": 81611,
         "multi_role_analyses": 4498,
@@ -1499,8 +1504,8 @@
           "2": 4498,
           "1": 8024
         },
-        "median_analysis_ms": 32.28304197546095,
-        "p95_analysis_ms": 73.1124160811305
+        "median_analysis_ms": 20.689937518909574,
+        "p95_analysis_ms": 35.25733295828104
       },
       "splits": {
         "calibration": {
@@ -1522,8 +1527,8 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 120,
           "passed_clarification_checkpoints": 120,
-          "median_dialogue_ms": 638.9829164836556,
-          "p95_dialogue_ms": 1804.3754999525845,
+          "median_dialogue_ms": 429.30441652424634,
+          "p95_dialogue_ms": 2010.385625064373,
           "analyses": 2824,
           "model_calls": 18194,
           "multi_role_analyses": 987,
@@ -1531,8 +1536,8 @@
             "2": 987,
             "1": 1837
           },
-          "median_analysis_ms": 32.846582937054336,
-          "p95_analysis_ms": 75.07249992340803
+          "median_analysis_ms": 20.823729573749006,
+          "p95_analysis_ms": 35.896833054721355
         },
         "development": {
           "dialogues": 1162,
@@ -1553,8 +1558,8 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 296,
           "passed_clarification_checkpoints": 296,
-          "median_dialogue_ms": 485.5658960295841,
-          "p95_dialogue_ms": 2008.7752090767026,
+          "median_dialogue_ms": 401.89856302458793,
+          "p95_dialogue_ms": 2276.2087918817997,
           "analyses": 7314,
           "model_calls": 47540,
           "multi_role_analyses": 2600,
@@ -1562,8 +1567,8 @@
             "2": 2600,
             "1": 4714
           },
-          "median_analysis_ms": 32.2682085679844,
-          "p95_analysis_ms": 73.0197080411017
+          "median_analysis_ms": 20.676541491411626,
+          "p95_analysis_ms": 36.11229080706835
         },
         "test": {
           "dialogues": 404,
@@ -1584,8 +1589,8 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 80,
           "passed_clarification_checkpoints": 80,
-          "median_dialogue_ms": 441.97760394308716,
-          "p95_dialogue_ms": 1870.3609581571072,
+          "median_dialogue_ms": 345.1811046106741,
+          "p95_dialogue_ms": 1816.4043750148267,
           "analyses": 2384,
           "model_calls": 15877,
           "multi_role_analyses": 911,
@@ -1593,8 +1598,8 @@
             "2": 911,
             "1": 1473
           },
-          "median_analysis_ms": 31.66281257290393,
-          "p95_analysis_ms": 71.47375005297363
+          "median_analysis_ms": 20.622479496523738,
+          "p95_analysis_ms": 32.79429208487272
         }
       },
       "families": {
@@ -1617,8 +1622,8 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 400.24889551568776,
-          "p95_dialogue_ms": 1537.4659590888768,
+          "median_dialogue_ms": 326.1842291103676,
+          "p95_dialogue_ms": 1216.334749944508,
           "analyses": 1534,
           "model_calls": 9907,
           "multi_role_analyses": 531,
@@ -1626,8 +1631,8 @@
             "2": 531,
             "1": 1003
           },
-          "median_analysis_ms": 33.57377101201564,
-          "p95_analysis_ms": 79.92595806717873
+          "median_analysis_ms": 20.78612509649247,
+          "p95_analysis_ms": 35.57950002141297
         },
         "duplicate_settlement": {
           "dialogues": 250,
@@ -1648,8 +1653,8 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 377.47616635169834,
-          "p95_dialogue_ms": 1489.3297089729458,
+          "median_dialogue_ms": 335.6907289708033,
+          "p95_dialogue_ms": 1322.7182920090854,
           "analyses": 1534,
           "model_calls": 9907,
           "multi_role_analyses": 531,
@@ -1657,8 +1662,8 @@
             "2": 531,
             "1": 1003
           },
-          "median_analysis_ms": 30.947812483645976,
-          "p95_analysis_ms": 69.16370801627636
+          "median_analysis_ms": 20.216249977238476,
+          "p95_analysis_ms": 34.427457954734564
         },
         "evidence_mismatch": {
           "dialogues": 250,
@@ -1679,8 +1684,8 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 413.64729148335755,
-          "p95_dialogue_ms": 1567.9487080778927,
+          "median_dialogue_ms": 335.9806453809142,
+          "p95_dialogue_ms": 1969.0506251063198,
           "analyses": 1534,
           "model_calls": 9907,
           "multi_role_analyses": 531,
@@ -1688,8 +1693,8 @@
             "2": 531,
             "1": 1003
           },
-          "median_analysis_ms": 30.836916528642178,
-          "p95_analysis_ms": 66.77595805376768
+          "median_analysis_ms": 20.316582988016307,
+          "p95_analysis_ms": 35.608042031526566
         },
         "fare_over_cap": {
           "dialogues": 250,
@@ -1710,8 +1715,8 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 452.23187492229044,
-          "p95_dialogue_ms": 1890.5515419319272,
+          "median_dialogue_ms": 356.0116254957393,
+          "p95_dialogue_ms": 1635.4149160906672,
           "analyses": 1534,
           "model_calls": 9907,
           "multi_role_analyses": 531,
@@ -1719,8 +1724,8 @@
             "2": 531,
             "1": 1003
           },
-          "median_analysis_ms": 31.501542078331113,
-          "p95_analysis_ms": 77.36979215405881
+          "median_analysis_ms": 20.572603563778102,
+          "p95_analysis_ms": 33.918790984898806
         },
         "fare_supported": {
           "dialogues": 250,
@@ -1741,8 +1746,8 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 382.8424165258184,
-          "p95_dialogue_ms": 1515.7027079258114,
+          "median_dialogue_ms": 340.27872944716364,
+          "p95_dialogue_ms": 2622.509750071913,
           "analyses": 1534,
           "model_calls": 9907,
           "multi_role_analyses": 531,
@@ -1750,8 +1755,8 @@
             "2": 531,
             "1": 1003
           },
-          "median_analysis_ms": 34.56225001718849,
-          "p95_analysis_ms": 73.0197080411017
+          "median_analysis_ms": 21.05120790656656,
+          "p95_analysis_ms": 36.54574998654425
         },
         "mcp_recovery": {
           "dialogues": 250,
@@ -1772,8 +1777,8 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 1320.2229789458215,
-          "p95_dialogue_ms": 2823.714999947697,
+          "median_dialogue_ms": 1227.7459169272333,
+          "p95_dialogue_ms": 3068.2490409817547,
           "analyses": 1784,
           "model_calls": 12262,
           "multi_role_analyses": 781,
@@ -1781,8 +1786,8 @@
             "2": 781,
             "1": 1003
           },
-          "median_analysis_ms": 31.768812448717654,
-          "p95_analysis_ms": 70.16141712665558
+          "median_analysis_ms": 20.91920841485262,
+          "p95_analysis_ms": 33.47679181024432
         },
         "no_excess": {
           "dialogues": 250,
@@ -1803,8 +1808,8 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 384.63727105408907,
-          "p95_dialogue_ms": 1635.9256249852479,
+          "median_dialogue_ms": 335.72160394396633,
+          "p95_dialogue_ms": 2276.4982080552727,
           "analyses": 1534,
           "model_calls": 9907,
           "multi_role_analyses": 531,
@@ -1812,8 +1817,8 @@
             "2": 531,
             "1": 1003
           },
-          "median_analysis_ms": 31.432249466888607,
-          "p95_analysis_ms": 73.56591592542827
+          "median_analysis_ms": 20.45547845773399,
+          "p95_analysis_ms": 35.87116696871817
         },
         "pickup_conflict": {
           "dialogues": 250,
@@ -1834,8 +1839,8 @@
           "stale_claim_checkpoints": 0,
           "expected_clarification_checkpoints": 62,
           "passed_clarification_checkpoints": 62,
-          "median_dialogue_ms": 433.27706248965114,
-          "p95_dialogue_ms": 1518.8388340175152,
+          "median_dialogue_ms": 342.0984580880031,
+          "p95_dialogue_ms": 1602.3208750411868,
           "analyses": 1534,
           "model_calls": 9907,
           "multi_role_analyses": 531,
@@ -1843,13 +1848,13 @@
             "2": 531,
             "1": 1003
           },
-          "median_analysis_ms": 33.871479448862374,
-          "p95_analysis_ms": 74.95900010690093
+          "median_analysis_ms": 21.31214551627636,
+          "p95_analysis_ms": 36.68045811355114
         }
       },
-      "scores_sha256": "f849c0a85efc887c462cfe4ee2033a229e342bea65309ae4bd088d51c84123f0",
-      "raw_sha256": "564a879e90f9aea7004eb39ac21f093e55ef0ba86ecb624a2d39231633cf5a77",
-      "observations_sha256": "15c15548e92529440c895c526f017886fbec19e700b0cf8465cdc9a25561c9bc",
+      "scores_sha256": "a22756092704b9144d56cb70806fdad186419d84c232b1a612ce09093807fdd8",
+      "raw_sha256": "8e50d8c361cf3bd9ebd221c6ad6fe52b7eb21dfa2841cc16943f87076b753174",
+      "observations_sha256": "4683b95812ea9532603f5b4264c5da26bfd74bb355aaed435fcafef927f82a30",
       "failure_examples": [],
       "exception_examples": []
     }

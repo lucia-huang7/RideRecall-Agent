@@ -9,8 +9,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Deque, Dict, List, Optional
 
-import httpx
-from prometheus_client import REGISTRY, Counter, Gauge, Histogram, start_http_server
+from prometheus_client import REGISTRY, Counter, Gauge, Histogram
 
 logger = logging.getLogger(__name__)
 
@@ -88,22 +87,17 @@ class PerformanceMonitor:
         orchestrator,
         tool_manager,
         interval_s: float = 10.0,
-        webhook_url: Optional[str] = None,
-        prometheus_port: Optional[int] = None,
         registry=None,
     ):
         self._orchestrator = orchestrator
         self._tool_manager = tool_manager
         self._interval = interval_s
-        self._webhook = webhook_url
         self._detector = AnomalyDetector()
         self._alerts: List[Alert] = []
         self._suggestions: List[Suggestion] = []
         self._active = False
         self._task: Optional[asyncio.Task] = None
         self._registry = registry if registry is not None else REGISTRY
-        self._prometheus_port = prometheus_port
-        self._http_server = None
         self._registered = True
         self._setup_prometheus()
         for kind, agents in self._orchestrator._pool.items():
@@ -174,9 +168,6 @@ class PerformanceMonitor:
             for metric in self._prom.values():
                 self._registry.register(metric)
             self._registered = True
-        if self._prometheus_port:
-            self._http_server, _ = start_http_server(self._prometheus_port, registry=self._registry)
-            logger.info(f"Prometheus started: :{self._prometheus_port}")
         self._active = True
         self._task = asyncio.create_task(self._loop())
         logger.info(f"Monitor started; collection interval {self._interval}s")
@@ -190,10 +181,6 @@ class PerformanceMonitor:
             except asyncio.CancelledError:
                 pass
             self._task = None
-        if self._http_server is not None:
-            await asyncio.to_thread(self._http_server.shutdown)
-            self._http_server.server_close()
-            self._http_server = None
         if self._registered:
             for metric in self._prom.values():
                 self._registry.unregister(metric)
@@ -278,8 +265,6 @@ class PerformanceMonitor:
             )
             self._alerts.append(alert)
             logger.warning(f"[{severity.value.upper()}] {alert.message}")
-            if self._webhook:
-                asyncio.create_task(self._send_webhook(alert))
 
     def _generate_routing_suggestions(self, agent_stats: Dict[str, Any]) -> None:
         """Generate routing suggestions."""
@@ -303,13 +288,6 @@ class PerformanceMonitor:
         if not any((x.title == s.title for x in self._suggestions)):
             self._suggestions.append(s)
             logger.info(f"Suggestion [P{s.priority}]: {s.title}")
-
-    async def _send_webhook(self, alert: Alert) -> None:
-        try:
-            async with httpx.AsyncClient(timeout=5.0) as c:
-                await c.post(self._webhook, json=asdict(alert))
-        except Exception as ex:
-            logger.error(f"Webhook delivery failed: {ex}")
 
     def summary(self) -> Dict[str, Any]:
         """Summary."""

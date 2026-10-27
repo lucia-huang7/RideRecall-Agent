@@ -1,73 +1,21 @@
-"""Knowledge base."""
+"""Versioned document chunks and embedding-backed policy retrieval."""
 
 import asyncio
 import hashlib
 import json
 import logging
-import os
 import threading
 from typing import Any, Dict, List
-
-import chromadb
-
-from ride_agent.domain.seed import POLICIES
 
 logger = logging.getLogger(__name__)
 
 
 class KnowledgeBase:
-    """Knowledge base."""
-
-    COLLECTION_NAME = "knowledge_base"
-
-    def __init__(
-        self,
-        chroma_host: str = "localhost",
-        chroma_port: int = 8000,
-        chroma_path: str = "./data/chroma",
-        collection: Any = None,
-    ):
-        if collection is not None:
-            self._write_lock = threading.RLock()
-            self._use_server = False
-            self._collection = collection
-            return
+    def __init__(self, collection):
         self._write_lock = threading.RLock()
-        self._use_server = False
-        try:
-            self._client = chromadb.HttpClient(
-                host=chroma_host,
-                port=chroma_port,
-                settings=chromadb.Settings(anonymized_telemetry=False),
-            )
-            self._client.heartbeat()
-            self._use_server = True
-            logger.info(f"Knowledge ChromaDB connected: {chroma_host}:{chroma_port}")
-        except Exception as ex:
-            if os.getenv("LLM_AGENT_SYSTEM_ENV", "development").lower() == "production":
-                raise RuntimeError(("Production knowledge ChromaDB unavailable; local fallback is forbidden")) from ex
-            logger.info(f"Knowledge ChromaDB unavailable; using local mode: {chroma_path}")
-            self._client = chromadb.PersistentClient(
-                path=chroma_path, settings=chromadb.Settings(anonymized_telemetry=False)
-            )
-        self._collection = self._client.get_or_create_collection(
-            name=self.COLLECTION_NAME,
-            metadata={"description": "Ride-support policy index"},
-        )
-        seed_demo = os.getenv("LLM_AGENT_SYSTEM_SEED_DEMO_DOCS", "true").lower() in {
-            "1",
-            "true",
-            "yes",
-        }
-        if (
-            os.getenv("LLM_AGENT_SYSTEM_ENV", "development").lower() != "production"
-            and seed_demo
-            and (self._collection.count() == 0)
-        ):
-            self._load_default_docs()
+        self._collection = collection
 
     def add_documents(self, documents: List[Dict[str, str]]) -> int:
-        """Add documents."""
         prepared = {}
         for doc in documents:
             title, content = (doc.get("title", ""), doc.get("content", ""))
@@ -82,8 +30,6 @@ class KnowledgeBase:
                 ["explicit", explicit_id] if explicit_id else ["title", title],
                 ensure_ascii=True,
             )
-            if not isinstance(identity, str):
-                raise ValueError("document_id must be a string")
             prepared[identity] = (title, content, bool(doc.get("document_id")))
         count = 0
         with self._write_lock:
@@ -137,11 +83,9 @@ class KnowledgeBase:
         return count
 
     async def add_documents_async(self, documents: List[Dict[str, str]]) -> int:
-        """Add documents async."""
         return await asyncio.to_thread(self.add_documents, documents)
 
     def search(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
-        """Search."""
         if type(top_k) is not int or not 1 <= top_k <= 20:
             raise ValueError("top_k must be an integer between 1 and 20")
         count = self._collection.count()
@@ -168,25 +112,13 @@ class KnowledgeBase:
         return items
 
     async def search_async(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
-        """Search async."""
         return await asyncio.to_thread(self.search, query, top_k)
 
     @property
     def doc_count(self) -> int:
         return self._collection.count()
 
-    async def doc_count_async(self) -> int:
-        """Doc count async."""
-        return await asyncio.to_thread(self._collection.count)
-
-    async def search_handler(self, params: Dict[str, Any], context: Any) -> List[Dict]:
-        """Search handler."""
-        query = params.get("query", "")
-        top_k = params.get("top_k", 5)
-        return await self.search_async(query, top_k=top_k)
-
     def _chunk_text(self, text: str, chunk_size: int = 500) -> List[str]:
-        """Chunk text."""
         if len(text) <= chunk_size:
             return [text] if text.strip() else []
         chunks = []
@@ -206,7 +138,3 @@ class KnowledgeBase:
         if current:
             chunks.append(current)
         return chunks
-
-    def _load_default_docs(self) -> None:
-
-        self.add_documents([dict(document_id=p["id"], title=p["title"], content=p["text"]) for p in POLICIES.values()])

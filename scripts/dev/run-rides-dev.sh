@@ -3,11 +3,22 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 PYTHON="${LLM_AGENT_SYSTEM_PYTHON:-$ROOT/.venv-rides/bin/python}"
 if [ ! -x "$PYTHON" ]; then
-  python3 -m venv "$ROOT/.venv-rides"
+  if [ -n "${LLM_AGENT_SYSTEM_PYTHON:-}" ]; then
+    echo 'LLM_AGENT_SYSTEM_PYTHON must name an existing Python 3.11/3.12 executable.' >&2
+    exit 1
+  fi
+  for candidate in python3.11 python3.12; do
+    if command -v "$candidate" >/dev/null 2>&1; then
+      "$candidate" -m venv "$ROOT/.venv-rides"
+      break
+    fi
+  done
 fi
-if ! "$PYTHON" -c "import fastapi, uvicorn, anthropic, httpx, jsonschema, multipart, chromadb, fakeredis, redis, lupa, mcp, prometheus_client" >/dev/null 2>&1; then
-  "$PYTHON" -m pip install -r "$ROOT/backend/requirements.txt"
+if [ ! -x "$PYTHON" ] || ! "$PYTHON" -c 'import sys; assert sys.version_info[:2] in ((3,11),(3,12))'; then
+  echo 'Python 3.11 or 3.12 is required.' >&2
+  exit 1
 fi
+"$PYTHON" -m pip install --disable-pip-version-check --require-hashes -r "$ROOT/backend/requirements.txt"
 if [ ! -d "$ROOT/frontend/node_modules" ]; then
   (cd "$ROOT/frontend" && npm ci)
 fi

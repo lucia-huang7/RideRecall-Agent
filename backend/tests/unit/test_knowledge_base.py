@@ -1,13 +1,3 @@
-import sys
-import threading
-import types
-
-try:
-    import chromadb as _chromadb
-
-    assert _chromadb is not None
-except ModuleNotFoundError:
-    sys.modules["chromadb"] = types.ModuleType("chromadb")
 from ride_agent.retrieval.knowledge_base import KnowledgeBase
 
 
@@ -31,10 +21,7 @@ class FakeCollection:
 
 
 def make_kb():
-    kb = KnowledgeBase.__new__(KnowledgeBase)
-    kb._write_lock = threading.RLock()
-    kb._collection = FakeCollection()
-    return kb
+    return KnowledgeBase(collection=FakeCollection())
 
 
 def test_repeated_document_import_is_idempotent():

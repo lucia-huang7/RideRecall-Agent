@@ -12,7 +12,7 @@ bash scripts/dev/one-click.sh stop
 
 Open [Trips](http://127.0.0.1:5175/#/trips), [Help](http://127.0.0.1:5175/#/help) or [Account](http://127.0.0.1:5175/#/account). First setup needs Python 3.11/3.12, Node.js compatible with Vite 7, and dependency-registry access. The background installation supervises the frontend, backend and separate stdio MCP process. The Mac must remain awake and logged in. Run Start again after source updates; saved cases are retained.
 
-For foreground development, stop the background installation, then run `bash scripts/dev/run-rides.sh --dev`.
+For foreground development, stop the background installation, then run `bash scripts/dev/run-rides-dev.sh`.
 
 ## Use
 
@@ -94,7 +94,7 @@ Choose the model and verify its current input/output prices before running. The 
 
 ## Dependency compatibility
 
-The runtime pins Chroma 1.5.9 and HTTPX2 2.16.0. Chroma 0.5.23 accessed Pydantic model fields through instances; the newer release uses class-level access. Starlette's TestClient uses HTTPX2 instead of its deprecated HTTPX fallback. HTTPX remains installed for application integrations that use its API.
+The runtime pins Chroma 1.5.9 and HTTPX2 2.16.0. Chroma 0.5.23 accessed Pydantic model fields through instances; the newer release uses class-level access. [Starlette's TestClient](https://www.starlette.io/testclient/) uses HTTPX2 instead of its deprecated HTTPX fallback. HTTPX remains installed for application integrations that use its API.
 
 The local embedding implements Chroma's named, serializable configuration protocol. Its 256-dimensional hash vectors, cosine policy indexes and L2 memory indexes are unchanged; no embedding service or model download is required by the ride pipeline. Tests run with `-W error`, so unexpected warnings fail rather than being hidden.
 
@@ -109,6 +109,15 @@ python -m ride_agent.persistence.backup verify /absolute/path/to/new-snapshot
 
 The snapshot includes the case database, receipts, binary evidence and derived sidecars. Chroma may migrate its index format on first open; keep the snapshot and the original dependency lock if rollback is needed. Do not open an upgraded index with the old Chroma package. Restart with the one-click command after upgrading. The dependency validation includes an old-version case/index migration and a no-key follow-up retaining corrected memory; synthetic replay results still do not establish live-model quality.
 
-## GitHub presentation
+The isolated Linux container regression can be reproduced with:
 
-The Verify workflow runs on main pushes and pull requests; its badge reports actual GitHub status. The container workflow remains an explicit manual option. Repository topics and About text describe the implemented architecture. `docs/assets/social-preview.png` is the prepared sharing image; an authenticated repository administrator must select it under Settings → General → Social preview. Committing the image alone does not activate GitHub social preview. Repository visibility is unchanged.
+```bash
+docker compose build app
+python scripts/ops/check-container.py --output artifacts/my-container-check.json
+```
+
+It uses a separate Compose project and removes only its own containers and volumes. The dependency upgrade run passed all 31 checks, including the specialist/confirmation workflow, restart persistence and offline recovery.
+
+## Reliability workloads
+
+`scripts/bench/check-capacity.py --help` describes the bounded authenticated HTTP concurrency workload; `scripts/bench/check-soak.py --help` describes the paced restart/MCP-fault workload. Both operate on an explicit frozen checkout and isolated state, preserve failures and refuse an existing output directory. These test recovery and resource bounds rather than model quality. `scripts/ops/check-local-recovery.py` checks the installed macOS service without discarding saved cases.

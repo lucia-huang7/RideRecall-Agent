@@ -2,11 +2,10 @@ import asyncio
 import json
 from collections import deque
 from types import SimpleNamespace
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock
 
 import pytest
 from ride_agent.agent.composer import ResponseComposer
-from ride_agent.agent.conversation_memory import MemoryManager
 from ride_agent.agent.conversation_state import merge_state
 from ride_agent.agent.intent import IntentCategory, IntentRecognizer, UrgencyLevel
 from ride_agent.agent.orchestrator import AgentOrchestrator
@@ -71,47 +70,9 @@ async def test_intent_timeout_uses_fallback_instead_of_waiting_for_chat_deadline
     assert result["failed"]
 
 
-@pytest.mark.parametrize(
-    "cls,module",
-    [
-        (KnowledgeBase, "ride_agent.retrieval.knowledge_base"),
-        (MemoryManager, "ride_agent.agent.conversation_memory"),
-    ],
-)
-def test_production_storage_connection_failure_never_switches_to_local(cls, module, monkeypatch):
-    import importlib
-
-    target = importlib.import_module(module)
-    monkeypatch.setenv("LLM_AGENT_SYSTEM_ENV", "production")
-    monkeypatch.setattr(target.chromadb, "Settings", Mock(return_value=None), raising=False)
-    monkeypatch.setattr(
-        target.chromadb,
-        "HttpClient",
-        Mock(side_effect=RuntimeError("remote unavailable")),
-        raising=False,
-    )
-    local = Mock()
-    monkeypatch.setattr(target.chromadb, "PersistentClient", local, raising=False)
-    if cls is MemoryManager:
-        monkeypatch.setattr(target, "AsyncAnthropic", Mock())
-        monkeypatch.setattr(target.redis, "from_url", Mock())
-    with pytest.raises(RuntimeError, match="Production"):
-        cls()
-    local.assert_not_called()
-
-
-def test_empty_production_knowledge_base_does_not_seed_demo_policies(monkeypatch):
-    import ride_agent.retrieval.knowledge_base as module
-
-    monkeypatch.setenv("LLM_AGENT_SYSTEM_ENV", "production")
+def test_empty_injected_knowledge_index_is_not_seeded():
     collection = SimpleNamespace(count=lambda: 0)
-    remote = SimpleNamespace(heartbeat=lambda: None, get_or_create_collection=lambda **kwargs: collection)
-    monkeypatch.setattr(module.chromadb, "Settings", Mock(return_value=None), raising=False)
-    monkeypatch.setattr(module.chromadb, "HttpClient", Mock(return_value=remote), raising=False)
-    seed = Mock()
-    monkeypatch.setattr(KnowledgeBase, "_load_default_docs", seed)
-    assert KnowledgeBase()._use_server
-    seed.assert_not_called()
+    assert KnowledgeBase(collection=collection).doc_count == 0
 
 
 def test_retrieval_retains_document_identity_and_version():
@@ -244,22 +205,17 @@ async def test_invalid_search_budget_does_not_spend_a_model_request():
 
 
 @pytest.mark.asyncio
-async def test_monitor_shutdown_releases_registry_and_http_server(monkeypatch):
-    import ride_agent.ops.performance_monitor as module
+async def test_monitor_shutdown_releases_registry_and_can_restart():
     from prometheus_client import CollectorRegistry
     from ride_agent.ops.performance_monitor import PerformanceMonitor
 
     registry = CollectorRegistry()
-    http_server = Mock()
-    monkeypatch.setattr(module, "start_http_server", Mock(return_value=(http_server, None)))
     orch = SimpleNamespace(_pool={}, get_stats=lambda: {})
     tools = SimpleNamespace(get_stats=lambda: {})
-    monitor = PerformanceMonitor(orch, tools, prometheus_port=9091, registry=registry)
+    monitor = PerformanceMonitor(orch, tools, registry=registry)
     await monitor.start()
     await monitor.stop()
     assert not list(registry.collect())
-    http_server.shutdown.assert_called_once()
-    http_server.server_close.assert_called_once()
     await monitor.start()
     assert list(registry.collect())
     await monitor.stop()

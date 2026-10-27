@@ -7,7 +7,6 @@ from ride_agent.agent.concurrency import (
     ConversationBusyError,
     KeyedLocks,
     LeaseLostError,
-    ProfileUpdater,
     redis_lease,
 )
 
@@ -100,59 +99,5 @@ def test_busy_redis_lease_reports_busy():
         with pytest.raises(ConversationBusyError):
             async with redis_lease(client, "key"):
                 pytest.fail("must not run")
-
-    asyncio.run(run())
-
-
-def test_profile_updates_coalesce_per_user_and_shutdown_cancels_workers():
-
-    async def run():
-        entered, finish, other = (asyncio.Event(), asyncio.Event(), asyncio.Event())
-        calls = []
-
-        async def update(user, conv):
-            calls.append((user, conv))
-            if conv == "first":
-                entered.set()
-                await finish.wait()
-            if user == "b":
-                other.set()
-
-        queue = ProfileUpdater(SimpleNamespace(update_profile=update), workers=2)
-        queue.start()
-        queue.submit("a", "first")
-        await entered.wait()
-        queue.submit("a", "discarded")
-        queue.submit("a", "latest")
-        queue.submit("b", "parallel")
-        await asyncio.wait_for(other.wait(), 1)
-        finish.set()
-        await asyncio.wait_for(queue._queue.join(), 1)
-        assert ("a", "discarded") not in calls
-        assert calls.index(("a", "first")) < calls.index(("a", "latest"))
-        await queue.close()
-        assert not queue._tasks and (not queue._pending)
-        assert not queue.submit("a", "after-close")
-
-    asyncio.run(run())
-
-
-def test_profile_shutdown_cleans_active_and_queued_work():
-
-    async def run():
-        started = asyncio.Event()
-
-        async def update(user, conv):
-            started.set()
-            await asyncio.Event().wait()
-
-        queue = ProfileUpdater(SimpleNamespace(update_profile=update), workers=1)
-        queue.start()
-        queue.submit("a", "active")
-        await started.wait()
-        queue.submit("b", "queued")
-        await asyncio.wait_for(queue.close(), 1)
-        await asyncio.wait_for(queue._queue.join(), 1)
-        assert queue._queue.empty() and (not queue._tasks) and (not queue._pending)
 
     asyncio.run(run())

@@ -4,22 +4,16 @@ import asyncio
 import hashlib
 import json
 import logging
-import os
 import time
-from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-import chromadb
-import redis.asyncio as redis
-from anthropic import AsyncAnthropic
 from redis.exceptions import WatchError
 
-from ride_agent.agent.concurrency import KeyedLocks, redis_lease
+from ride_agent.agent.concurrency import redis_lease
 from ride_agent.agent.llm_utils import extract_text_content
-from ride_agent.agent.redaction import redact
 
 logger = logging.getLogger(__name__)
 
@@ -80,71 +74,24 @@ class MemoryManager:
 
     def __init__(
         self,
-        redis_url: str = "redis://localhost:6379/0",
-        chroma_host: str = "localhost",
-        chroma_port: int = 8000,
-        chroma_path: str = "./data/chroma",
-        api_key: str = "",
-        base_url: Optional[str] = None,
-        model: str = "claude-3-5-sonnet-20241022",
-        client: Any = None,
-        redis_client: Any = None,
-        episodic: Any = None,
-        profile: Any = None,
+        *,
+        client: Any,
+        redis_client: Any,
+        episodic: Any,
+        profile: Any,
+        model: str = "local-memory",
         prompt_builder: Any = None,
         strict_scope: bool = False,
     ):
-        kwargs: Dict[str, Any] = {"api_key": api_key}
-        if base_url:
-            kwargs["base_url"] = base_url
-        self._client = client if client is not None else AsyncAnthropic(**kwargs)
+        self._client = client
         self._prompt_builder = prompt_builder
         self._strict_scope = strict_scope
         self._model = model
-        self._redis = redis_client if redis_client is not None else redis.from_url(redis_url, decode_responses=True)
-        self._request_locks = KeyedLocks()
-        if episodic is not None and profile is not None:
-            self._episodic, self._profile = (episodic, profile)
-            return
-        try:
-            chroma = chromadb.HttpClient(
-                host=chroma_host,
-                port=chroma_port,
-                settings=chromadb.Settings(anonymized_telemetry=False),
-            )
-            chroma.heartbeat()
-            logger.info(f"ChromaDB connected: {chroma_host}:{chroma_port}")
-        except Exception as ex:
-            if os.getenv("LLM_AGENT_SYSTEM_ENV", "development").lower() == "production":
-                raise RuntimeError(("Production memory ChromaDB unavailable; local fallback is forbidden")) from ex
-            logger.info(f"ChromaDB unavailable; using embedded storage: {chroma_path}")
-            chroma = chromadb.PersistentClient(path=chroma_path, settings=chromadb.Settings(anonymized_telemetry=False))
-        self._episodic = chroma.get_or_create_collection("episodic")
-        self._profile = chroma.get_or_create_collection("user_profile")
+        self._redis = redis_client
+        self._episodic, self._profile = episodic, profile
 
-    @asynccontextmanager
-    async def conversation(self, user_id: str, conv_id: str):
-        digest = hashlib.sha256(json.dumps([self._safe_text(user_id), self._safe_text(conv_id)]).encode()).hexdigest()
-        async with self._request_locks.hold(digest):
-            async with redis_lease(self._redis, f"lock:conversation:{digest}"):
-                await self._migrate_legacy_keys(user_id, conv_id)
-                yield
-
-    def receipt_key(self, user_id, conv_id, request_id):
-        return (
-            "turn_receipt:"
-            + self._conversation_id(user_id, conv_id)
-            + ":"
-            + hashlib.sha256(request_id.encode()).hexdigest()
-        )
-
-    async def get_turn_receipt(self, user_id, conv_id, request_id):
-        raw = await self._redis.get(self.receipt_key(user_id, conv_id, request_id))
-        return json.loads(raw) if raw else None
-
-    async def commit_turn(self, user_id, conv_id, request_id, message, response, trace=None, *, state=None):
-        """Commit turn."""
-        await self._migrate_legacy_keys(user_id, conv_id)
+    async def commit_turn(self, user_id, conv_id, request_id, message, response, *, state=None):
+        """Append working messages and state atomically; durable receipts belong to the case store."""
 
         def raw(role, content):
             return json.dumps(
@@ -163,28 +110,7 @@ class MemoryManager:
                 pipe.expire(key, 86400)
                 if state is not None:
                     pipe.setex(self._state_key(user_id, conv_id), 86400, json.dumps(state))
-            pipe.setex(
-                self.receipt_key(user_id, conv_id, request_id),
-                86400,
-                json.dumps({"message": message, "response": response}),
-            )
-            if trace:
-                encoded_trace = json.dumps(redact(trace))
-                pipe.setex("trace:" + response["request_id"], 7 * 86400, encoded_trace)
-                pipe.lpush("trace:recent", response["request_id"])
-                pipe.ltrim("trace:recent", 0, 199)
             await pipe.execute()
-
-    async def get_trace(self, request_id):
-        raw = await self._redis.get("trace:" + request_id)
-        return json.loads(raw) if raw else None
-
-    async def recent_traces(self, limit):
-        keys = await self._redis.lrange("trace:recent", 0, max(1, min(limit, 200)) - 1)
-        if not keys:
-            return []
-        rows = await self._redis.mget(["trace:" + key for key in keys])
-        return [json.loads(row) for row in rows if row]
 
     async def maintain(self, user_id, conv_id):
         await asyncio.wait_for(self._compress(user_id, conv_id), 30)
@@ -203,7 +129,6 @@ class MemoryManager:
         conv_id = self._safe_text(conv_id)
         clean_metadata = {self._safe_text(k): self._safe_metadata_value(v) for k, v in (metadata or {}).items()}
         msg = Message(role=role, content=self._safe_text(content), metadata=clean_metadata)
-        await self._migrate_legacy_keys(user_id, conv_id)
         key = self._wm_key(user_id, conv_id)
         await self._redis.lpush(
             key,
@@ -374,7 +299,6 @@ class MemoryManager:
         return msgs
 
     async def _get_working_memory(self, user_id: str, conv_id: str) -> List[Message]:
-        await self._migrate_legacy_keys(user_id, conv_id)
         raws = await self._redis.lrange(self._wm_key(user_id, conv_id), 0, self.WORKING_MAX - 1)
         return self._messages_from_raw(raws)
 
@@ -444,11 +368,6 @@ class MemoryManager:
             pass
         return {}
 
-    async def close(self) -> None:
-        """Close."""
-        await self._redis.aclose()
-        await self._client.close()
-
     @classmethod
     def _conversation_id(cls, user_id: str, conv_id: str) -> str:
         return hashlib.sha256(
@@ -466,22 +385,6 @@ class MemoryManager:
     @classmethod
     def _state_key(cls, user_id: str, conv_id: str) -> str:
         return f"state_v1:{cls._conversation_id(user_id, conv_id)}"
-
-    async def _migrate_legacy_keys(self, user_id: str, conv_id: str) -> None:
-        user_id, conv_id = (self._safe_text(user_id), self._safe_text(conv_id))
-        if ":" in user_id or ":" in conv_id:
-            return
-        script = (
-            "\n        if redis.call('EXISTS', KEYS[1]) == 1 and "
-            "redis.call('EXISTS', KEYS[2]) == 0 then\n            return "
-            "redis.call('RENAMENX', KEYS[1], KEYS[2])\n        end\n       "
-            " return 0\n        "
-        )
-        for old, new in [
-            (f"wm:{user_id}:{conv_id}", self._wm_key(user_id, conv_id)),
-            (f"summary:{user_id}:{conv_id}", self._summary_key(user_id, conv_id)),
-        ]:
-            await self._redis.eval(script, 2, old, new)
 
     @classmethod
     def _profile_doc_id(cls, user_id: str) -> str:

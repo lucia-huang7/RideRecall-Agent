@@ -251,7 +251,7 @@ def start(open_browser=True):
 def main():
     if sys.platform != "darwin":
         raise RuntimeError(
-            ("The background launcher requires macOS. Use scripts/dev/run-rides.sh --dev on other systems.")
+            ("The background launcher requires macOS. Use scripts/dev/run-rides-dev.sh on other systems.")
         )
     parser = argparse.ArgumentParser()
     parser.add_argument("action", choices=["start", "stop", "status", "restart"])

@@ -5,13 +5,9 @@ import sys
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
-import httpx
 import pytest
-from mcp import ClientSession
-from mcp.client.streamable_http import streamable_http_client
 from ride_agent.agent.agents import BillingAgent, GeneralAgent
 from ride_agent.agent.types import Request
-from ride_agent.integrations import knowledge_server as mcp_server
 from ride_agent.integrations.mcp_client import (
     MCPServerConfig,
     StandardMCPClient,
@@ -87,34 +83,6 @@ def test_stdio_discovery_whitelist_and_agent_tool_roundtrip():
             await client.close()
             await manager._client.close()
         assert not client.agent_tools() and client.summary()["servers"][0]["state"] == "closed"
-
-    asyncio.run(run())
-
-
-def test_local_standard_http_server_tools_and_resources():
-
-    async def run():
-        kb = SimpleNamespace(
-            search_async=AsyncMock(return_value=[{"title": "政策", "content": "退款规则"}]),
-            doc_count_async=AsyncMock(return_value=8),
-        )
-        mcp_server.configure(kb)
-        try:
-            async with mcp_server.server.session_manager.run():
-                async with httpx.AsyncClient(transport=httpx.ASGITransport(app=mcp_server.http_app)) as http:
-                    async with streamable_http_client("http://localhost/", http_client=http) as (read, write, _):
-                        async with ClientSession(read, write) as session:
-                            await session.initialize()
-                            catalog = await session.list_tools()
-                            assert [t.name for t in catalog.tools] == ["search_local_knowledge"]
-                            result = await session.call_tool("search_local_knowledge", {"query": "退款", "top_k": 2})
-                            assert not result.isError and result.structuredContent["results"][0]["title"] == "政策"
-                            stats = await session.read_resource("llmagentsystem://knowledge/stats")
-                            assert json.loads(stats.contents[0].text)["total_chunks"] == 8
-                            invalid = await session.call_tool("search_local_knowledge", {"query": "退款", "top_k": 0})
-                            assert invalid.isError
-        finally:
-            mcp_server.configure(None)
 
     asyncio.run(run())
 

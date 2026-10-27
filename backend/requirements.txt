@@ -2417,7 +2417,6 @@ pydantic-settings==2.16.1 \
     --hash=sha256:30f5313340da4e8f1b440d1910b92a5bc3ccbb6b4ba70ec2b8395bc921f418f5 \
     --hash=sha256:aff602a1886338c2df3d1e958e2193a8dc33cec75b91f202e83fd98484b4b0da
     # via
-    #   -r backend/requirements.in
     #   chromadb
     #   mcp
 pygments==2.21.0 \
@@ -2446,7 +2445,6 @@ python-dotenv==1.2.4 \
     --hash=sha256:42269a8a5b3fd54ffa6f3d84b18abed50064717576b4ecf03dc4a55d8aa04fdc \
     --hash=sha256:f0d53e69935a851c0dcc78f3ab7aaccd8cabef0b92382b576b824212902873c0
     # via
-    #   -r backend/requirements.in
     #   pydantic-settings
     #   uvicorn
 python-multipart==0.0.31 \

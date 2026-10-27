@@ -1,5 +1,4 @@
 import asyncio
-import json
 import time
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
@@ -7,7 +6,6 @@ from unittest.mock import AsyncMock
 import pytest
 from mcp.types import Tool as RemoteTool
 from mcp.types import ToolAnnotations
-from ride_agent.agent.access import identity
 from ride_agent.agent.agents import TechnicalAgent
 from ride_agent.agent.intent import IntentCategory, IntentRecognizer
 from ride_agent.agent.orchestrator import AgentOrchestrator
@@ -171,20 +169,6 @@ def test_read_only_rejects_write_and_unspecified_tools():
         await manager._client.close()
 
     asyncio.run(run())
-
-
-def test_access_tokens_bind_identity_and_production_fails_closed(monkeypatch):
-    monkeypatch.delenv("LLM_AGENT_SYSTEM_API_TOKENS", raising=False)
-    monkeypatch.setenv("LLM_AGENT_SYSTEM_ENV", "production")
-    with pytest.raises(ValueError):
-        identity("")
-    token = "test-token-with-at-least-24-characters"
-    monkeypatch.setenv(
-        "LLM_AGENT_SYSTEM_API_TOKENS",
-        json.dumps({token: {"user_id": "u1", "role": "user"}}),
-    )
-    assert identity("Bearer " + token)["user_id"] == "u1"
-    assert identity("Bearer wrong") == {}
 
 
 def test_internal_intent_recognition_passes_entities():

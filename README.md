@@ -1,18 +1,18 @@
-# LLM-Agent-System: Stateful Ride-Support Agent
+# LLM-Agent-System
 
 [![Verify](https://github.com/lucia-huang7/LLM-Agent-System/actions/workflows/verify.yml/badge.svg)](https://github.com/lucia-huang7/LLM-Agent-System/actions/workflows/verify.yml)
 
-A support agent where rider claims stay separate from recorded trip facts, policy answers carry retrieved evidence, and model text cannot execute an adjustment.
+A Python/FastAPI support agent with durable case memory, policy retrieval and read-only MCP tools, backed by SQLite and Chroma. A Vue web client provides rider, specialist and operator views.
 
-![Product showcase with three actual application screens in concept phone frames](docs/assets/device-showcase.jpg)
+The engineering problem is preserving an evolving account of a dispute: a rider can correct a statement, contradict the trip record and request an adjustment in the same conversation. The system stores rider claims separately from recorded facts, attaches policy evidence to its analysis, and hands the existing case to a specialist. An adjustment is a server-controlled state transition requiring explicit rider confirmation; model output cannot execute it.
 
-[Interface walkthrough: all 25 screens](docs/interface.md) · [Editable device presentation](docs/assets/device-showcase.html)
+![Actual application screens in illustrative phone frames](docs/assets/device-showcase.jpg)
 
-Screenshots use fictional data and illustrative device shells; this is a web application, not a native iOS app.
+[All 25 interface screens](docs/interface.md) · [Editable presentation](docs/assets/device-showcase.html). The phone frames are presentation artwork; the application runs in a browser.
 
 ## Run
 
-Requires Python 3.11/3.12 and Node.js compatible with Vite 7. First setup downloads pinned dependencies.
+Use Python 3.11/3.12 and Node.js compatible with Vite 7. The default deterministic adapter needs no model API key. Trips, policies and payments are fictional; Uber is not contacted.
 
 ```bash
 git clone https://github.com/lucia-huang7/LLM-Agent-System.git
@@ -20,99 +20,69 @@ cd LLM-Agent-System
 bash scripts/dev/one-click.sh start --no-open
 ```
 
-Open [Trips](http://127.0.0.1:5175/#/trips). On macOS, double-click [Start LLM-Agent-System.command](scripts/macos/Start%20LLM-Agent-System.command). Frontend, backend and the independent MCP process run under the local supervisor. No model API key is required. See [operations](docs/operations.md) for stopping, development, authenticated previews, containers, backup and optional live-model configuration.
+On macOS, open [Trips](http://127.0.0.1:5175/#/trips), or double-click [Start LLM-Agent-System.command](scripts/macos/Start%20LLM-Agent-System.command). The launcher supervises the API, frontend and independent stdio MCP process. For foreground development on other systems, run `bash scripts/dev/run-rides-dev.sh` after installing the dependencies below. [Operations](docs/operations.md) covers stopping, authenticated previews, containers, backup and optional live-model configuration.
 
-## Workflow
-
-A rider can correct an earlier statement, contradict a recorded pickup, and request a refund in the same conversation. A useful support system must preserve the correction, distinguish claims from facts, retrieve the applicable policy, and hand the case to a specialist without losing its history.
-
-## Architecture
+## Design
 
 ```mermaid
 flowchart LR
-    UI[Vue mobile views] --> API[FastAPI routes]
-    API --> P[Case pipeline]
-    P --> I[Intent recognition]
-    I --> O[Single / optional multi-agent]
-    O --> T[Read-only tools]
-    T --> R[Policy retrieval · Chroma]
-    T --> M[Independent MCP service]
-    O --> V[Evidence validation]
-    V --> S[SQLite case + projection outbox]
+    UI[Vue views] --> API[FastAPI]
+    API --> P[Case context and intent]
+    P --> A[Agent analysis]
+    A --> R[Policy retrieval / Chroma]
+    A --> M[Read-only MCP tools]
+    A --> V[Evidence validation]
+    V --> S[SQLite case and projection outbox]
 ```
 
-The [API](backend/ride_agent/api/app.py) assembles middleware, lifespan management and route groups. The [pipeline](backend/ride_agent/agent/pipeline.py) loads case context, recognizes intent, builds scoped tools, orchestrates the analysis, validates evidence and prepares durable memory effects. [Case transitions](backend/ride_agent/domain/case.py) apply separate server-controlled commands; analysis never grants financial authority.
+Single agent with durable memory is the default. Optional multi-agent routing is retained for comparison; it produced no completion gain in the offline experiment. Both modes use scoped tools and the same validation and case-transition rules.
 
-The [claim ledger](backend/ride_agent/domain/claims.py) records statement versions and corrections independently of trip records. [Memory](backend/ride_agent/agent/memory.py) restores the case snapshot and derives source-backed context. [Persistence](backend/ride_agent/persistence/store.py) commits case changes and projection work together; Chroma indexes remain derived state.
+| Code | Responsibility |
+|---|---|
+| [API](backend/ride_agent/api/) | Identity, ownership, request bounds, revisions and HTTP routes |
+| [Agent pipeline](backend/ride_agent/agent/pipeline.py) | Context restoration, intent, analysis, scoped tools and evidence validation |
+| [Domain](backend/ride_agent/domain/) | Versioned rider claims, catalog facts and guarded case transitions |
+| [Persistence](backend/ride_agent/persistence/) | Atomic case/receipt commits, immutable attachments, projection outbox and recovery |
+| [Retrieval](backend/ride_agent/retrieval/) / [integrations](backend/ride_agent/integrations/) | Policy indexes, model adapters and standard MCP client/server boundary |
+| [Frontend](frontend/src/) | Rider workflow, specialist desk and operator diagnostics |
 
-## Key design decisions
-
-| Decision | Reason | Implementation |
-|---|---|---|
-| Separate rider claims and recorded facts | A corrected statement must not silently overwrite verified trip data | [Claim ledger](backend/ride_agent/domain/claims.py) |
-| Require indexed policy anchors | Missing payment or topic evidence downgrades the analysis to partial | [Policy validation](backend/ride_agent/agent/pipeline.py), [case tools](backend/ride_agent/agent/case_tools.py) |
-| Isolate adjustments from model output | Only a valid server proposal and explicit rider confirmation can change simulated payment state | [Case workflow](backend/ride_agent/domain/case.py) |
-| Request IDs plus revisions and ETags | Retries must not duplicate an adjustment; stale writes must be rejected | [Case routes](backend/ride_agent/api/routes/cases.py), [store](backend/ride_agent/persistence/store.py) |
-| Default to one agent with durable memory | Multiple agents produced no task-completion gain in the offline comparison | [Orchestrator](backend/ride_agent/agent/orchestrator.py) |
-| Keep oracle labels outside agent inputs | Evaluation answers must not enter the production request pipeline | [Replay and oracle](backend/ride_agent/evaluation/simulation/) |
-
-## Verify
-
-After installing the Python runtime and development dependencies as described in [operations](docs/operations.md):
-
-```bash
-(cd backend && python -m pytest tests -q -W error)
-(cd frontend && npm ci && npm run lint && npm run format:check && npm test && npm run build)
-python scripts/ops/check-evaluation-evidence.py
-```
-
-To reproduce all four agent/memory conditions, run `python scripts/bench/run-ablation.py --output artifacts/my-ablation`. This is a new experiment; the evidence check only validates the published dataset and source hashes. See [benchmark setup and live-mode requirements](docs/operations.md#reproduce-the-offline-comparison).
+Request IDs make command retries idempotent; revisions and ETags reject stale writes. SQLite is authoritative. Chroma indexes are derived state updated through the durable outbox, so an indexing failure does not silently rewrite the committed case.
 
 ## Evaluation
 
-The supplied dataset contains **1,000 synthetic worlds and 2,000 dialogue variants across eight failure families**. Both variants of a world remain in one development, calibration or test split. Replay sends requests through the real API; a separate oracle scores the resulting records.
+The [dataset](datasets/ride_support_v1/) contains 1,000 synthetic worlds and 2,000 dialogue variants across eight failure families. Both variants of a world stay in one split: development 581 worlds/1,162 dialogues, calibration 217/434, test 202/404. Replay exercises the actual HTTP pipeline; oracle labels remain outside agent inputs.
 
-These measurements were rerun on the **shipped dataset and frozen application/scorer source**. Each condition covers all 2,000 dialogues; the four conditions total 8,000 dialogue replays. [Results, exact dataset/source hashes, failures and per-split statistics](datasets/ride_support_v1/baseline.json).
-
-The recent-window baseline reconstructs context from the last four rider-started rounds; durable conditions restore the case memory snapshot. The single-agent comparator has the union of read-only tools; multi-agent conditions use role-scoped routing.
-
-The adapter is **deterministic and offline**: this experiment measures memory retention and workflow conformance, not an LLM's reasoning or answer quality. Four condition processes ran concurrently; dialogue times include resource contention and should not be used as an isolated performance ranking.
-
-| Agent mode | Memory | Strict task completion | Context loss per eligible checkpoint | Median dialogue time |
+| Agent mode | Context | Strict completion | Context loss per eligible checkpoint | Median dialogue |
 |---|---|---:|---:|---:|
-| Single | Recent 4 rider rounds | 1,340/2,000 · 67.00% | 34.09% | 460.6 ms |
-| Multi | Recent 4 rider rounds | 1,340/2,000 · 67.00% | 34.09% | 504.7 ms |
-| Single (default) | Durable | 2,000/2,000 · 100.00% | 0.00% | 452.8 ms |
-| Multi (optional) | Durable | 2,000/2,000 · 100.00% | 0.00% | 492.0 ms |
+| Single | Recent 4 rider rounds | 1,340/2,000 · 67.00% | 34.09% | 406.6 ms |
+| Multi | Recent 4 rider rounds | 1,340/2,000 · 67.00% | 34.09% | 422.3 ms |
+| Single (default) | Durable | 2,000/2,000 · 100.00% | 0.00% | 380.1 ms |
+| Multi (optional) | Durable | 2,000/2,000 · 100.00% | 0.00% | 392.2 ms |
 
-| Split | Worlds / dialogues per condition | Single + recent 4 | Multi + recent 4 | Single + durable | Multi + durable |
-|---|---:|---:|---:|---:|---:|
-| Development | 581 / 1162 | 780/1162 | 780/1162 | 1162/1162 | 1162/1162 |
-| Calibration | 217 / 434 | 274/434 | 274/434 | 434/434 | 434/434 |
-| Test | 202 / 404 | 286/404 | 286/404 | 404/404 | 404/404 |
+These are deterministic offline measurements of memory retention and workflow conformance, not LLM reasoning or real-user accuracy. Conditions ran concurrently on a shared host with overlapping local validation; latency is not an isolated performance comparison. [Frozen source/data hashes, per-split and family results, failures and paired comparisons](datasets/ride_support_v1/baseline.json) identify the exact measured version. Live-model quality, latency and cost have not been measured.
 
-Multiple agents produced no completion improvement under either memory condition in this dataset. Single agent with durable memory remains the default; multi-agent is optional. Failed checks and example episode IDs are retained in the linked evidence.
-
-**Live model: not evaluated.** No provider credentials were configured. Live completion, context loss, latency and cost therefore remain unavailable. An explicit [live evaluation harness](scripts/bench/check-live.py) uses the same HTTP workflow and mechanical scorer, records provider usage/failures and never silently substitutes demo answers. It has local failure-path regression coverage, which is not a live-model quality result.
-
-Limitations:
-
-- Synthetic fixtures and a deterministic adapter do not establish real-user accuracy, live-model reliability or universal policy grounding. Independent human review of the generated dataset is still pending.
-- Offline claim extraction is conservative and field-based. Arbitrary free-form corrections may remain unstructured; original messages are retained for specialist review.
-- Business invariants passed in these runs, but this is not a general safety guarantee. No real payment was executed.
-- SQLite and embedded Chroma target one state namespace and one worker; deployment needs managed identity, TLS, upload scanning and offsite recovery.
-
-## Repository layout
-
-```text
-backend/ride_agent/  api · domain · agent · retrieval · integrations · persistence · ops · evaluation
-backend/tests/       unit · integration · regression
-datasets/            synthetic worlds, dialogue steps, separate oracle and recorded baseline
-frontend/src/        Vue Router views, workspace composable and shared components/styles
-scripts/             dev · ops · bench · macos
-docs/                interface walkthrough, operations and presentation assets
+```bash
+python scripts/bench/run-ablation.py --output artifacts/my-ablation
+python scripts/ops/check-evaluation-evidence.py
 ```
 
-Java is preserved on the [`archive/java`](https://github.com/lucia-huang7/LLM-Agent-System/tree/archive/java/legacy-java) branch and does not serve this application.
+The runner refuses existing output directories and preserves raw responses, failures and source hashes. [Reproduction details](docs/operations.md#reproduce-the-offline-comparison) explain the four conditions and explicit live-evaluation harness. Benchmarks and reliability workloads live in `scripts/bench/`; synthetic generation, audit, replay and scoring live in `backend/ride_agent/evaluation/simulation/`.
 
-Independent prototype; fictional trips and policies. Not affiliated with Uber.
+## Develop
+
+```bash
+python -m pip install --require-hashes -r backend/requirements.txt
+python -m pip install -r backend/requirements-dev.txt
+(cd backend && python -m pytest tests -q -W error)
+(cd frontend && npm ci && npm run lint && npm run format:check && npm test && npm run build)
+```
+
+CI runs these checks and validates the published evaluation evidence on main pushes and pull requests. Generated databases, credentials, raw experiment output and build artifacts are ignored by Git.
+
+## Limits
+
+- Synthetic fixtures and the local adapter do not establish live-model reliability. Independent human review of the generated dataset is pending.
+- Offline correction extraction is conservative and field-based; arbitrary corrections can remain unstructured. Original messages are retained for specialist review.
+- The system supports one worker per SQLite/embedded-Chroma state namespace. It does not implement a distributed runtime.
+- Demo identities are role-play controls. An authenticated preview exists, but public deployment still needs managed identity, TLS, upload scanning and offsite recovery.
+- Adjustments are simulated. No real payment integration or production availability claim is made.

@@ -1,7 +1,7 @@
 <template>
   <main v-if="!identity" class="auth-shell">
     <section class="auth-card">
-      <a class="mobile-brand" href="#">LLM-Agent-System</a>
+      <a class="mobile-brand" href="#">RideRecall-Agent</a>
       <p class="eyebrow">YOUR SUPPORT WORKSPACE</p>
       <h1>{{ booting ? "Connecting securely" : "Sign in to continue" }}</h1>
       <p v-if="booting">Checking the workspace configuration.</p>

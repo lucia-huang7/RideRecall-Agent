@@ -1,7 +1,7 @@
 <template>
   <div class="ride-layout">
     <aside class="desktop-intro">
-      <a :href="homePath" class="wordmark">LLM-Agent-System</a>
+      <a :href="homePath" class="wordmark">RideRecall-Agent</a>
       <div>
         <p class="eyebrow">SUPPORT, WITHOUT THE RUNAROUND</p>
         <h1>A better way<br />forward.</h1>
@@ -39,7 +39,7 @@
         >
           <Icon name="chevron" class="reverse" />
         </button>
-        <a v-else class="mobile-brand" :href="homePath">LLM-Agent-System</a>
+        <a v-else class="mobile-brand" :href="homePath">RideRecall-Agent</a>
         <span
           v-if="!['trips', 'help', 'account', 'agent'].includes(route.page)"
           class="header-label"

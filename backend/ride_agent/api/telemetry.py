@@ -15,7 +15,7 @@ from prometheus_client import (
     generate_latest,
 )
 
-LOGGER = logging.getLogger("llmagentsystem.http")
+LOGGER = logging.getLogger("riderecallagent.http")
 METHODS = {"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"}
 
 
@@ -31,22 +31,22 @@ def configure_logging():
 class HttpObservation:
     def __init__(self):
         self.registry = CollectorRegistry()
-        ProcessCollector(namespace="llmagentsystem", registry=self.registry)
+        ProcessCollector(namespace="riderecallagent", registry=self.registry)
         GCCollector(registry=self.registry)
         self.requests = Counter(
-            "llmagentsystem_http_requests_total",
+            "riderecallagent_http_requests_total",
             "Prepared HTTP responses",
             ["method", "route", "status"],
             registry=self.registry,
         )
         self.latency = Histogram(
-            "llmagentsystem_http_request_seconds",
+            "riderecallagent_http_request_seconds",
             "HTTP response preparation duration",
             ["method", "route"],
             buckets=(0.005, 0.025, 0.1, 0.5, 1, 5, 15, 35, 60),
             registry=self.registry,
         )
-        self.active = Gauge("llmagentsystem_http_active", "Active HTTP requests", registry=self.registry)
+        self.active = Gauge("riderecallagent_http_active", "Active HTTP requests", registry=self.registry)
 
     def finish(self, correlation_id, method, route, status, elapsed, error=None):
         method = method if method in METHODS else "OTHER"

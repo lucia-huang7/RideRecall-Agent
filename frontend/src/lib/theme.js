@@ -1,4 +1,4 @@
-export const THEME_KEY = "llmagentsystem.rides.theme";
+export const THEME_KEY = "riderecallagent.rides.theme";
 
 export function loadTheme(storage = globalThis.localStorage) {
   try {

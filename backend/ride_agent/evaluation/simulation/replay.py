@@ -86,7 +86,7 @@ def replay(dataset, output, limit=None, split=None, retain_db=False):
     raw = output / "responses.jsonl.gz"
     started = time.monotonic()
     with (
-        patch.dict(os.environ, {"LLM_AGENT_SYSTEM_RIDE_MODEL_MODE": "demo"}),
+        patch.dict(os.environ, {"RIDERECALL_AGENT_RIDE_MODEL_MODE": "demo"}),
         TestClient(create_app(db, catalog_path=dataset / "catalog.json")) as client,
         gzip.open(raw, "wt") as traces,
         (output / "scores.jsonl").open("w") as scores,

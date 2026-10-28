@@ -115,11 +115,11 @@ class Frontend(SimpleHTTPRequestHandler):
         )
 
     def do_GET(self):
-        if self.path == "/__llmagentsystem_health":
+        if self.path == "/__riderecallagent_health":
             body = json.dumps(
                 {
-                    "service": "llmagentsystem-frontend",
-                    "instance": os.environ["LLM_AGENT_SYSTEM_INSTANCE_ID"],
+                    "service": "riderecallagent-frontend",
+                    "instance": os.environ["RIDERECALL_AGENT_INSTANCE_ID"],
                 }
             ).encode()
             self.send_response(200)

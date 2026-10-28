@@ -15,7 +15,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--catalog")
 args = parser.parse_args()
 catalog = RideCatalog(args.catalog)
-server = FastMCP("LLM-Agent-System Demo Service")
+server = FastMCP("RideRecall-Agent Demo Service")
 
 
 @server.tool(annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False))

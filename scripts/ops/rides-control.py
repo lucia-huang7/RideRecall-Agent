@@ -1,4 +1,4 @@
-"""Install and control the macOS user-level LLM-Agent-System demo service."""
+"""Install and control the macOS user-level RideRecall-Agent demo service."""
 
 import argparse
 import hashlib
@@ -16,8 +16,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 INSTANCE = hashlib.sha256(str(ROOT).encode()).hexdigest()[:10]
-INSTALL = Path.home() / "Library" / "Application Support" / "LLM-Agent-System" / INSTANCE
-LABEL = "com.llmagentsystem.rides." + INSTANCE
+INSTALL = Path.home() / "Library" / "Application Support" / "RideRecall-Agent" / INSTANCE
+LABEL = "com.riderecallagent.rides." + INSTANCE
 PLIST = Path.home() / "Library" / "LaunchAgents" / (LABEL + ".plist")
 DOMAIN = "gui/" + str(os.getuid())
 TARGET = DOMAIN + "/" + LABEL
@@ -72,7 +72,7 @@ def stop():
         deadline = time.monotonic() + 20
         while time.monotonic() < deadline and any((not available(port) for port in (5175, 8010))):
             time.sleep(0.25)
-    print("LLM-Agent-System background service stopped. Saved cases remain in " + str(INSTALL / "data"))
+    print("RideRecall-Agent background service stopped. Saved cases remain in " + str(INSTALL / "data"))
 
 
 def ensure_frontend_dependencies(frontend, installation):
@@ -289,7 +289,7 @@ if __name__ == "__main__":
         main()
     except (RuntimeError, subprocess.CalledProcessError, OSError) as error:
         print(
-            "LLM-Agent-System could not complete this action: " + str(error)[:600],
+            "RideRecall-Agent could not complete this action: " + str(error)[:600],
             file=sys.stderr,
         )
         sys.exit(1)

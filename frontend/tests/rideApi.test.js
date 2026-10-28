@@ -210,7 +210,7 @@ test("an empty migrated demo workspace can recover only IDs already saved in thi
   const { clearCredential, setCredential } = await import("../src/lib/auth.js");
   clearCredential();
   const values = new Map([
-    ["llmagentsystem.rides.session", "new-rider-id"],
+    ["riderecallagent.rides.session", "new-rider-id"],
     ["previous-app.rides.session", "saved-rider-id"],
   ]);
   const previousStore = globalThis.localStorage;
@@ -245,9 +245,9 @@ test("an empty migrated demo workspace can recover only IDs already saved in thi
       seen.map((h) => h["X-Demo-Session"]),
       ["new-rider-id", "saved-rider-id"],
     );
-    assert.equal(values.get("llmagentsystem.rides.session"), "saved-rider-id");
+    assert.equal(values.get("riderecallagent.rides.session"), "saved-rider-id");
     assert.equal(
-      values.get("llmagentsystem.saved.rides.session"),
+      values.get("riderecallagent.saved.rides.session"),
       "new-rider-id",
     );
     setCredential("production-credential-example");

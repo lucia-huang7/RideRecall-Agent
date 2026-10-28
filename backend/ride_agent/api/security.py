@@ -58,15 +58,15 @@ principal_context: ContextVar[Principal | None] = ContextVar("ride_principal", d
 
 class Security:
     def __init__(self, environment=None, identity_file=None):
-        self.environment = environment or os.getenv("LLM_AGENT_SYSTEM_ENV", "development")
+        self.environment = environment or os.getenv("RIDERECALL_AGENT_ENV", "development")
         if self.environment not in ("development", "test", "production"):
-            raise ValueError("LLM_AGENT_SYSTEM_ENV must be development, test or production")
+            raise ValueError("RIDERECALL_AGENT_ENV must be development, test or production")
         self.production = self.environment == "production"
         self.identities = []
         if self.production:
-            filename = identity_file or os.getenv("LLM_AGENT_SYSTEM_IDENTITY_FILE")
+            filename = identity_file or os.getenv("RIDERECALL_AGENT_IDENTITY_FILE")
             if not filename:
-                raise ValueError("Production requires LLM_AGENT_SYSTEM_IDENTITY_FILE")
+                raise ValueError("Production requires RIDERECALL_AGENT_IDENTITY_FILE")
             path = Path(filename)
             if os.name == "posix" and stat.S_IMODE(path.stat().st_mode) & 63:
                 raise ValueError("Identity file must not be accessible by group or other users")

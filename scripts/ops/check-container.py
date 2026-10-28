@@ -24,11 +24,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
-    project = "llm-agent-system-check-" + uuid4().hex[:10]
+    project = "riderecall-agent-check-" + uuid4().hex[:10]
     with socket.socket() as listener:
         listener.bind(("127.0.0.1", 0))
         port = listener.getsockname()[1]
-    environment = {**os.environ, "LLM_AGENT_SYSTEM_HTTP_PORT": str(port)}
+    environment = {**os.environ, "RIDERECALL_AGENT_HTTP_PORT": str(port)}
     base = ["docker", "compose", "-p", project, "--profile", "tools"]
     checks = []
     correlations = []
@@ -178,7 +178,7 @@ def main():
         path = "/api/cases/" + case["id"]
         staff = "/api/agent/cases/" + case["id"] + "/actions"
         raw = b"%PDF-1.4\nFictional pickup evidence\n%%EOF"
-        boundary = "llmagent" + uuid4().hex
+        boundary = "riderecallagent" + uuid4().hex
         upload = (
             (
                 "--"
@@ -325,11 +325,11 @@ def main():
         )
         status, metrics = call("GET", "/api/agent/metrics", role="preview-operator")
         check(
-            status == 200 and b"llmagentsystem_http_requests_total" in metrics,
+            status == 200 and b"riderecallagent_http_requests_total" in metrics,
             "HTTP metrics share the protected operator endpoint",
         )
         check(
-            b"llmagentsystem_process_resident_memory_bytes" in metrics,
+            b"riderecallagent_process_resident_memory_bytes" in metrics,
             "Linux process resource metrics are exported",
         )
         check(
@@ -398,7 +398,7 @@ def main():
             status="passed",
             checks=checks,
             total=len(checks),
-            image="llm-agent-system:local",
+            image="riderecall-agent:local",
             scope=("Isolated authenticated fictional container; no real payment or live model."),
         )
         if args.output:

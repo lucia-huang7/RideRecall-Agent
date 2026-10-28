@@ -27,8 +27,8 @@
               : !m.analysis_id
                 ? "Saved assistant response"
                 : m.model_mode === "live"
-                  ? "LLM-Agent-System · Model analysis"
-                  : "LLM-Agent-System · Offline model adapter"
+                  ? "RideRecall-Agent · Model analysis"
+                  : "RideRecall-Agent · Offline model adapter"
         }}</span>
         <div>{{ m.content }}</div>
         <small>{{ time(m.at) }}</small>

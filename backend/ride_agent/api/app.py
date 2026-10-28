@@ -17,15 +17,15 @@ from ride_agent.integrations.settings import ModelSettings
 
 def create_app(db_path=None, catalog_path=None, *, security=None):
     security = security or Security()
-    catalog = RideCatalog(catalog_path or os.getenv("LLM_AGENT_SYSTEM_RIDE_CATALOG_PATH"))
+    catalog = RideCatalog(catalog_path or os.getenv("RIDERECALL_AGENT_RIDE_CATALOG_PATH"))
     security.validate_catalog(catalog)
-    database_path = db_path or os.getenv("LLM_AGENT_SYSTEM_RIDE_DB")
+    database_path = db_path or os.getenv("RIDERECALL_AGENT_RIDE_DB")
     if security.production and (not database_path):
-        raise ValueError("Production requires an explicit LLM_AGENT_SYSTEM_RIDE_DB")
+        raise ValueError("Production requires an explicit RIDERECALL_AGENT_RIDE_DB")
     database_path = database_path or str(Path(__file__).resolve().parents[3] / ".runtime/rides.sqlite3")
     runtime = RuntimeContext(security, catalog, ModelSettings.from_environment(), database_path)
     app = FastAPI(
-        title="LLM-Agent-System Ride Support",
+        title="RideRecall-Agent Ride Support",
         version="0.5.0",
         lifespan=runtime.lifespan,
         docs_url=None if security.production else "/docs",

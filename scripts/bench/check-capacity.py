@@ -96,11 +96,11 @@ def main():
     environment = {key: value for key, value in os.environ.items() if not key.endswith("_API_KEY")}
     environment.update(
         PYTHONPATH=str(source / "backend"),
-        LLM_AGENT_SYSTEM_ENV="production",
-        LLM_AGENT_SYSTEM_RIDE_MODEL_MODE="demo",
-        LLM_AGENT_SYSTEM_RIDE_DB=str(database),
-        LLM_AGENT_SYSTEM_RIDE_CATALOG_PATH=str(catalog),
-        LLM_AGENT_SYSTEM_IDENTITY_FILE=str(registry),
+        RIDERECALL_AGENT_ENV="production",
+        RIDERECALL_AGENT_RIDE_MODEL_MODE="demo",
+        RIDERECALL_AGENT_RIDE_DB=str(database),
+        RIDERECALL_AGENT_RIDE_CATALOG_PATH=str(catalog),
+        RIDERECALL_AGENT_IDENTITY_FILE=str(registry),
         PYTHONUNBUFFERED="1",
         PYTHONDONTWRITEBYTECODE="1",
     )

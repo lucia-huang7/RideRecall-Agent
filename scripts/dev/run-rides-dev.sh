@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-PYTHON="${LLM_AGENT_SYSTEM_PYTHON:-$ROOT/.venv-rides/bin/python}"
+PYTHON="${RIDERECALL_AGENT_PYTHON:-$ROOT/.venv-rides/bin/python}"
 if [ ! -x "$PYTHON" ]; then
-  if [ -n "${LLM_AGENT_SYSTEM_PYTHON:-}" ]; then
-    echo 'LLM_AGENT_SYSTEM_PYTHON must name an existing Python 3.11/3.12 executable.' >&2
+  if [ -n "${RIDERECALL_AGENT_PYTHON:-}" ]; then
+    echo 'RIDERECALL_AGENT_PYTHON must name an existing Python 3.11/3.12 executable.' >&2
     exit 1
   fi
   for candidate in python3.11 python3.12; do
@@ -23,7 +23,7 @@ if [ ! -d "$ROOT/frontend/node_modules" ]; then
   (cd "$ROOT/frontend" && npm ci)
 fi
 mkdir -p "$ROOT/.runtime"
-export LLM_AGENT_SYSTEM_RIDE_DB="${LLM_AGENT_SYSTEM_RIDE_DB:-$ROOT/.runtime/rides.sqlite3}"
+export RIDERECALL_AGENT_RIDE_DB="${RIDERECALL_AGENT_RIDE_DB:-$ROOT/.runtime/rides.sqlite3}"
 cd "$ROOT/backend"
 "$PYTHON" -m uvicorn ride_agent.api.app:app --host 127.0.0.1 --port 8010 --limit-concurrency 64 --no-proxy-headers --no-access-log --reload &
 API_PID=$!

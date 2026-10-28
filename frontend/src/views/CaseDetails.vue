@@ -164,7 +164,7 @@
                 : item.actor === "rider"
                   ? "You"
                   : item.actor === "system"
-                    ? "LLM-Agent-System"
+                    ? "RideRecall-Agent"
                     : item.actor
             }}</small
           >

@@ -15,16 +15,16 @@ class ModelSettings:
 
     @classmethod
     def from_environment(cls):
-        mode = os.getenv("LLM_AGENT_SYSTEM_RIDE_MODEL_MODE", "demo").lower()
+        mode = os.getenv("RIDERECALL_AGENT_RIDE_MODEL_MODE", "demo").lower()
         if mode not in ("demo", "live"):
-            raise ValueError("LLM_AGENT_SYSTEM_RIDE_MODEL_MODE must be demo or live.")
+            raise ValueError("RIDERECALL_AGENT_RIDE_MODEL_MODE must be demo or live.")
         if mode == "demo":
             return cls(mode, "deterministic-messages-adapter")
-        model = os.getenv("LLM_AGENT_SYSTEM_RIDE_MODEL", "")
-        key = os.getenv("LLM_AGENT_SYSTEM_RIDE_API_KEY", "")
+        model = os.getenv("RIDERECALL_AGENT_RIDE_MODEL", "")
+        key = os.getenv("RIDERECALL_AGENT_RIDE_API_KEY", "")
         if not key or not model:
-            raise ValueError(("Live mode requires LLM_AGENT_SYSTEM_RIDE_API_KEY and LLM_AGENT_SYSTEM_RIDE_MODEL."))
-        base = os.getenv("LLM_AGENT_SYSTEM_RIDE_BASE_URL") or None
+            raise ValueError(("Live mode requires RIDERECALL_AGENT_RIDE_API_KEY and RIDERECALL_AGENT_RIDE_MODEL."))
+        base = os.getenv("RIDERECALL_AGENT_RIDE_BASE_URL") or None
         if base:
             parsed = urlsplit(base)
             if (
@@ -36,7 +36,7 @@ class ModelSettings:
                 or parsed.fragment
             ):
                 raise ValueError(("Provider URL must be HTTP(S) without credentials, query or fragment."))
-            if os.getenv("LLM_AGENT_SYSTEM_ENV") == "production" and parsed.scheme != "https":
+            if os.getenv("RIDERECALL_AGENT_ENV") == "production" and parsed.scheme != "https":
                 try:
                     local = ipaddress.ip_address(parsed.hostname).is_loopback
                 except ValueError:

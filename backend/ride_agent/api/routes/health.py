@@ -14,7 +14,7 @@ def install(app, runtime):
         return dict(
             auth_mode="production" if runtime.security.production else "demo",
             model_mode=runtime.model_settings.mode,
-            product="LLM-Agent-System",
+            product="RideRecall-Agent",
         )
 
     @app.get("/api/session")

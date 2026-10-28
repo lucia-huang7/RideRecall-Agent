@@ -60,7 +60,7 @@ async def test_intent_timeout_uses_fallback_instead_of_waiting_for_chat_deadline
 ):
     rec = IntentRecognizer.__new__(IntentRecognizer)
     rec.model = "test"
-    monkeypatch.setenv("LLM_AGENT_SYSTEM_INTENT_TIMEOUT_S", "0.1")
+    monkeypatch.setenv("RIDERECALL_AGENT_INTENT_TIMEOUT_S", "0.1")
 
     async def stall(**kwargs):
         await asyncio.Event().wait()

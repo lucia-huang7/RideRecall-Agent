@@ -194,7 +194,7 @@ class RoleAgent:
                     ]
                 resp = await asyncio.wait_for(
                     self._client.messages.create(**request_kwargs),
-                    timeout=max(1, _env_float("LLM_AGENT_SYSTEM_LLM_TIMEOUT_S", 15)),
+                    timeout=max(1, _env_float("RIDERECALL_AGENT_LLM_TIMEOUT_S", 15)),
                 )
                 tool_uses = [block for block in resp.content or [] if self._block_type(block) == "tool_use"]
                 if not tool_uses:

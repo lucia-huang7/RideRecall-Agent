@@ -10,7 +10,7 @@ class Document(BaseModel):
     text: str
 
 
-server = FastMCP("LlmAgentSystem Test")
+server = FastMCP("RideRecallAgent Test")
 
 
 @server.tool(annotations=ToolAnnotations(readOnlyHint=True))

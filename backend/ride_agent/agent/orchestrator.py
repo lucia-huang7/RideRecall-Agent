@@ -78,7 +78,7 @@ class AgentOrchestrator:
         self._skill_manager = skill_manager
         self._composer = composer if composer is not None else ResponseComposer(client, model, skill_manager)
         self._shared_tools: Dict[str, AgentToolSpec] = {}
-        self._recent_tool_traces = deque(maxlen=_env_int("LLM_AGENT_SYSTEM_TOOL_TRACE_MAX", 200))
+        self._recent_tool_traces = deque(maxlen=_env_int("RIDERECALL_AGENT_TOOL_TRACE_MAX", 200))
         self._pool: Dict[AgentType, List[RoleAgent]] = {
             AgentType.GENERAL: [self._make_agent(GeneralAgent, client, model, skill_manager)],
             AgentType.TECHNICAL: [self._make_agent(TechnicalAgent, client, model, skill_manager)],
@@ -98,7 +98,7 @@ class AgentOrchestrator:
     ) -> RoleAgent:
         """Make agent."""
         profile = agent_cls.profile
-        env_name = f"LLM_AGENT_SYSTEM_{agent_cls.agent_type.value.upper()}_MODEL"
+        env_name = f"RIDERECALL_AGENT_{agent_cls.agent_type.value.upper()}_MODEL"
         model = os.getenv(env_name, "").strip() or profile.model
         configured_profile = replace(profile, model=model) if model else profile
         return agent_cls(client, default_model, skill_manager, profile=configured_profile)

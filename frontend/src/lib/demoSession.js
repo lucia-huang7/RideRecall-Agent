@@ -1,6 +1,6 @@
 // Demo workspace IDs are local role-play state, never production credentials.
-export const sessionKey = "llmagentsystem.rides.session";
-const savedKey = "llmagentsystem.saved.rides.session";
+export const sessionKey = "riderecallagent.rides.session";
+const savedKey = "riderecallagent.saved.rides.session";
 const valid = (value) =>
   typeof value === "string" && /^[A-Za-z0-9_-]{1,100}$/.test(value);
 function browserStore() {

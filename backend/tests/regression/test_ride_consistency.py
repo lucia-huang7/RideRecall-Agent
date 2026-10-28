@@ -153,7 +153,7 @@ def test_case_receipt_and_memory_outbox_survive_process_death_after_commit(tmp_p
         env={
             **os.environ,
             "CRASH_DB": str(path),
-            "LLM_AGENT_SYSTEM_RIDE_MODEL_MODE": "demo",
+            "RIDERECALL_AGENT_RIDE_MODEL_MODE": "demo",
         },
         capture_output=True,
         cwd=Path(__file__).resolve().parents[2],

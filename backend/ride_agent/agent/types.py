@@ -84,9 +84,9 @@ class AgentStats:
 
     def set_penalty(self, penalty):
         self.monitor_penalty = penalty
-        threshold = min(max(_env_float("LLM_AGENT_SYSTEM_MONITOR_FALLBACK_PENALTY", 0.5), 0.01), 0.9)
+        threshold = min(max(_env_float("RIDERECALL_AGENT_MONITOR_FALLBACK_PENALTY", 0.5), 0.01), 0.9)
         if penalty >= threshold and (not self.retry_at):
-            self.retry_at = time.monotonic() + max(1, _env_float("LLM_AGENT_SYSTEM_MONITOR_COOLDOWN_SECONDS", 60))
+            self.retry_at = time.monotonic() + max(1, _env_float("RIDERECALL_AGENT_MONITOR_COOLDOWN_SECONDS", 60))
 
     def record(self, success, ms, request_id=None):
         if self.probe_running and request_id == self.probe_owner:
@@ -97,7 +97,7 @@ class AgentStats:
                 self.retry_at = 0.0
                 self.monitor_penalty = 0.0
             else:
-                self.retry_at = time.monotonic() + max(1, _env_float("LLM_AGENT_SYSTEM_MONITOR_COOLDOWN_SECONDS", 60))
+                self.retry_at = time.monotonic() + max(1, _env_float("RIDERECALL_AGENT_MONITOR_COOLDOWN_SECONDS", 60))
         self.samples.append((time.monotonic(), success, ms))
         if self.observer:
             self.observer(ms)

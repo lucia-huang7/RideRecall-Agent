@@ -19,7 +19,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 INSTANCE = hashlib.sha256(str(ROOT).encode()).hexdigest()[:10]
-INSTALL = Path.home() / "Library" / "Application Support" / "LLM-Agent-System" / INSTANCE
+INSTALL = Path.home() / "Library" / "Application Support" / "RideRecall-Agent" / INSTANCE
 
 
 def read(url):
@@ -111,7 +111,7 @@ def main():
                 if replacement != pid and current.get("status") == "ready" and all(current["healthy"].values()):
                     if (
                         read("http://127.0.0.1:8010/readyz")["status"] == "ok"
-                        and read("http://127.0.0.1:5175/__llmagentsystem_health")["instance"] == INSTANCE
+                        and read("http://127.0.0.1:5175/__riderecallagent_health")["instance"] == INSTANCE
                     ):
                         recovered = current
                         break

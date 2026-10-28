@@ -9,7 +9,7 @@ export function clearCredential() {
 export function credentialHeaders() {
   return credential ? { Authorization: `Bearer ${credential}` } : null;
 }
-export const sessionExpiredEvent = "llmagentsystem:session-expired";
+export const sessionExpiredEvent = "riderecallagent:session-expired";
 export function expireCredentialIfCurrent(sentHeaders) {
   if (!credential || sentHeaders?.Authorization !== `Bearer ${credential}`)
     return false;

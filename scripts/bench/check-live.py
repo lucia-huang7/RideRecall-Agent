@@ -35,7 +35,7 @@ def main():
         parser.error("Call limit must be positive and prices nonnegative")
     if args.limit is not None and args.limit < 1:
         parser.error("Episode limit must be positive")
-    if os.environ.get("LLM_AGENT_SYSTEM_RIDE_MODEL_MODE") != "live":
+    if os.environ.get("RIDERECALL_AGENT_RIDE_MODEL_MODE") != "live":
         parser.error("Explicit live mode and locally configured provider credentials are required")
     settings = ModelSettings.from_environment()
     output = args.output.resolve()

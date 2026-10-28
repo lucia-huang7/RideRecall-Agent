@@ -1,4 +1,4 @@
-const KEY = "llm-agent-system-support-mode";
+const KEY = "riderecall-agent-support-mode";
 export const normalizeAgentMode = (value) =>
   value === "multi" ? "multi" : "single";
 export function loadAgentMode() {

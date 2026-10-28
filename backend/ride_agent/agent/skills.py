@@ -112,7 +112,7 @@ class SkillManager:
         """Log loaded skills."""
         lines = [
             "",
-            "================ LlmAgentSystem Skills Loaded ================",
+            "================ RideRecallAgent Skills Loaded ================",
             f"Directory: {self.root_dir}",
             f"Count: {len(self._skills)}",
         ]

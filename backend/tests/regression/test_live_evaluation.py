@@ -31,7 +31,7 @@ def command(output):
 
 
 def test_missing_live_configuration_fails_before_creating_evidence(tmp_path):
-    environment = {k: v for k, v in os.environ.items() if not k.startswith("LLM_AGENT_SYSTEM_RIDE_")}
+    environment = {k: v for k, v in os.environ.items() if not k.startswith("RIDERECALL_AGENT_RIDE_")}
     output = tmp_path / "missing"
     result = subprocess.run(command(output), env=environment, capture_output=True, text=True, timeout=60)
     assert result.returncode != 0
@@ -59,10 +59,10 @@ def test_provider_failure_is_not_scored_as_demo_success(tmp_path):
     worker.start()
     environment = dict(
         os.environ,
-        LLM_AGENT_SYSTEM_RIDE_MODEL_MODE="live",
-        LLM_AGENT_SYSTEM_RIDE_MODEL="local-failure-fixture",
-        LLM_AGENT_SYSTEM_RIDE_API_KEY="local-fixture-only",
-        LLM_AGENT_SYSTEM_RIDE_BASE_URL=f"http://127.0.0.1:{server.server_port}",
+        RIDERECALL_AGENT_RIDE_MODEL_MODE="live",
+        RIDERECALL_AGENT_RIDE_MODEL="local-failure-fixture",
+        RIDERECALL_AGENT_RIDE_API_KEY="local-fixture-only",
+        RIDERECALL_AGENT_RIDE_BASE_URL=f"http://127.0.0.1:{server.server_port}",
     )
     output = tmp_path / "failed-live"
     try:

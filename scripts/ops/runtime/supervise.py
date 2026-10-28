@@ -160,10 +160,10 @@ def main():
     logs.chmod(448)
     env = os.environ.copy()
     env.update(
-        LLM_AGENT_SYSTEM_ENV="development",
-        LLM_AGENT_SYSTEM_RIDE_MODEL_MODE="demo",
-        LLM_AGENT_SYSTEM_RIDE_DB=str(INSTANCE_ROOT / "data" / "rides.sqlite3"),
-        LLM_AGENT_SYSTEM_INSTANCE_ID=config["instance"],
+        RIDERECALL_AGENT_ENV="development",
+        RIDERECALL_AGENT_RIDE_MODEL_MODE="demo",
+        RIDERECALL_AGENT_RIDE_DB=str(INSTANCE_ROOT / "data" / "rides.sqlite3"),
+        RIDERECALL_AGENT_INSTANCE_ID=config["instance"],
         PYTHONUNBUFFERED="1",
     )
     commands = {
@@ -249,7 +249,7 @@ def main():
                 pass
             try:
                 frontend = (
-                    read_json("http://127.0.0.1:5175/__llmagentsystem_health").get("instance") == config["instance"]
+                    read_json("http://127.0.0.1:5175/__riderecallagent_health").get("instance") == config["instance"]
                 )
             except Exception:
                 pass

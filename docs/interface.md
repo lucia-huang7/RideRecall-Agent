@@ -1,6 +1,6 @@
 # Interface walkthrough
 
-A canceled ride, a $6.50 charge, a corrected pickup account, and a specialist who receives the history. These are actual mobile screenshots, presented in concept phone frames, from the offline demo: fictional data, a deterministic model adapter, and real local tool execution. The specialist is role-play; no real payment is made. The device shells and sequential story times are presentation artwork, not an official Apple model or evidence of a native iOS app. Click a panel for its original full-size screenshot.
+A rider disputes a $6.50 cancellation fee, corrects the pickup account and requests specialist review. The specialist receives the history and proposes an adjustment for the rider to confirm. These browser captures use fictional data and the no-key adapter. Phone frames and sequential status-bar times are presentation artwork. Click a panel to open the original screenshot.
 
 | **01 · Choose the charged trip** | **02 · Explain what happened** |
 |---|---|
@@ -25,7 +25,7 @@ A canceled ride, a $6.50 charge, a corrected pickup account, and a specialist wh
 <details>
 <summary><strong>Explore every other screen — evidence, handoff, Help, settings, all five Control Room tabs, and support drawers</strong></summary>
 
-The full collection contains 25 captures across all nine main views, the five operations tabs, support drawers and key workflow states. Captions describe observed behavior; console fixture results are not live-model quality measurements.
+The 25 captures cover rider and specialist views, five Control Room tabs, settings and support drawers.
 
 | **Read the trip record** | **Flag the conflict** |
 |---|---|

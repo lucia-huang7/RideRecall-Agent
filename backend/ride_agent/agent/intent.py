@@ -366,7 +366,7 @@ class IntentRecognizer:
                         }
                     ],
                 ),
-                timeout=max(0.1, float(os.getenv("LLM_AGENT_SYSTEM_INTENT_TIMEOUT_S", "8"))),
+                timeout=max(0.1, float(os.getenv("RIDERECALL_AGENT_INTENT_TIMEOUT_S", "8"))),
             )
             data = json.loads(extract_text_content(answer.content))
             data["intent"] = IntentCategory(data["intent"])

@@ -2,7 +2,7 @@
 
 ## Run
 
-On macOS, double-click `scripts/macos/Start LLM-Agent-System.command`, or run:
+On macOS, double-click `scripts/macos/Start RideRecall-Agent.command`, or run:
 
 ```bash
 bash scripts/dev/one-click.sh start --no-open
@@ -18,7 +18,7 @@ For foreground development, stop the background installation, then run `bash scr
 
 Select a trip, describe a dispute, add evidence, review a proposed simulated adjustment or request a specialist. A specialist can read the existing history, accept the case and record a decision.
 
-**Support approach** on Account, new-case and conversation screens selects the next analysis. Single agent is the default; multi-agent is optional. Both keep durable context. An explicit browser preference survives reload. Each case and execution records its actual mode.
+**Support approach** on Account, new-case and conversation screens selects the next analysis. Single agent is the default; multi-agent is optional. Both keep durable context. An explicit browser preference survives reload. Case records and execution traces show the selected mode.
 
 API clients can pass `agent_mode: "single"` or `"multi"` on case creation or a `message` action. Omitting it defaults new/older cases to single and preserves an existing explicit case choice on follow-ups. State changes use request IDs and case revisions; model text cannot execute payments.
 
@@ -31,7 +31,6 @@ python -m pip install -r backend/requirements-dev.txt
 (cd frontend && npm ci && npm test && npm run lint && npm run build)
 ```
 
-
 Replay the supplied synthetic data through the real API pipeline:
 
 ```bash
@@ -40,7 +39,7 @@ python -m ride_agent.evaluation.simulation audit --dataset ../datasets/ride_supp
 python -m ride_agent.evaluation.simulation replay --dataset ../datasets/ride_support_v1 --output ../artifacts/my-replay
 ```
 
-Existing dataset/result directories are never overwritten. Generated results, databases, credentials, caches and build output stay outside the tracked tree.
+Replay refuses an existing output directory. Results, databases and credentials are ignored by Git.
 
 ## Optional authenticated and container previews
 
@@ -62,25 +61,24 @@ Other preview accounts are `preview-specialist` and `preview-operator`. Keep cre
 
 ## Runtime boundaries
 
-The default public demo identities are role-play controls. Keep demo mode on loopback. The authenticated preview enforces ownership and staff roles, but is not managed identity or OIDC. Storage is single-node SQLite with embedded Chroma; use one worker per state namespace. Real deployments still need TLS, identity lifecycle management, upload scanning, dependency review and offsite recovery. No production availability or live-model quality claim is made.
+Demo identities are role-play controls. Keep demo mode on loopback. The authenticated preview enforces ownership and staff roles, but is not managed identity or OIDC. Storage is single-node SQLite with embedded Chroma; use one worker per state namespace. Real deployments still need TLS, identity lifecycle management, upload scanning, dependency review and offsite recovery.
 
-`/livez` checks the process; `/readyz` also checks storage, policy indexes, projections and actual MCP access. Local data lives under `.runtime/`; the persistent macOS installation uses `~/Library/Application Support/LLM-Agent-System/<instance>/`. Use `python -m ride_agent.persistence.backup --help` from `backend/` for offline backup/restore commands and stop the relevant instance before copying embedded state.
+`/livez` checks the process; `/readyz` also checks storage, policy indexes, projections and actual MCP access. Local data lives under `.runtime/`; the persistent macOS installation uses `~/Library/Application Support/RideRecall-Agent/<instance>/`. Use `python -m ride_agent.persistence.backup --help` from `backend/` for offline backup/restore commands and stop the relevant instance before copying embedded state.
 
-Live model access is separate from agent count: set `LLM_AGENT_SYSTEM_RIDE_MODEL_MODE=live`, `LLM_AGENT_SYSTEM_RIDE_MODEL` and `LLM_AGENT_SYSTEM_RIDE_API_KEY` explicitly. The default remains no-key `demo`; live model access never grants financial permissions.
-
+For live-model access, set `RIDERECALL_AGENT_RIDE_MODEL_MODE=live`, `RIDERECALL_AGENT_RIDE_MODEL` and `RIDERECALL_AGENT_RIDE_API_KEY` explicitly. The default is no-key `demo`.
 
 ## Reproduce the offline comparison
 
-Use the same installed Python environment as the backend, including its test dependencies:
+The published comparison uses 1,000 synthetic worlds and 2,000 dialogues per condition. It measures workflow completion and claim retention with the deterministic adapter. Live-model results and independent human dataset review are pending. Use the backend environment, including test dependencies:
 
 ```bash
 python scripts/bench/run-ablation.py --output artifacts/my-ablation
 python scripts/ops/check-evaluation-evidence.py
 ```
 
-The runner records source and dataset hashes before execution, refuses existing output directories, preserves per-condition logs, scores and compressed HTTP responses, and verifies all 2,000 episode IDs in every condition. The default is sequential execution for less resource contention. `--workers 4` runs the conditions concurrently; report that contention when presenting latency. Runtime and scoring rules must remain unchanged during a run. The published evidence gate checks the curated baseline against the shipped manifest and split counts; it does not rerun the experiment.
+The runner records source and dataset hashes before execution, refuses existing output directories, preserves per-condition logs, scores and compressed HTTP responses, and verifies all 2,000 episode IDs in every condition. The default runs conditions sequentially. `--workers 4` runs the conditions concurrently; report that contention when presenting latency. The published evidence gate checks the curated baseline against the shipped manifest and split counts; it does not rerun the experiment.
 
-The offline replay deliberately forces the deterministic adapter even if live environment variables are present. For a live run, configure the existing provider variables locally and invoke the explicit live harness:
+Offline replay always uses the deterministic adapter. To evaluate a live model, configure the provider variables and run:
 
 ```bash
 python scripts/bench/check-live.py --output artifacts/my-live-test \
@@ -90,13 +88,11 @@ python scripts/bench/check-live.py --output artifacts/my-live-test \
   --pricing-date "$PRICING_DATE"
 ```
 
-Choose the model and verify its current input/output prices before running. The harness requires explicit `LLM_AGENT_SYSTEM_RIDE_MODEL_MODE=live`, model and API key; it injects validated live settings into the same HTTP replay and leaves transitions and scoring unchanged. It records every provider attempt, token usage, context loss, dialogue timing, strict completion and test coverage. `--limit` is a smoke run, not a full test result. The call ceiling is not a guaranteed dollar budget. Unknown failed-request usage or unpriced cache tokens make the total cost unavailable; estimates are not provider invoices. Raw responses may contain provider content and remain ignored locally. No live-model quality, latency or cost result is currently published.
+Choose the model and verify its current input/output prices before running. The harness requires live mode, model and API key and uses the same HTTP replay and scorer. It records every provider attempt, token usage, context loss, dialogue timing, strict completion and test coverage. `--limit` is a smoke run, not a full test result. The call ceiling is not a guaranteed dollar budget. Unknown failed-request usage or unpriced cache tokens make the total cost unavailable; estimates are not provider invoices. Raw responses may contain provider content and remain ignored locally.
 
-## Dependency compatibility
+## Storage upgrades
 
-The runtime pins Chroma 1.5.9 and HTTPX2 2.16.0. Chroma 0.5.23 accessed Pydantic model fields through instances; the newer release uses class-level access. [Starlette's TestClient](https://www.starlette.io/testclient/) uses HTTPX2 instead of its deprecated HTTPX fallback. HTTPX remains installed for application integrations that use its API.
-
-The local embedding implements Chroma's named, serializable configuration protocol. Its 256-dimensional hash vectors, cosine policy indexes and L2 memory indexes are unchanged; no embedding service or model download is required by the ride pipeline. Tests run with `-W error`, so unexpected warnings fail rather than being hidden.
+The local embedding uses 256-dimensional hash vectors, cosine policy indexes and L2 memory indexes. It requires no embedding service or model download.
 
 Before upgrading an existing 0.5.x installation, stop it and create an offline snapshot with the existing environment:
 
@@ -107,7 +103,7 @@ python -m ride_agent.persistence.backup create /absolute/path/to/rides.sqlite3 /
 python -m ride_agent.persistence.backup verify /absolute/path/to/new-snapshot
 ```
 
-The snapshot includes the case database, receipts, binary evidence and derived sidecars. Chroma may migrate its index format on first open; keep the snapshot and the original dependency lock if rollback is needed. Do not open an upgraded index with the old Chroma package. Restart with the one-click command after upgrading. The dependency validation includes an old-version case/index migration and a no-key follow-up retaining corrected memory; synthetic replay results still do not establish live-model quality.
+The snapshot includes the case database, receipts, binary evidence and derived sidecars. Chroma may migrate its index format on first open; keep the snapshot and the original dependency lock if rollback is needed. Do not open an upgraded index with the old Chroma package. Restart with the one-click command after upgrading.
 
 The isolated Linux container regression can be reproduced with:
 
@@ -116,8 +112,8 @@ docker compose build app
 python scripts/ops/check-container.py --output artifacts/my-container-check.json
 ```
 
-It uses a separate Compose project and removes only its own containers and volumes. The dependency upgrade run passed all 31 checks, including the specialist/confirmation workflow, restart persistence and offline recovery.
+It uses a separate Compose project and removes only its own containers and volumes. It checks specialist decisions, rider confirmation, restart persistence and offline recovery.
 
 ## Reliability workloads
 
-`scripts/bench/check-capacity.py --help` describes the bounded authenticated HTTP concurrency workload; `scripts/bench/check-soak.py --help` describes the paced restart/MCP-fault workload. Both operate on an explicit frozen checkout and isolated state, preserve failures and refuse an existing output directory. These test recovery and resource bounds rather than model quality. `scripts/ops/check-local-recovery.py` checks the installed macOS service without discarding saved cases.
+`scripts/bench/check-capacity.py --help` describes the bounded authenticated HTTP concurrency workload; `scripts/bench/check-soak.py --help` describes the paced restart/MCP-fault workload. Both operate on an explicit frozen checkout and isolated state, preserve failures and refuse an existing output directory. `scripts/ops/check-local-recovery.py` checks the installed macOS service without discarding saved cases.

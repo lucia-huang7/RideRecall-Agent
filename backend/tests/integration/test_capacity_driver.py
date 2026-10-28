@@ -23,8 +23,8 @@ def test_capacity_driver_preserves_failure_report_when_startup_leaves_an_empty_d
     (package / "domain" / "__init__.py").touch()
     (package / "api" / "app.py").write_text(
         (
-            "import os, sqlite3\nsqlite3.connect(os.environ['LLM_AGENT_SYS"
-            "TEM_RIDE_DB']).close()\nraise RuntimeError('Intentional "
+            "import os, sqlite3\nsqlite3.connect(os.environ['RIDERECALL_"
+            "AGENT_RIDE_DB']).close()\nraise RuntimeError('Intentional "
             "private preflight "
             "failure')\n"
         )

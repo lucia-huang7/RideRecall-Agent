@@ -13,7 +13,7 @@ def headers(key=None):
 
 
 def test_default_union_tools_and_optional_mode_survive_restart(tmp_path, monkeypatch):
-    monkeypatch.delenv("LLM_AGENT_SYSTEM_RIDE_API_KEY", raising=False)
+    monkeypatch.delenv("RIDERECALL_AGENT_RIDE_API_KEY", raising=False)
     path = tmp_path / "modes.sqlite3"
     payload = dict(
         trip_id="trip-river",

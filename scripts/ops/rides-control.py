@@ -193,7 +193,7 @@ def install():
         "RunAtLoad": True,
         "KeepAlive": True,
         "ThrottleInterval": 5,
-        "ProcessType": "Background",
+        "ProcessType": "Standard",
         "ExitTimeOut": 30,
         "EnvironmentVariables": {
             "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
@@ -225,7 +225,7 @@ def start(open_browser=True):
                 + (" is already in use. Stop the development server or conflicting app before starting this service.")
             )
         run(["/bin/launchctl", "bootstrap", DOMAIN, PLIST])
-    deadline = time.monotonic() + 90
+    deadline = time.monotonic() + 180
     while time.monotonic() < deadline:
         current = state()
         if current.get("status") == "ready" and time.time() - current.get("checked_at", 0) < 12:
@@ -243,7 +243,7 @@ def start(open_browser=True):
             return
         time.sleep(0.5)
     raise RuntimeError(
-        ("Service did not become healthy within 90 seconds. Open the Status command and inspect ")
+        ("Service did not become healthy within 180 seconds. Open the Status command and inspect ")
         + str(INSTALL / "logs")
     )
 

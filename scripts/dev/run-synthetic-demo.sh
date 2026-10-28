@@ -2,7 +2,7 @@
 # Run the existing mobile app against an opt-in synthetic catalog and isolated DB.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-CATALOG="${1:-$ROOT/datasets/ride_support_v1/catalog-preview.json}"
+CATALOG="${1:-$ROOT/datasets/ride_support/catalog-preview.json}"
 PORT="${PORT:-8011}"
 RIDE_PYTHON="${RIDE_PYTHON:-}"
 if [ -z "$RIDE_PYTHON" ]; then

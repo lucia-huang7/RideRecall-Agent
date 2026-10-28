@@ -75,12 +75,12 @@ def sample_health(liveness, readiness, frontend, failures):
     return (healthy, dict(backend=alive, frontend=frontend))
 
 
-def recovery_decision(failures, started, now):
+def recovery_decision(failures, started, now, backend_grace=35):
     result = []
     for name in ("backend", "frontend"):
-        if failures[name] >= 4 and now - started[name] > 35:
+        if failures[name] >= 4 and now - started[name] > (backend_grace if name == "backend" else 35):
             result.append(name)
-    if failures["mcp"] >= 6 and now - started["backend"] > 35 and ("backend" not in result):
+    if failures["mcp"] >= 6 and now - started["backend"] > backend_grace and ("backend" not in result):
         result.append("backend")
     return result
 
@@ -186,6 +186,7 @@ def main():
         "frontend": [sys.executable, str(INSTANCE_ROOT / "runtime" / "frontend.py")],
     }
     processes = {}
+    backend_was_alive = False
     failures = {"backend": 0, "frontend": 0, "mcp": 0}
     restarts = {"backend": 0, "frontend": 0, "mcp": 0}
     handles = {name: ChildLog(logs / (name + ".log")) for name in commands}
@@ -254,8 +255,11 @@ def main():
             except Exception:
                 pass
             healthy, alive = sample_health(liveness, readiness, frontend, failures)
+            backend_was_alive = backend_was_alive or alive["backend"]
             started = {name: status[name + "_started"] for name in commands}
-            for name in recovery_decision(failures, started, time.time()):
+            for name in recovery_decision(
+                failures, started, time.time(), backend_grace=35 if backend_was_alive else 120
+            ):
                 if name == "backend" and failures["mcp"] >= 6:
                     restarts["mcp"] += 1
                     failures["mcp"] = 0

@@ -35,8 +35,8 @@ Replay the supplied synthetic data through the real API pipeline:
 
 ```bash
 cd backend
-python -m ride_agent.evaluation.simulation audit --dataset ../datasets/ride_support_v1
-python -m ride_agent.evaluation.simulation replay --dataset ../datasets/ride_support_v1 --output ../artifacts/my-replay
+python -m ride_agent.evaluation.simulation audit --dataset ../datasets/ride_support
+python -m ride_agent.evaluation.simulation replay --dataset ../datasets/ride_support --output ../artifacts/my-replay
 ```
 
 Replay refuses an existing output directory. Results, databases and credentials are ignored by Git.

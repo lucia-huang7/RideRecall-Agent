@@ -16,7 +16,7 @@ CONFIGURATIONS = ("single_recent4", "multi_recent4", "single_durable", "multi_du
 def main():
     root = Path(__file__).resolve().parents[2]
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--dataset", type=Path, default=root / "datasets/ride_support_v1")
+    parser.add_argument("--dataset", type=Path, default=root / "datasets/ride_support")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--workers", type=int, choices=range(1, 5), default=1)
     args = parser.parse_args()

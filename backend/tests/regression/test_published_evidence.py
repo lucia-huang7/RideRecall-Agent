@@ -13,7 +13,7 @@ spec.loader.exec_module(evidence)
 
 
 def test_shipped_evidence_matches_shipped_dataset():
-    result = evidence.verify(ROOT / "datasets/ride_support_v1")
+    result = evidence.verify(ROOT / "datasets/ride_support")
     assert result["worlds"] == 1000
     assert result["dialogues"] == 2000
     assert result["splits"]["test"] == 404
@@ -21,7 +21,7 @@ def test_shipped_evidence_matches_shipped_dataset():
 
 @pytest.mark.parametrize("corruption", ["dataset_hash", "test_count"])
 def test_rejects_stale_dataset_or_split_counts(tmp_path, corruption):
-    dataset = ROOT / "datasets/ride_support_v1"
+    dataset = ROOT / "datasets/ride_support"
     for path in dataset.iterdir():
         if path.is_file() and path.name != "baseline.json":
             (tmp_path / path.name).symlink_to(path)

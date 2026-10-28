@@ -22,7 +22,7 @@ def main():
     from ride_agent.integrations.settings import ModelSettings
 
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--dataset", type=Path, default=root / "datasets/ride_support_v1")
+    parser.add_argument("--dataset", type=Path, default=root / "datasets/ride_support")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--limit", type=int)
     parser.add_argument("--max-calls", type=int, required=True)

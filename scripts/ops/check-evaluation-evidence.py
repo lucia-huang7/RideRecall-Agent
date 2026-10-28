@@ -53,4 +53,4 @@ def verify(dataset):
 
 
 if __name__ == "__main__":
-    print(json.dumps(verify(Path(__file__).resolve().parents[2] / "datasets/ride_support_v1"), indent=2))
+    print(json.dumps(verify(Path(__file__).resolve().parents[2] / "datasets/ride_support"), indent=2))

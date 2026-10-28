@@ -12,14 +12,14 @@ Click either row to enlarge it. [All 25 screens](docs/interface.md).
 
 ## Architecture
 
-[![Request processing, policy and trip lookups, case storage and adjustment confirmation](docs/assets/architecture.svg)](docs/assets/architecture.svg)
+[![Request processing, policy and trip lookups, case storage and adjustment confirmation](docs/assets/architecture.png)](docs/assets/architecture.svg)
 
 - [Case memory](backend/ride_agent/agent/memory.py) restores the conversation and [versioned rider claims](backend/ride_agent/domain/claims.py). Corrections update the rider's account without replacing recorded trip facts.
 - The [agent pipeline](backend/ride_agent/agent/pipeline.py) identifies the request, retrieves policies from Chroma and checks trip records through [read-only MCP tools](backend/ride_agent/integrations/mcp_server.py). Responses include policy citations.
 - [Case actions](backend/ride_agent/domain/case.py) handle specialist decisions and rider confirmation. Before recording an adjustment, the server checks the amount, current policy and trip record.
 - [SQLite storage](backend/ride_agent/persistence/store.py) saves case changes and request receipts in one transaction. Request IDs prevent duplicate commands; revisions reject stale writes. An [outbox](backend/ride_agent/persistence/projections.py) retries Chroma updates after the case is saved.
 
-On 2,000 synthetic dialogues, durable memory raised strict offline workflow completion from 67% with four recent rider rounds to 100%; context loss fell from 4,100/12,026 eligible checkpoints to zero. The replay uses the deterministic adapter and measures case state and retained claims. [Results and frozen hashes](datasets/ride_support_v1/baseline.json) · [Reproduction](docs/operations.md#reproduce-the-offline-comparison).
+On 2,000 synthetic dialogues, durable memory raised strict offline workflow completion from 67% with four recent rider rounds to 100%; context loss fell from 4,100/12,026 eligible checkpoints to zero. The replay uses the deterministic adapter and measures case state and retained claims. [Results and frozen hashes](datasets/ride_support/baseline.json) · [Reproduction](docs/operations.md#reproduce-the-offline-comparison).
 
 ## Run locally
 
@@ -42,6 +42,12 @@ python -m pip install -r backend/requirements-dev.txt
 (cd frontend && npm ci && npm run lint && npm run format:check && npm test && npm run build)
 ```
 
-CI runs 321 backend tests, 22 frontend tests, lint, build and evaluation-evidence checks. [Operations](docs/operations.md) covers service control, authenticated previews, containers, backup and live-model configuration.
+CI runs 322 backend tests, 22 frontend tests, lint, build and evaluation-evidence checks. [Operations](docs/operations.md) covers service control, authenticated previews, containers, backup and live-model configuration.
+
+[Java backend reference](https://github.com/lucia-huang7/RideRecall-Agent/tree/reference/java-backend): Java 21, Spring Boot and LangChain4j.
 
 Demo trips, policies and adjustments are simulated; no money moves. Keep demo mode on loopback and use one worker per SQLite/Chroma state directory. See [deployment requirements](docs/operations.md#runtime-boundaries) before exposing the application.
+
+## License
+
+[MIT](LICENSE). Third-party dependencies retain their respective licenses.
